@@ -1,0 +1,92 @@
+{
+  "heroes": [
+    {
+      "id": 16,
+      "name": "sand_king",
+      "localized_name": "Sand King",
+      "abilities": [
+        {
+          "id": 1601,
+          "name": "Burrowstrike",
+          "description": "Sand King burrows into the ground and resurfaces at a target location, damaging and stunning enemy units above him as he resurfaces. Burrowstrike travels in a straight line, and the stun duration is the same on each level.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "burrow_damage": [100, 160, 220, 280],
+            "burrow_stun": [1.6, 1.6, 1.6, 1.6],
+            "cast_range": [400, 500, 600, 700],
+            "width": [225, 225, 225, 225]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Disjoint projectiles upon cast."
+        },
+        {
+          "id": 1602,
+          "name": "Sand Storm",
+          "description": "Sand King creates a fierce sand storm, damaging all enemies caught within it. Sand King becomes invisible while in the sandstorm.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "sand_storm_damage": [25, 50, 75, 100],
+            "radius": [525, 525, 525, 525],
+            "duration": [25, 30, 35, 40],
+            "sand_storm_tick_interval": [0.5, 0.5, 0.5, 0.5],
+            "fade_time": [0.3, 0.2, 0.1, 0.0]
+          },
+          "cooldown": [34, 26, 18, 10],
+          "mana_cost": [60, 70, 80, 90],
+          "notes": "Sand King becomes invisible while in Sand Storm."
+        },
+        {
+          "id": 1603,
+          "name": "Caustic Finale",
+          "description": "Sand King's attacks infect the target with a poisonous sting that slows their movement speed. If the target dies while under this effect, it explodes, damaging nearby enemies.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "caustic_finale_damage": [110, 150, 190, 230],
+            "caustic_finale_radius": [400, 400, 400, 400],
+            "movement_slow": [17, 24, 31, 38],
+            "slow_duration": [3, 3, 3, 3]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "If the target dies while under the effect, it deals AoE damage."
+        },
+        {
+          "id": 1604,
+          "name": "Epicenter",
+          "description": "After channeling for 2 seconds, Sand King sends out a series of damaging pulse waves that slow enemies caught in their wake. The slowing effect stacks with each pulse and reaches its maximum value.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "epicenter_damage": [110, 110, 110],
+            "epicenter_slow": [30, 30, 30],
+            "epicenter_radius": [275, 325, 375],
+            "epicenter_pulses": [6, 8, 10],
+            "epicenter_pulse_interval": [0.8, 0.8, 0.8],
+            "slow_duration": [3, 3, 3],
+            "damage_interval": [1, 1, 1]
+          },
+          "cooldown": [120, 100, 80],
+          "mana_cost": [150, 225, 325],
+          "notes": "Requires successful channeling. Each pulse increases the slow effect."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

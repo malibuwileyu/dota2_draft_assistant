@@ -1,0 +1,121 @@
+{
+  "heroes": [
+    {
+      "id": 22,
+      "name": "zuus",
+      "localized_name": "Zeus",
+      "abilities": [
+        {
+          "id": 2201,
+          "name": "Arc Lightning",
+          "description": "Zeus sends a bolt of lightning that leaps through nearby enemy units, dealing damage and revealing the area around each target.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "arc_lightning_damage": [85, 100, 115, 130],
+            "jump_count": [7, 9, 11, 13],
+            "arc_lightning_radius": [500, 500, 500, 500],
+            "far_radius": [800, 800, 800, 800]
+          },
+          "cooldown": [1.6, 1.6, 1.6, 1.6],
+          "mana_cost": [80, 85, 90, 95],
+          "notes": "Jumps to the closest enemy unit in radius. Provides vision around each target."
+        },
+        {
+          "id": 2202,
+          "name": "Lightning Bolt",
+          "description": "Zeus calls down a bolt of lightning to strike an enemy unit, dealing damage and providing true sight of the target. Provides vision in a small area around the target for a short time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "lightning_bolt_damage": [125, 200, 275, 350],
+            "sight_radius": [750, 750, 750, 750],
+            "sight_duration": [5, 5, 5, 5],
+            "ministun_duration": [0.2, 0.2, 0.2, 0.2]
+          },
+          "cooldown": [6, 6, 6, 6],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Provides true sight of the target for a short time and ministuns it."
+        },
+        {
+          "id": 2203,
+          "name": "Heavenly Jump",
+          "description": "Zeus leaps into the air and comes crashing down at the target location, dealing damage to all enemies in the area and briefly slowing them.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [80, 120, 160, 200],
+            "slow": [30, 30, 30, 30],
+            "slow_duration": [0.4, 0.5, 0.6, 0.7],
+            "radius": [300, 300, 300, 300],
+            "lightning_bolt_radius": [375, 375, 375, 375],
+            "jump_speed": [1000, 1000, 1000, 1000],
+            "jump_lockdown_time": [0.8, 0.8, 0.8, 0.8]
+          },
+          "cooldown": [35, 30, 25, 20],
+          "mana_cost": [120, 120, 120, 120],
+          "notes": "Zeus is invulnerable while jumping. With shard, auto-casts Lightning Bolt on a random enemy."
+        },
+        {
+          "id": 2204,
+          "name": "Thundergod's Wrath",
+          "description": "Zeus strikes all enemy heroes with a bolt of lightning, regardless of where they may be hiding. Thundergod's Wrath also provides True Sight around each hero struck.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [300, 400, 500],
+            "sight_radius": [900, 900, 900],
+            "sight_duration": [3, 3, 3],
+            "scepter_cloud_duration": [45, 45, 45],
+            "scepter_cast_delay": [0.2, 0.2, 0.2]
+          },
+          "cooldown": [120, 110, 100],
+          "mana_cost": [300, 350, 400],
+          "notes": "Strikes all enemy heroes on the map, providing vision. With Scepter, creates Nimbus clouds."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 2205,
+          "name": "Static Field",
+          "description": "Zeus's abilities damage all enemy units within a radius around him based on a percentage of their current health.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["enemies"],
+          "special_values": {
+            "static_field_damage": [5, 7, 9, 11],
+            "static_field_radius": [1200, 1200, 1200, 1200],
+            "radius": [1200, 1200, 1200, 1200]
+          },
+          "notes": "Deals extra damage as a percentage of current health to enemies within radius whenever Zeus casts a spell."
+        },
+        {
+          "id": 2206,
+          "name": "Nimbus",
+          "description": "With Aghanim's Scepter, Zeus can summon a storm cloud that automatically casts Lightning Bolt on the nearest enemy in range.",
+          "type": "innate",
+          "behavior": "point target",
+          "affects": ["enemies"],
+          "special_values": {
+            "cloud_duration": [35, 35, 35],
+            "cloud_radius": [500, 500, 500],
+            "health": [400, 400, 400]
+          },
+          "notes": "Requires Aghanim's Scepter. Summons a cloud that casts Lightning Bolt on enemies in range."
+        }
+      ]
+    }
+  ]
+}

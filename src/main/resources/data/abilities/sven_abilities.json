@@ -1,0 +1,85 @@
+{
+  "heroes": [
+    {
+      "id": 18,
+      "name": "sven",
+      "localized_name": "Sven",
+      "abilities": [
+        {
+          "id": 1801,
+          "name": "Storm Hammer",
+          "description": "Sven unleashes his magical gauntlet that deals damage and stuns enemy units in a small area around the target.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "hammer_damage": [110, 180, 250, 320],
+            "hammer_stun": [1.4, 1.6, 1.8, 2.0],
+            "hammer_speed": [1000, 1000, 1000, 1000],
+            "hammer_radius": [255, 255, 255, 255]
+          },
+          "cooldown": [18, 16, 14, 12],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Deals damage and stuns all targets in a small AoE."
+        },
+        {
+          "id": 1802,
+          "name": "Great Cleave",
+          "description": "Sven strikes with great force, cleaving all nearby enemy units with his attack.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "great_cleave_radius": [360, 360, 360, 360],
+            "great_cleave_damage": [40, 55, 70, 85]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Cleave damage is reduced by armor type but not by armor value."
+        },
+        {
+          "id": 1803,
+          "name": "Warcry",
+          "description": "Sven's Warcry heartens his allied heroes for battle, granting them bonus armor and movement speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["allies", "self"],
+          "special_values": {
+            "warcry_radius": [700, 700, 700, 700],
+            "warcry_armor": [4, 8, 12, 16],
+            "warcry_movespeed": [8, 12, 16, 20],
+            "warcry_duration": [8, 8, 8, 8]
+          },
+          "cooldown": [34, 28, 22, 16],
+          "mana_cost": [40, 40, 40, 40],
+          "notes": "Affects all allied heroes in a 700 radius, including Sven."
+        },
+        {
+          "id": 1804,
+          "name": "God's Strength",
+          "description": "Sven channels his rogue strength, granting himself bonus damage for 40 seconds. With Aghanim's Scepter, the damage bonus is also granted to all allied heroes.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "gods_strength_damage": [110, 160, 210],
+            "duration": [40, 40, 40],
+            "scepter_bonus": [75, 75, 75]
+          },
+          "cooldown": [110, 105, 100],
+          "mana_cost": [100, 150, 200],
+          "notes": "With Aghanim's Scepter, grants 75% of the damage bonus to all allied heroes."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

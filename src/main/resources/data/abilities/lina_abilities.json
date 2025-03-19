@@ -1,0 +1,88 @@
+{
+  "heroes": [
+    {
+      "id": 25,
+      "name": "lina",
+      "localized_name": "Lina",
+      "abilities": [
+        {
+          "id": 2501,
+          "name": "Dragon Slave",
+          "description": "Lina unleashes a wave of fire in the direction she is facing. The wave damages enemy units in its path.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "directional",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [110, 180, 250, 320],
+            "dragon_slave_width_initial": [275, 275, 275, 275],
+            "dragon_slave_width_end": [275, 275, 275, 275],
+            "dragon_slave_distance": [1075, 1075, 1075, 1075],
+            "dragon_slave_speed": [1200, 1200, 1200, 1200]
+          },
+          "cooldown": [8, 8, 8, 8],
+          "mana_cost": [100, 115, 130, 145],
+          "notes": "The projectile provides vision along its path."
+        },
+        {
+          "id": 2502,
+          "name": "Light Strike Array",
+          "description": "Lina summons a column of flames that damages and stuns enemies in a target area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [80, 140, 200, 260],
+            "light_strike_array_aoe": [225, 225, 225, 225],
+            "light_strike_array_delay_time": [0.5, 0.5, 0.5, 0.5],
+            "stun_duration": [1.6, 1.9, 2.2, 2.5]
+          },
+          "cooldown": [7, 7, 7, 7],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Has a slight delay before the stun and damage are applied."
+        },
+        {
+          "id": 2503,
+          "name": "Fiery Soul",
+          "description": "Grants bonus attack and movement speed each time Lina casts a spell. Stacks with each spell cast, and refreshes duration.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "fiery_soul_attack_speed_bonus": [35, 55, 75, 95],
+            "fiery_soul_move_speed_bonus": [5, 6.5, 8, 9.5],
+            "fiery_soul_max_stacks": [3, 3, 3, 3],
+            "fiery_soul_duration": [12, 14, 16, 18]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Stacks up to 3 times. Each stack refreshes the duration independently."
+        },
+        {
+          "id": 2504,
+          "name": "Laguna Blade",
+          "description": "Lina unleashes a huge bolt of lightning that deals massive damage to a single enemy. With Aghanim's Scepter, Laguna Blade's damage type becomes Pure and it pierces spell immunity.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [450, 650, 850],
+            "scepter_damage": [500, 725, 950],
+            "cast_range": [600, 650, 700]
+          },
+          "cooldown": [70, 60, 50],
+          "mana_cost": [280, 420, 680],
+          "notes": "With Aghanim's Scepter, damage type becomes Pure and pierces spell immunity."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 5,
+      "name": "crystal_maiden",
+      "localized_name": "Crystal Maiden",
+      "abilities": [
+        {
+          "id": 501,
+          "name": "Crystal Nova",
+          "description": "Creates a blast of damaging frost that slows enemy movement and attack speed in an area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [425, 425, 425, 425],
+            "damage": [110, 160, 210, 260],
+            "movement_slow": [20, 30, 40, 50],
+            "attack_slow": [30, 45, 60, 75],
+            "duration": [4.5, 5, 5.5, 6]
+          },
+          "cooldown": [11, 10, 9, 8],
+          "mana_cost": [115, 135, 155, 175],
+          "notes": "Slows attack and movement speed of all enemies in the area of effect."
+        },
+        {
+          "id": 502,
+          "name": "Frostbite",
+          "description": "Encases an enemy unit in ice, preventing movement and attack while dealing damage over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [1.5, 2, 2.5, 3],
+            "damage_per_second": [100, 100, 100, 100],
+            "cast_range": [600, 600, 600, 600],
+            "creep_damage_factor": 4
+          },
+          "cooldown": [9, 8, 7, 6],
+          "mana_cost": [125, 135, 145, 155],
+          "notes": "Target cannot move or attack, but can still cast spells."
+        },
+        {
+          "id": 503,
+          "name": "Arcane Aura",
+          "description": "Provides bonus mana regeneration to all allied heroes globally. Crystal Maiden receives additional regeneration.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["allies", "self"],
+          "special_values": {
+            "mana_regen": [0.4, 0.6, 0.8, 1],
+            "proximity_aura_radius": 1200,
+            "proximity_bonus_factor": 3
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Affects all allied heroes globally, including creep-heroes."
+        },
+        {
+          "id": 504,
+          "name": "Freezing Field",
+          "description": "Crystal Maiden channels energy to unleash waves of damaging frost that slow attack and movement speed. Explosions happen randomly in the area of effect.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [810, 810, 810],
+            "min_explosion_spawn_radius": 195,
+            "max_explosion_spawn_radius": 785,
+            "explosion_damage_radius": 320,
+            "damage_per_explosion": [105, 170, 250],
+            "explosion_interval": [0.1, 0.1, 0.1],
+            "move_slow": [40, 40, 40],
+            "attack_slow": [80, 120, 160],
+            "debuff_duration": 1,
+            "duration": [10, 10, 10]
+          },
+          "cooldown": [100, 95, 90],
+          "mana_cost": [200, 400, 600],
+          "notes": "Crystal Maiden is unable to move or perform actions during this channeled ultimate."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 505,
+          "name": "Blueheart Floe",
+          "description": "Grants the Maiden incoming mana regeneration amplification.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "self_mana_regen_amplification": [25, 50, 75, 100]
+          },
+          "notes": "This ability levels up with Freezing Field."
+        }
+      ]
+    }
+  ]
+}

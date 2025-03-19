@@ -1,0 +1,88 @@
+{
+  "heroes": [
+    {
+      "id": 2,
+      "name": "axe",
+      "localized_name": "Axe",
+      "abilities": [
+        {
+          "id": 201,
+          "name": "Berserker's Call",
+          "description": "Axe taunts nearby enemy units, forcing them to attack him, while he gains bonus armor during the duration.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "radius": [300, 300, 300, 300],
+            "duration": [2, 2.4, 2.8, 3.2],
+            "bonus_armor": [30, 40, 50, 60]
+          },
+          "cooldown": [16, 14, 12, 10],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Forces enemies to attack Axe even if they are spell immune."
+        },
+        {
+          "id": 202,
+          "name": "Battle Hunger",
+          "description": "Drives an enemy unit mad with hunger, causing it to be slowed and take damage over time until it kills another unit or the duration ends. While the target has Battle Hunger on it, Axe gains bonus movement speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "slow": [15, 20, 25, 30],
+            "damage_per_second": [25, 35, 45, 55],
+            "duration": [8, 10, 12, 14],
+            "movement_speed_bonus": [6, 8, 10, 12]
+          },
+          "cooldown": [12, 10, 8, 6],
+          "mana_cost": [60, 65, 70, 75],
+          "notes": "Damage stops if the target kills a unit. Axe gains movement speed for every enemy affected by Battle Hunger."
+        },
+        {
+          "id": 203,
+          "name": "Counter Helix",
+          "description": "When attacked, Axe performs a helix counter attack, dealing pure damage to all nearby enemies.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [275, 275, 275, 275],
+            "damage": [100, 140, 180, 220],
+            "proc_chance": [20, 20, 20, 20],
+            "cooldown": [0.5, 0.5, 0.5, 0.5]
+          },
+          "cooldown": [0.5, 0.5, 0.5, 0.5],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Triggers when attacked, even if the attack misses."
+        },
+        {
+          "id": 204,
+          "name": "Culling Blade",
+          "description": "Axe spots a weakness and strikes, instantly killing an enemy unit with low health, or dealing moderate damage otherwise. When an enemy hero is culled, its kill threshold is checked after reductions. If a unit is killed with Culling Blade, Axe and nearby allied units gain bonus movement speed.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "kill_threshold": [250, 350, 450],
+            "damage": [150, 250, 350],
+            "speed_bonus": [30, 40, 50],
+            "bonus_duration": [6, 6, 6],
+            "speed_radius": [900, 900, 900]
+          },
+          "cooldown": [75, 65, 55],
+          "mana_cost": [60, 120, 180],
+          "notes": "When Axe successfully kills an enemy hero with Culling Blade, the cooldown is reset."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

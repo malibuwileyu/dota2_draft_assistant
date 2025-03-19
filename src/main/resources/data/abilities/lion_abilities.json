@@ -1,0 +1,90 @@
+{
+  "heroes": [
+    {
+      "id": 26,
+      "name": "lion",
+      "localized_name": "Lion",
+      "abilities": [
+        {
+          "id": 2601,
+          "name": "Earth Spike",
+          "description": "Lion summons a column of spikes from the earth, impaling enemy units on their path and dealing damage. The impaled enemies are stunned and raised into the air for a short period.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [120, 180, 240, 300],
+            "duration": [1.4, 1.8, 2.2, 2.6],
+            "width": [125, 125, 125, 125],
+            "length": [500, 600, 700, 800],
+            "speed": [1600, 1600, 1600, 1600]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [80, 100, 120, 140],
+          "notes": "Impales units in a line, stunning and damaging them."
+        },
+        {
+          "id": 2602,
+          "name": "Hex",
+          "description": "Transforms an enemy unit into a harmless critter for a few seconds. The transformed unit is slowed, cannot attack, cast spells, or use items.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [2.5, 3, 3.5, 4],
+            "movement_speed": [140, 140, 140, 140]
+          },
+          "cooldown": [16, 14, 12, 10],
+          "mana_cost": [70, 110, 150, 190],
+          "notes": "Disables the target completely, setting their movement speed to 140."
+        },
+        {
+          "id": 2603,
+          "name": "Mana Drain",
+          "description": "Lion drains mana from a target enemy unit, gaining mana for each point drained. The unit being drained is also slowed while the drain is in effect.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [5, 5, 5, 5],
+            "mana_per_second": [30, 60, 90, 120],
+            "break_distance": [1200, 1200, 1200, 1200],
+            "slow": [14, 16, 18, 20],
+            "tick_interval": [0.25, 0.25, 0.25, 0.25]
+          },
+          "cooldown": [20, 16, 12, 8],
+          "mana_cost": [30, 40, 50, 60],
+          "notes": "Transfers mana from the target to Lion. Also applies a slow effect."
+        },
+        {
+          "id": 2604,
+          "name": "Finger of Death",
+          "description": "Lion channels a powerful energy burst through his finger, dealing massive damage to the target. Each time Finger of Death kills an enemy hero, Lion gains a permanent damage bonus.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [600, 725, 850],
+            "damage_per_kill": [40, 40, 40],
+            "cast_range_scepter": [900, 900, 900],
+            "cooldown_scepter": [100, 60, 20],
+            "damage_per_kill_scepter": [50, 50, 50],
+            "area_of_effect_scepter": [325, 325, 325]
+          },
+          "cooldown": [160, 100, 40],
+          "mana_cost": [200, 420, 650],
+          "notes": "Gains permanent damage for each hero kill. With Aghanim's Scepter, damages enemies in an area."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "heroes": [
+    {
+      "id": 33,
+      "name": "enigma",
+      "localized_name": "Enigma",
+      "abilities": [
+        {
+          "id": 3301,
+          "name": "Malefice",
+          "description": "Focuses Enigma's power on a target, causing it to take damage and become repeatedly stunned for multiple instances.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [30, 50, 70, 90],
+            "stun_instances": [3, 3, 3, 3],
+            "stun_duration": [0.5, 0.6, 0.7, 0.8],
+            "malefice_duration": [4.75, 4.75, 4.75, 4.75]
+          },
+          "cooldown": [18, 16, 14, 12],
+          "mana_cost": [95, 115, 135, 155],
+          "notes": "Applies multiple stuns and damage instances over time."
+        },
+        {
+          "id": 3302,
+          "name": "Demonic Conversion",
+          "description": "Transforms a creep or lesser life form into three fragments of Enigma himself. These fragments are known as Eidolons. When Eidolons attack 8 times, they multiply, creating a new Eidolon. They last for 35 seconds.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "eidolon_hp": [200, 300, 400, 500],
+            "eidolon_dmg_min": [16, 24, 32, 40],
+            "eidolon_dmg_max": [24, 32, 40, 48],
+            "eidolon_health_tooltip": [200, 300, 400, 500],
+            "eidolon_attack_count": [8, 8, 8, 8],
+            "eidolon_duration": [35, 35, 35, 35]
+          },
+          "cooldown": [55, 50, 45, 40],
+          "mana_cost": [140, 150, 160, 170],
+          "notes": "Eidolons multiply after 8 attacks. Cannot target ancient creeps or heroes."
+        },
+        {
+          "id": 3303,
+          "name": "Midnight Pulse",
+          "description": "Steeps an area in dark resonance, damaging all enemies caught in it based on their max health.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_percent": [3.0, 3.5, 4.0, 4.5],
+            "radius": [550, 550, 550, 550],
+            "duration": [11, 11, 11, 11]
+          },
+          "cooldown": [35, 35, 35, 35],
+          "mana_cost": [95, 110, 125, 140],
+          "notes": "Deals pure damage based on max health. Goes through spell immunity."
+        },
+        {
+          "id": 3304,
+          "name": "Black Hole",
+          "description": "Enigma creates a vortex that sucks in nearby enemies, stunning, damaging and pulling them to its center. The vortex is too powerful for even the strongest units to escape.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [55, 110, 165],
+            "pull_speed": [40, 50, 60],
+            "duration": [4, 4, 4],
+            "radius": [420, 420, 420],
+            "damage_per_second": [55, 110, 165],
+            "far_damage": [0, 0, 0],
+            "far_radius": [600, 600, 600],
+            "eidolon_stun_radius": [1400, 1400, 1400]
+          },
+          "cooldown": [200, 180, 160],
+          "mana_cost": [275, 325, 400],
+          "notes": "Requires channeling. Pulls and stuns all units in the area."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

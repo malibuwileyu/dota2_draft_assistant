@@ -1,0 +1,101 @@
+{
+  "heroes": [
+    {
+      "id": 34,
+      "name": "tinker",
+      "localized_name": "Tinker",
+      "abilities": [
+        {
+          "id": 3401,
+          "name": "Laser",
+          "description": "Fires a laser at an enemy unit, dealing pure damage and temporarily blinding them, causing them to miss all physical attacks.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "laser_damage": [80, 160, 240, 320],
+            "duration": [2.25, 3, 3.75, 4.5],
+            "cast_range": [650, 650, 650, 650],
+            "scepter_bounce_range": [650, 650, 650, 650],
+            "scepter_bounce": [1, 2, 3]
+          },
+          "cooldown": [14, 14, 14, 14],
+          "mana_cost": [95, 120, 145, 170],
+          "notes": "Causes the target to miss all physical attacks. With Aghanim's Scepter, Laser bounces to additional targets."
+        },
+        {
+          "id": 3402,
+          "name": "Heat-Seeking Missile",
+          "description": "Launches missiles to track and damage enemy heroes within range.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [100, 175, 250, 325],
+            "search_range": [2500, 2500, 2500, 2500],
+            "target_count": [2, 2, 3, 3],
+            "speed": [900, 900, 900, 900]
+          },
+          "cooldown": [18, 18, 18, 18],
+          "mana_cost": [95, 120, 145, 170],
+          "notes": "Automatically targets visible enemy heroes within range. Multiple missiles can target the same hero if fewer heroes are in range than available missiles."
+        },
+        {
+          "id": 3403,
+          "name": "Defense Matrix",
+          "description": "Tinker protects an ally with a high-powered energy forcefield that absorbs a fixed amount of incoming damage. Any excess damage is dealt as normal.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "damage_absorb": [100, 175, 250, 325],
+            "duration": [6, 9, 12, 15],
+            "cast_range": [800, 800, 800, 800]
+          },
+          "cooldown": [20, 20, 20, 20],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Absorbs a specific amount of damage before expiring."
+        },
+        {
+          "id": 3404,
+          "name": "Rearm",
+          "description": "After channeling for a fixed time, Rearm refreshes the cooldown on most items and abilities.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "channel_time": [3, 1.5, 0.75],
+            "scepter_channel_time": [1.5, 0.75, 0]
+          },
+          "cooldown": [0, 0, 0],
+          "mana_cost": [125, 225, 325],
+          "notes": "Does not refresh items that limited by charges or Black King Bar. With Aghanim's Scepter, reduces channel time significantly."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 3405,
+          "name": "Keen Teleport",
+          "description": "With Aghanim's Shard, Tinker can teleport to a friendly unit, dealing damage to enemies upon arrival.",
+          "type": "innate",
+          "behavior": "unit target",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "cast_range": [500, 500, 500],
+            "damage": [150, 150, 150],
+            "radius": [300, 300, 300]
+          },
+          "notes": "Requires Aghanim's Shard to unlock. Deals damage to enemies at the arrival location."
+        }
+      ]
+    }
+  ]
+}

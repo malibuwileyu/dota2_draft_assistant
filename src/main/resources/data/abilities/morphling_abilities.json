@@ -1,0 +1,106 @@
+{
+  "heroes": [
+    {
+      "id": 10,
+      "name": "morphling",
+      "localized_name": "Morphling",
+      "abilities": [
+        {
+          "id": 1001,
+          "name": "Waveform",
+          "description": "Morphling dissolves into a fast-moving wave, damaging enemy units in his path. Morphling is invulnerable during Waveform.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [100, 175, 250, 325],
+            "wave_speed": [900, 900, 900, 900],
+            "width": [200, 200, 200, 200],
+            "max_distance": [1000, 1000, 1000, 1000]
+          },
+          "cooldown": [17, 15, 13, 11],
+          "mana_cost": [150, 150, 150, 150],
+          "notes": "Morphling is invulnerable during Waveform."
+        },
+        {
+          "id": 1002,
+          "name": "Adaptive Strike (Agility)",
+          "description": "Launches a surge of water toward an enemy unit, dealing damage and knocking them back. Effect is based on Morphling's agility/strength ratio.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_base": [80, 160, 240, 320],
+            "damage_max_multiplier": [0.5, 1.0, 1.5, 2.0],
+            "stun_duration": [0.0, 0.0, 0.0, 0.0],
+            "knockback_min": [100, 100, 100, 100],
+            "knockback_max": [300, 300, 300, 300],
+            "knockback_duration": [1.0, 1.25, 1.5, 1.75]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [80, 80, 80, 80],
+          "notes": "Knockback and damage increases with Agility ratio."
+        },
+        {
+          "id": 1003,
+          "name": "Adaptive Strike (Strength)",
+          "description": "Launches a surge of water toward an enemy unit, stunning them and dealing damage. Effect is based on Morphling's strength/agility ratio.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_base": [80, 160, 240, 320],
+            "damage_min_multiplier": [0.25, 0.25, 0.25, 0.25],
+            "stun_min": [0.25, 0.25, 0.25, 0.25],
+            "stun_max": [1.5, 2.0, 2.5, 3.0],
+            "knockback_duration": [0.0, 0.0, 0.0, 0.0]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [80, 80, 80, 80],
+          "notes": "Stun duration increases with Strength ratio."
+        },
+        {
+          "id": 1004,
+          "name": "Morph",
+          "description": "Morphling shifts his form, trading Strength for Agility or Agility for Strength.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "morph_rate": [2, 3, 4, 5],
+            "bonus_attributes": [3, 4, 5, 6]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [30, 30, 30, 30],
+          "notes": "Mana cost is per second."
+        },
+        {
+          "id": 1005,
+          "name": "Morph Replicate",
+          "description": "Morphling changes form to match the targeted unit, copying its non-ultimate abilities. When the morph ends, Morphling reverts to his normal form.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [30, 40, 50],
+            "cast_time": [0.35, 0.35, 0.35]
+          },
+          "cooldown": [140, 120, 100],
+          "mana_cost": [50, 50, 50],
+          "notes": "Morphling can only target enemy or allied heroes."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

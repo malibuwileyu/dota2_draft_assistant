@@ -1,0 +1,99 @@
+{
+  "heroes": [
+    {
+      "id": 31,
+      "name": "lich",
+      "localized_name": "Lich",
+      "abilities": [
+        {
+          "id": 3101,
+          "name": "Frost Nova",
+          "description": "Blasts an enemy unit with ice, dealing damage and slowing its movement and attack speed. The primary target is frozen in place.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [100, 150, 200, 250],
+            "slow_attack_speed": [30, 30, 30, 30],
+            "slow_movement_speed": [30, 35, 40, 45],
+            "root_duration": [0.5, 0.75, 1, 1.25],
+            "slow_duration": [3, 3.5, 4, 4.5],
+            "radius": [200, 200, 200, 200]
+          },
+          "cooldown": [8, 8, 8, 8],
+          "mana_cost": [105, 115, 125, 135],
+          "notes": "Roots the primary target and slows all enemies in the radius."
+        },
+        {
+          "id": 3102,
+          "name": "Frost Shield",
+          "description": "Forms a shield of frost that reduces incoming physical damage and slows the attack speed of enemies who attack the target. Periodically damages nearby enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "bonus_armor": [5, 10, 15, 20],
+            "slow_attack_speed": [20, 25, 30, 35],
+            "slow_duration": [2, 2, 2, 2],
+            "slow_count": [4, 5, 6, 7],
+            "radius": [275, 275, 275, 275],
+            "damage_interval": [0.9, 0.9, 0.9, 0.9],
+            "damage": [30, 35, 40, 45],
+            "duration": [5, 6, 7, 8]
+          },
+          "cooldown": [18, 16, 14, 12],
+          "mana_cost": [100, 100, 100, 100],
+          "notes": "Can be cast on buildings. Slows attackers and deals period damage to nearby enemies."
+        },
+        {
+          "id": 3103,
+          "name": "Sinister Gaze",
+          "description": "Lich fixates his gaze on a target, causing them to move towards him while being slowed. Steals some of their mana.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "mana_drain_pct": [10, 16, 22, 28],
+            "duration": [1.6, 1.9, 2.2, 2.5],
+            "slow": [40, 50, 60, 70]
+          },
+          "cooldown": [22, 20, 18, 16],
+          "mana_cost": [75, 85, 95, 105],
+          "notes": "Forces the target to walk towards Lich while being slowed. Drains mana based on target's max mana."
+        },
+        {
+          "id": 3104,
+          "name": "Chain Frost",
+          "description": "Unleashes a chain of frost that bounces between nearby enemy units, slowing and damaging them. Each bounce increases the damage. With Aghanim's Scepter, it becomes infinite bounces.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [250, 375, 500],
+            "jump_range": [600, 600, 600],
+            "jump_count": [7, 9, 11],
+            "ministun": [0.3, 0.3, 0.3],
+            "slow_movement_speed": [50, 50, 50],
+            "slow_attack_speed": [25, 30, 35],
+            "slow_duration": [2, 2.5, 3],
+            "projectile_speed": [850, 850, 850],
+            "damage_per_jump": [0, 0, 0],
+            "unlimited_bounces_scepter": [1, 1, 1]
+          },
+          "cooldown": [120, 100, 80],
+          "mana_cost": [150, 225, 325],
+          "notes": "With Aghanim's Scepter, Chain Frost has unlimited bounces and slows more."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

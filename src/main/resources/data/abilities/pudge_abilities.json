@@ -1,0 +1,90 @@
+{
+  "heroes": [
+    {
+      "id": 14,
+      "name": "pudge",
+      "localized_name": "Pudge",
+      "abilities": [
+        {
+          "id": 1401,
+          "name": "Meat Hook",
+          "description": "Launches a bloody hook toward a unit or location. The hook will grab the first unit it encounters, dragging the unit back to Pudge and dealing damage if it is an enemy.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "pure",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "hook_damage": [160, 240, 320, 400],
+            "hook_speed": [1450, 1450, 1450, 1450],
+            "hook_width": [100, 100, 100, 100],
+            "hook_distance": [1300, 1400, 1500, 1600],
+            "hook_vision": [500, 500, 500, 500]
+          },
+          "cooldown": [17, 15, 13, 11],
+          "mana_cost": [140, 140, 140, 140],
+          "notes": "Provides vision along its path and can grab units through trees and terrain."
+        },
+        {
+          "id": 1402,
+          "name": "Rot",
+          "description": "A toxic cloud of gas that deals damage per second to enemy units around Pudge, as well as slowing both enemies and allies. Pudge himself takes only half the damage. Rot can be toggled on and off.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "toggle",
+          "damage_type": "magical",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "rot_radius": [275, 275, 275, 275],
+            "rot_slow": [17, 22, 27, 32],
+            "rot_damage": [30, 60, 90, 120],
+            "rot_self_slow": [17, 22, 27, 32],
+            "rot_tick": [0.2, 0.2, 0.2, 0.2]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Pudge takes half damage from Rot. Tapping the ability quickly will only deal a single instance of damage."
+        },
+        {
+          "id": 1403,
+          "name": "Flesh Heap",
+          "description": "Gives Pudge increased magic resistance and bonus strength that increases permanently each time Pudge kills an enemy hero or the enemy hero dies in his vicinity. Flesh Heap is retroactive, meaning it can gain charges before it is skilled, which then become active.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "flesh_heap_magic_resist": [6, 8, 10, 12],
+            "flesh_heap_strength_buff": [0.5, 0.75, 1.0, 1.25],
+            "flesh_heap_range": [1200, 1200, 1200, 1200],
+            "aura_health_regen": [2, 3, 4, 5]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Grants retroactive strength when skilled based on kills that happened before skilling it."
+        },
+        {
+          "id": 1404,
+          "name": "Dismember",
+          "description": "Pudge chows down on an enemy unit, disabling it and dealing damage per second based on Pudge's Strength. Lasts 3 seconds on enemy heroes, 6 seconds on creeps.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "dismember_damage": [80, 120, 160],
+            "strength_damage": [0.3, 0.45, 0.6],
+            "duration_hero": [3.0, 3.0, 3.0],
+            "duration_creep": [6.0, 6.0, 6.0]
+          },
+          "cooldown": [30, 25, 20],
+          "mana_cost": [100, 130, 170],
+          "notes": "Restores Pudge's health based on the damage dealt during Dismember. Increases damage per second based on Pudge's Strength."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

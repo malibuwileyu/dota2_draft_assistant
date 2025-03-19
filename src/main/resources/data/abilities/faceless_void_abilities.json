@@ -1,0 +1,211 @@
+{
+  "heroes": [
+    {
+      "id": 41,
+      "name": "faceless_void",
+      "localized_name": "Faceless Void",
+      "abilities": [
+        {
+          "id": 4101,
+          "name": "Time Walk",
+          "description": "Rushes to a target location while backtracking any damage taken in the last 2 seconds.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": [
+            "self"
+          ],
+          "special_values": {
+            "range": [
+              500,
+              600,
+              700,
+              800
+            ],
+            "backtrack_duration": [
+              2,
+              2,
+              2,
+              2
+            ],
+            "speed": [
+              3000,
+              3000,
+              3000,
+              3000
+            ],
+            "cast_range": [
+              500,
+              600,
+              700,
+              800
+            ]
+          },
+          "cooldown": [
+            22,
+            18,
+            14,
+            10
+          ],
+          "mana_cost": [
+            40,
+            40,
+            40,
+            40
+          ],
+          "notes": "Time Walk dispels Faceless Void upon cast. The damage backtrack does not restore health beyond what Faceless Void had 2 seconds ago."
+        },
+        {
+          "id": 4102,
+          "name": "Time Dilation",
+          "description": "Temporarily freezes cooldowns of all abilities and items of enemy heroes in the area. Deals damage and adds a debuff duration for each cooldown frozen.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": [
+            "enemies"
+          ],
+          "special_values": {
+            "radius": [
+              725,
+              725,
+              725,
+              725
+            ],
+            "duration": [
+              9,
+              10,
+              11,
+              12
+            ],
+            "slow_per_cooldown": [
+              10,
+              10,
+              10,
+              10
+            ],
+            "bonus_damage": [
+              20,
+              30,
+              40,
+              50
+            ],
+            "cooldown_extension": [
+              3,
+              4,
+              5,
+              6
+            ]
+          },
+          "cooldown": [
+            40,
+            34,
+            28,
+            22
+          ],
+          "mana_cost": [
+            50,
+            75,
+            100,
+            125
+          ],
+          "notes": "Affects enemy heroes in the radius, freezing their ability and item cooldowns and extending them."
+        },
+        {
+          "id": 4103,
+          "name": "Time Lock",
+          "description": "Adds the chance for an attack to lock an enemy unit in time, causing damage and freezing them temporarily in a time bubble, stunning them.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": [
+            "enemies"
+          ],
+          "special_values": {
+            "chance": [
+              10,
+              15,
+              20,
+              25
+            ],
+            "duration": [
+              0.5,
+              0.75,
+              1,
+              1.25
+            ],
+            "bonus_damage": [
+              40,
+              60,
+              80,
+              100
+            ]
+          },
+          "cooldown": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "mana_cost": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "notes": "Has a chance to proc on each attack, dealing bonus magical damage and stunning the target."
+        },
+        {
+          "id": 4104,
+          "name": "Chronosphere",
+          "description": "Creates a sphere of chronofield that freezes all units caught in its radius. Only Faceless Void can move freely within the sphere.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": [
+            "enemies",
+            "allies"
+          ],
+          "special_values": {
+            "radius": [
+              425,
+              425,
+              425
+            ],
+            "duration": [
+              4,
+              5,
+              6
+            ],
+            "cooldown_scepter": [
+              60,
+              60,
+              60
+            ],
+            "vision_radius": [
+              425,
+              425,
+              425
+            ]
+          },
+          "cooldown": [
+            160,
+            140,
+            120
+          ],
+          "mana_cost": [
+            150,
+            225,
+            300
+          ],
+          "notes": "Freezes all units (enemies and allies) in the radius except for Faceless Void. Pierces spell immunity."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

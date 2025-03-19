@@ -1,0 +1,91 @@
+{
+  "heroes": [
+    {
+      "id": 28,
+      "name": "slardar",
+      "localized_name": "Slardar",
+      "abilities": [
+        {
+          "id": 2801,
+          "name": "Guardian Sprint",
+          "description": "Slardar slithers ahead, moving significantly faster at the cost of taking bonus damage. As an amphibious beast, Slardar has increased regeneration when in the river.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "bonus_speed": [20, 28, 36, 44],
+            "duration": [10, 10, 10, 10],
+            "river_speed": [10, 10, 10, 10],
+            "river_regen": [20, 40, 60, 80],
+            "pause_stun_penalty": [1.5, 1.5, 1.5, 1.5]
+          },
+          "cooldown": [23, 20, 17, 14],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Slardar moves faster but takes extra damage from spells. Gets bonus speed and regen in river."
+        },
+        {
+          "id": 2802,
+          "name": "Slithereen Crush",
+          "description": "Slardar slams the ground, stunning and damaging nearby enemy units, then applying a slowing effect after the stun.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "crush_radius": [350, 350, 350, 350],
+            "stun_duration": [0.75, 1.25, 1.75, 2.25],
+            "crush_attack_slow_tooltip": [20, 25, 30, 35],
+            "crush_extra_slow": [15, 20, 25, 30],
+            "crush_extra_slow_duration": [3, 3, 3, 3],
+            "crush_damage": [75, 125, 175, 225]
+          },
+          "cooldown": [12, 11, 10, 9],
+          "mana_cost": [80, 90, 100, 110],
+          "notes": "Applies a stun followed by a movement and attack speed slow."
+        },
+        {
+          "id": 2803,
+          "name": "Bash of the Deep",
+          "description": "Slardar's attacks have a chance to stun the target and deal bonus damage.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "chance": [15, 20, 25, 25],
+            "duration": [1.0, 1.2, 1.4, 1.6],
+            "bonus_damage": [75, 100, 125, 150],
+            "amplified_damage": [15, 25, 35, 45]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Has a chance to bash enemies on attack, dealing bonus damage and stunning them."
+        },
+        {
+          "id": 2804,
+          "name": "Corrosive Haze",
+          "description": "Slardar reduces the armor of an enemy unit and provides vision of that unit for the duration.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "armor_reduction": [10, 15, 20],
+            "duration": [12, 14, 16],
+            "bonus_armor_reduction": [1, 2, 3],
+            "duration_scepter": [15, 18, 21]
+          },
+          "cooldown": [10, 10, 10],
+          "mana_cost": [25, 25, 25],
+          "notes": "Provides True Sight of the target and significantly reduces their armor. Pierces spell immunity."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

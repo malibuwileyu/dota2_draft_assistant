@@ -1,0 +1,98 @@
+{
+  "heroes": [
+    {
+      "id": 30,
+      "name": "witch_doctor",
+      "localized_name": "Witch Doctor",
+      "abilities": [
+        {
+          "id": 3001,
+          "name": "Paralyzing Cask",
+          "description": "Launches a cask of paralyzing potion that bounces between enemy units, stunning and damaging them. The cask's impact deals less damage with each bounce and stuns for half the duration on creeps.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [90, 150, 210, 270],
+            "bounce_aoe": [575, 575, 575, 575],
+            "bounces": [2, 4, 6, 8],
+            "hero_stun": [1, 1, 1, 1],
+            "creep_stun": [5, 5, 5, 5],
+            "bounce_delay": [0.3, 0.3, 0.3, 0.3],
+            "speed": [1000, 1000, 1000, 1000]
+          },
+          "cooldown": [14, 14, 14, 14],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Bounces between enemies within 575 range. Stuns creeps for 5 seconds, heroes for 1 second."
+        },
+        {
+          "id": 3002,
+          "name": "Voodoo Restoration",
+          "description": "Witch Doctor creates a healing aura around himself that restores health to all nearby allied units. Drains mana while active.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "toggle",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "restore_amount": [16, 24, 32, 40],
+            "radius": [500, 500, 500, 500],
+            "mana_per_second": [8, 12, 16, 20]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [20, 30, 40, 50],
+          "notes": "Drains mana per second while active. Initial activation costs mana_cost."
+        },
+        {
+          "id": 3003,
+          "name": "Maledict",
+          "description": "Curses enemies in a small area, causing them to take bursts of damage over time based on how much health they have lost since being cursed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_tick": [16, 24, 32, 40],
+            "ticks": [3, 3, 3, 3],
+            "bonus_damage": [10, 20, 30, 40],
+            "duration": [12, 12, 12, 12],
+            "radius": [165, 165, 165, 165],
+            "tick_interval": [4, 4, 4, 4]
+          },
+          "cooldown": [35, 35, 35, 35],
+          "mana_cost": [120, 130, 140, 150],
+          "notes": "Deals more damage as the affected unit loses more health during the duration."
+        },
+        {
+          "id": 3004,
+          "name": "Death Ward",
+          "description": "Summons a deadly ward to attack nearby enemies. The ward attacks the closest enemy to it with strong, piercing attacks. Lasts up to 8 seconds, but requires Witch Doctor to channel.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [85, 145, 205],
+            "bounces": [0, 0, 0],
+            "bounce_range": [650, 650, 650],
+            "bounce_damage": [40, 55, 70],
+            "targets": [1, 1, 1],
+            "duration": [8, 8, 8],
+            "bounces_scepter": [4, 4, 4],
+            "damage_scepter": [170, 220, 270],
+            "attacks_per_second": [3, 3, 3],
+            "ward_count": [1, 1, 1]
+          },
+          "cooldown": [80, 80, 80],
+          "mana_cost": [200, 350, 500],
+          "notes": "Death Ward deals physical damage, which is reduced by armor. With Aghanim's Scepter, attacks bounce to nearby targets."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

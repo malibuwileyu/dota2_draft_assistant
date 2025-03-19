@@ -1,0 +1,94 @@
+{
+  "heroes": [
+    {
+      "id": 15,
+      "name": "razor",
+      "localized_name": "Razor",
+      "abilities": [
+        {
+          "id": 1501,
+          "name": "Plasma Field",
+          "description": "Razor releases a wave of energetic plasma that damages enemy units in the area. The wave deals damage to enemies based on how far they are from Razor, dealing maximum damage at the edge of the effect.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "plasma_damage_min": [60, 90, 120, 150],
+            "plasma_damage_max": [160, 230, 300, 370],
+            "plasma_field_radius": [550, 550, 550, 550],
+            "plasma_field_speed": [599, 599, 599, 599],
+            "slow_duration": [0.4, 0.5, 0.6, 0.7]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [125, 125, 125, 125],
+          "notes": "The maximum damage is dealt at the edge of the effect."
+        },
+        {
+          "id": 1502,
+          "name": "Static Link",
+          "description": "Razor links himself to a target enemy hero, stealing damage over time while the link is active. The link breaks if the enemy moves out of range or Razor is silenced.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "link_duration": [5, 6, 7, 8],
+            "link_damage_per_second": [7, 14, 21, 28],
+            "break_distance": [900, 900, 900, 900],
+            "link_vision": [900, 900, 900, 900],
+            "drain_interval": [0.25, 0.25, 0.25, 0.25],
+            "steal_interval": [0.1, 0.1, 0.1, 0.1]
+          },
+          "cooldown": [25, 20, 15, 10],
+          "mana_cost": [50, 60, 70, 80],
+          "notes": "Damage remains stolen until the duration ends, even if the link is broken."
+        },
+        {
+          "id": 1503,
+          "name": "Unstable Current",
+          "description": "Razor moves with increased speed as electrical energy builds up in his armor. Enemy units that cast a targeted spell on Razor are struck by lightning, damaging them and applying a brief slow.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["self", "enemies"],
+          "special_values": {
+            "movement_speed_bonus": [6, 10, 14, 18],
+            "damage": [60, 90, 120, 150],
+            "slow_duration": [0.3, 0.7, 1.1, 1.5],
+            "slow": [100, 100, 100, 100]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Punishes enemies who target Razor with spells."
+        },
+        {
+          "id": 1504,
+          "name": "Eye of the Storm",
+          "description": "Summons an electrical storm centered around Razor that strikes nearby enemy units with lightning every second, damaging them and reducing their armor.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "strike_damage": [45, 65, 85],
+            "radius": [500, 500, 500],
+            "armor_reduction": [1, 1, 1],
+            "max_armor_reduction": [6, 12, 18],
+            "duration": [16, 24, 32],
+            "buildings_damage_multiplier": [0.3, 0.3, 0.3],
+            "strike_interval": [0.7, 0.7, 0.7]
+          },
+          "cooldown": [80, 70, 60],
+          "mana_cost": [100, 150, 200],
+          "notes": "Lightning strikes the closest enemy unit to Razor. Can damage buildings but deals reduced damage."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

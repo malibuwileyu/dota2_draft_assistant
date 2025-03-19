@@ -1,0 +1,94 @@
+{
+  "heroes": [
+    {
+      "id": 21,
+      "name": "windrunner",
+      "localized_name": "Windranger",
+      "abilities": [
+        {
+          "id": 2101,
+          "name": "Shackleshot",
+          "description": "Windranger releases a shot that shackles the first unit it hits to a target behind it. If a valid secondary target is found, the shackle duration is increased.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "shackle_count": [1, 1, 1, 1],
+            "fail_stun_duration": [0.75, 1.5, 2.25, 3],
+            "stun_duration": [1.5, 2.25, 3, 3.75],
+            "chain_latch_radius": [575, 575, 575, 575],
+            "shackle_angle": [23, 23, 23, 23],
+            "shackle_speed": [1650, 1650, 1650, 1650]
+          },
+          "cooldown": [13, 13, 13, 13],
+          "mana_cost": [110, 110, 110, 110],
+          "notes": "If shackled to another unit, the duration is longer. Can shackle to trees and invisible units."
+        },
+        {
+          "id": 2102,
+          "name": "Powershot",
+          "description": "Windranger charges her bow for up to 1 second for a powerful shot, which deals damage to each enemy in a line. The damage is reduced by each unit hit. Powershot grants vision all along its path.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "powershot_damage": [180, 260, 340, 420],
+            "arrow_width": [125, 125, 125, 125],
+            "arrow_range": [2600, 2600, 2600, 2600],
+            "arrow_speed": [3000, 3000, 3000, 3000],
+            "vision_duration": [3.34, 3.34, 3.34, 3.34],
+            "vision_radius": [400, 400, 400, 400],
+            "damage_reduction": [20, 20, 20, 20]
+          },
+          "cooldown": [9, 9, 9, 9],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Each unit hit reduces damage by 20%. Grants vision along its path."
+        },
+        {
+          "id": 2103,
+          "name": "Windrun",
+          "description": "Increases movement speed and adds evasion from physical attacks, while slowing movement of nearby enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self", "enemies"],
+          "special_values": {
+            "move_speed_bonus_pct": [20, 30, 40, 50],
+            "enemy_slow_pct": [15, 20, 25, 30],
+            "radius": [300, 300, 300, 300],
+            "duration": [6, 8, 10, 12],
+            "evasion_pct": [100, 100, 100, 100]
+          },
+          "cooldown": [15, 14, 13, 12],
+          "mana_cost": [60, 60, 60, 60],
+          "notes": "Provides 100% evasion from physical attacks."
+        },
+        {
+          "id": 2104,
+          "name": "Focus Fire",
+          "description": "Windranger channels the wind to gain maximum attack speed against a single enemy unit or structure, though with reduced damage.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "focusfire_duration": [20, 20, 20],
+            "focusfire_damage_reduction": [50, 40, 30],
+            "focusfire_attack_speed": [500, 500, 500],
+            "scepter_damage_reduction": [30, 15, 0]
+          },
+          "cooldown": [70, 60, 50],
+          "mana_cost": [75, 100, 125],
+          "notes": "With Aghanim's Scepter, the damage reduction is reduced or eliminated."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

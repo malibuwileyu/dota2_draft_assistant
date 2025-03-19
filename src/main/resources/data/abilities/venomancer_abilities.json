@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 40,
+      "name": "venomancer",
+      "localized_name": "Venomancer",
+      "abilities": [
+        {
+          "id": 4001,
+          "name": "Venomous Gale",
+          "description": "Launches a ball of poison that splashes on enemy units, dealing damage over time and slowing their movement and attack speed. The slow takes some time to decay.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "strike_damage": [25, 50, 75, 100],
+            "tick_damage": [10, 40, 70, 100],
+            "tick_interval": [3, 3, 3, 3],
+            "duration": [15, 15, 15, 15],
+            "movement_slow": [50, 50, 50, 50],
+            "radius": [125, 125, 125, 125],
+            "speed": [1200, 1200, 1200, 1200],
+            "gale_heal_reduction": [15, 30, 45, 60]
+          },
+          "cooldown": [20, 19, 18, 17],
+          "mana_cost": [125, 125, 125, 125],
+          "notes": "Deals damage over time while slowing. Initial projectile damage, then multiple instances of damage over its duration."
+        },
+        {
+          "id": 4002,
+          "name": "Poison Sting",
+          "description": "Venomancer's attacks poison the enemy, dealing damage over time and slowing their movement speed. Plague Wards also apply this poison.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [6, 14, 22, 30],
+            "movement_speed": [11, 12, 13, 14],
+            "duration": [6, 12, 18, 24]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Basic attacks and Plague Wards apply this poison. Damage is dealt over time."
+        },
+        {
+          "id": 4003,
+          "name": "Plague Ward",
+          "description": "Summons a plague ward that attacks enemies, dealing damage and applying Poison Sting. The ward is immune to magic, but vulnerable to physical damage.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "ward_damage_tooltip": [10, 19, 29, 38],
+            "ward_hp_tooltip": [75, 150, 225, 300],
+            "ward_duration_tooltip": [40, 40, 40, 40]
+          },
+          "cooldown": [5, 5, 5, 5],
+          "mana_cost": [25, 25, 25, 25],
+          "notes": "Wards apply poison sting to enemies they attack. Wards have toxic damage type."
+        },
+        {
+          "id": 4004,
+          "name": "Poison Nova",
+          "description": "A toxic cloud that expands around Venomancer, dealing heavy poison damage to enemy units over time. Poison Nova deals half damage to illusions.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "start_radius": [250, 250, 250],
+            "radius": [830, 830, 830],
+            "duration": [16, 16, 16],
+            "damage": [40, 60, 90],
+            "strike_interval": [1, 1, 1],
+            "tick_damage": [40, 65, 90]
+          },
+          "cooldown": [140, 120, 100],
+          "mana_cost": [200, 300, 400],
+          "notes": "The poison slowly decays enemies over a long duration. Nova expands outward from Venomancer."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4005,
+          "name": "Latent Toxicity",
+          "description": "When Venomancer dies, he releases a noxious cloud that deals damage over time to enemies in the area.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [25, 35, 45, 55],
+            "radius": [300, 300, 300, 300],
+            "duration": [5, 5, 5, 5]
+          },
+          "notes": "Passive ability that triggers when Venomancer dies, dealing damage over time in an area."
+        }
+      ]
+    }
+  ]
+}

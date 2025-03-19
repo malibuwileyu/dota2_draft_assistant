@@ -1,0 +1,176 @@
+{
+  "match_id": 8218137859,
+  "radiant_win": true,
+  "start_time": 1742224458,
+  "duration": 2103,
+  "radiant_picks": [
+    {
+      "hero_id": 7,
+      "order": 2
+    },
+    {
+      "hero_id": 53,
+      "order": 3
+    },
+    {
+      "hero_id": 25,
+      "order": 4
+    },
+    {
+      "hero_id": 10,
+      "order": 7
+    },
+    {
+      "hero_id": 129,
+      "order": 9
+    }
+  ],
+  "dire_picks": [
+    {
+      "hero_id": 74,
+      "order": 0
+    },
+    {
+      "hero_id": 64,
+      "order": 1
+    },
+    {
+      "hero_id": 104,
+      "order": 5
+    },
+    {
+      "hero_id": 98,
+      "order": 6
+    },
+    {
+      "hero_id": 6,
+      "order": 8
+    }
+  ],
+  "radiant_bans": [
+    {
+      "hero_id": 59,
+      "order": 10
+    },
+    {
+      "hero_id": 14,
+      "order": 11
+    },
+    {
+      "hero_id": 82,
+      "order": 12
+    },
+    {
+      "hero_id": 93,
+      "order": 13
+    },
+    {
+      "hero_id": 60,
+      "order": 14
+    }
+  ],
+  "dire_bans": [
+    {
+      "hero_id": 97,
+      "order": 15
+    }
+  ],
+  "draft_sequence": [
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 74,
+      "order": 0
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 64,
+      "order": 1
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 7,
+      "order": 2
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 53,
+      "order": 3
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 25,
+      "order": 4
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 104,
+      "order": 5
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 98,
+      "order": 6
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 10,
+      "order": 7
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 6,
+      "order": 8
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 129,
+      "order": 9
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 59,
+      "order": 10
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 14,
+      "order": 11
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 82,
+      "order": 12
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 93,
+      "order": 13
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 60,
+      "order": 14
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 97,
+      "order": 15
+    }
+  ]
+}

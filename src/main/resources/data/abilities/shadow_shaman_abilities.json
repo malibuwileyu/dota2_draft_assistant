@@ -1,0 +1,86 @@
+{
+  "heroes": [
+    {
+      "id": 27,
+      "name": "shadow_shaman",
+      "localized_name": "Shadow Shaman",
+      "abilities": [
+        {
+          "id": 2701,
+          "name": "Ether Shock",
+          "description": "Shadow Shaman releases a bolt of electricity that strikes multiple enemy units, dealing damage to each.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "ether_shock_damage": [140, 200, 260, 320],
+            "targets": [2, 3, 5, 6],
+            "radius": [500, 500, 500, 500],
+            "jump_delay": [0.25, 0.25, 0.25, 0.25]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [95, 110, 125, 140],
+          "notes": "Jumps to the nearest enemies in range. The primary target is always hit."
+        },
+        {
+          "id": 2702,
+          "name": "Hex",
+          "description": "Transforms an enemy unit into a harmless creature, disabling its attacks and abilities.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [1.25, 2.0, 2.75, 3.5],
+            "movespeed": [140, 140, 140, 140]
+          },
+          "cooldown": [13, 13, 13, 13],
+          "mana_cost": [110, 140, 170, 200],
+          "notes": "Hexed units are transformed into frogs, slowed, and unable to attack or cast spells."
+        },
+        {
+          "id": 2703,
+          "name": "Shackles",
+          "description": "Shaman channels magical energy, causing stuns and damage to the target enemy unit over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "channel_time": [2.75, 3.5, 4.25, 5.0],
+            "total_damage": [120, 200, 280, 360],
+            "damage_interval": [0.1, 0.1, 0.1, 0.1]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [110, 130, 155, 185],
+          "notes": "Channeling ability that damages and disables the target as long as Shadow Shaman continues channeling."
+        },
+        {
+          "id": 2704,
+          "name": "Mass Serpent Ward",
+          "description": "Summons 8 Serpent Wards in a perimeter around the target point. The wards attack enemy units and structures.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "ward_count": [10, 10, 10],
+            "ward_damage": [55, 100, 145],
+            "ward_hp": [700, 700, 700],
+            "ward_duration": [45, 45, 45],
+            "naga_attack_range": [650, 650, 650]
+          },
+          "cooldown": [120, 120, 120],
+          "mana_cost": [250, 350, 450],
+          "notes": "Serpent Wards deal physical damage and are especially effective against structures."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.dota2assistant.ui.controller.MainController"
+            prefWidth="1280" prefHeight="800">
+
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <MenuBar>
+                <Menu text="File">
+                    <MenuItem text="New Draft" onAction="#onNewDraft"/>
+                    <MenuItem text="Reset" onAction="#onResetDraft"/>
+                    <SeparatorMenuItem />
+                    <MenuItem text="Preferences" onAction="#onShowPreferences"/>
+                    <SeparatorMenuItem />
+                    <MenuItem text="Exit" onAction="#onExit"/>
+                </Menu>
+                <Menu text="Data">
+                    <MenuItem text="Refresh Hero Data" onAction="#onRefreshHeroData"/>
+                    <MenuItem text="Update Match Data" onAction="#onUpdateMatchData"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem text="About" onAction="#onShowAbout"/>
+                </Menu>
+            </MenuBar>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Draft Mode:" />
+                <ComboBox fx:id="draftModeComboBox" />
+                
+                <Separator orientation="VERTICAL" />
+                
+                <Label text="Pick Order:" />
+                <ComboBox fx:id="pickOrderComboBox" />
+                
+                <Separator orientation="VERTICAL" />
+                
+                <Label text="Side:" />
+                <ComboBox fx:id="mapSideComboBox" />
+                
+                <Separator orientation="VERTICAL" />
+                
+                <Label text="Opponent Level:" />
+                <ComboBox fx:id="opponentLevelComboBox" />
+                
+                <Separator orientation="VERTICAL" />
+                
+                <CheckBox fx:id="timedModeCheckBox" text="Timed Mode" />
+                
+                <Region HBox.hgrow="ALWAYS" />
+                
+                <Button fx:id="startEndDraftButton" text="Start Draft" onAction="#onStartEndDraft" />
+            </HBox>
+            
+            <Separator />
+        </VBox>
+    </top>
+    
+    <center>
+        <HBox spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <!-- Left Column - Radiant Team -->
+            <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
+                <Label text="Radiant Team" style="-fx-font-weight: bold;" />
+                
+                <GridPane fx:id="radiantPicksGrid" alignment="CENTER" hgap="5" vgap="5">
+                    <!-- Heroes will be added here dynamically -->
+                </GridPane>
+                
+                <Separator />
+                
+                <Label text="Bans" />
+                <FlowPane fx:id="radiantBansPane" hgap="5" vgap="5" />
+            </VBox>
+            
+            <!-- Center - Hero Selection -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label text="Available Heroes" style="-fx-font-weight: bold;" />
+                
+                <HBox spacing="10">
+                    <TextField fx:id="heroSearchField" promptText="Search heroes..." HBox.hgrow="ALWAYS" />
+                    <ComboBox fx:id="heroFilterComboBox" />
+                </HBox>
+                
+                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="false" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+                    <FlowPane fx:id="heroSelectionPane" hgap="10" vgap="10">
+                        <!-- Heroes will be added here dynamically -->
+                    </FlowPane>
+                </ScrollPane>
+                
+                <HBox spacing="10" alignment="CENTER">
+                    <Button fx:id="actionButton" text="Select Action" onAction="#onHeroAction" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                </HBox>
+                
+                <!-- Debug buttons for direct ban/pick functionality -->
+                <HBox spacing="10" alignment="CENTER">
+                    <Button text="Force Ban Selected" onAction="#onForceBanHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    <Button text="Force Pick Selected" onAction="#onForcePickHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                </HBox>
+            </VBox>
+            
+            <!-- Right Column - Dire Team -->
+            <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
+                <Label text="Dire Team" style="-fx-font-weight: bold;" />
+                
+                <GridPane fx:id="direPicksGrid" alignment="CENTER" hgap="5" vgap="5">
+                    <!-- Heroes will be added here dynamically -->
+                </GridPane>
+                
+                <Separator />
+                
+                <Label text="Bans" />
+                <FlowPane fx:id="direBansPane" hgap="5" vgap="5" />
+            </VBox>
+        </HBox>
+    </center>
+    
+    <right>
+        <VBox spacing="10" minWidth="300" maxWidth="300">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            
+            <Label text="Draft Analysis" style="-fx-font-weight: bold;" />
+            
+            <TitledPane text="Suggestions" expanded="true">
+                <VBox spacing="5">
+                    <Label text="Recommended Picks:" />
+                    <ListView fx:id="recommendedPicksListView" prefHeight="120" />
+                    
+                    <Label text="Recommended Bans:" />
+                    <ListView fx:id="recommendedBansListView" prefHeight="120" />
+                </VBox>
+            </TitledPane>
+            
+            <TitledPane text="Team Analysis" expanded="true">
+                <VBox spacing="5">
+                    <Label text="Radiant Strength: " />
+                    <ProgressBar fx:id="radiantStrengthBar" progress="0.5" maxWidth="Infinity" />
+                    
+                    <Label text="Dire Strength: " />
+                    <ProgressBar fx:id="direStrengthBar" progress="0.5" maxWidth="Infinity" />
+                    
+                    <Separator />
+                    
+                    <TextArea fx:id="analysisTextArea" prefHeight="150" wrapText="true" editable="false" />
+                </VBox>
+            </TitledPane>
+            
+            <TitledPane text="Draft Timeline" expanded="true">
+                <ListView fx:id="draftTimelineListView" prefHeight="150" />
+            </TitledPane>
+        </VBox>
+    </right>
+    
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <padding>
+                <Insets top="10" right="15" bottom="10" left="15"/>
+            </padding>
+            
+            <Label fx:id="statusLabel" text="Ready" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="timerLabel" text="00:00" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+        </HBox>
+    </bottom>
+
+</BorderPane>

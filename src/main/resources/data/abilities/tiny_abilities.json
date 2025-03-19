@@ -1,0 +1,104 @@
+{
+  "heroes": [
+    {
+      "id": 19,
+      "name": "tiny",
+      "localized_name": "Tiny",
+      "abilities": [
+        {
+          "id": 1901,
+          "name": "Avalanche",
+          "description": "Bombards a target area with rocks, dealing damage to enemies in the area 4 times over the duration and stunning them for 0.8 seconds at the beginning.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "avalanche_damage": [90, 160, 230, 300],
+            "avalanche_stun_duration": [0.8, 0.8, 0.8, 0.8],
+            "avalanche_radius": [400, 400, 400, 400],
+            "avalanche_duration": [2, 2, 2, 2]
+          },
+          "cooldown": [17, 16, 15, 14],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Can deal double damage if combined with Toss (when toss lands during avalanche)."
+        },
+        {
+          "id": 1902,
+          "name": "Toss",
+          "description": "Tiny grabs a nearby unit and tosses it at the target enemy to deal damage in an area. The tossed unit takes damage as well (if it's an enemy). A tossed ally will damage enemies where it lands.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "toss_damage": [90, 160, 230, 300],
+            "toss_radius": [275, 275, 275, 275],
+            "toss_range": [1300, 1300, 1300, 1300],
+            "grab_radius": [275, 275, 275, 275],
+            "throw_duration": [1.0, 1.0, 1.0, 1.0]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Grabs the closest unit to Tiny (excluding self). Does damage to both tossed unit and units at the landing area."
+        },
+        {
+          "id": 1903,
+          "name": "Tree Grab",
+          "description": "Tiny grabs a tree, gaining bonus attack range, cleave damage, and bonus damage against buildings. The tree is consumed after a number of attacks.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "tree_grab_damage": [30, 40, 50, 60],
+            "cleave_damage": [25, 30, 35, 40],
+            "cleave_radius": [400, 400, 400, 400],
+            "bonus_building_damage": [90, 120, 150, 180],
+            "bonus_attack_range": [100, 100, 100, 100],
+            "tree_attacks": [6, 6, 6, 6]
+          },
+          "cooldown": [15, 12, 9, 6],
+          "mana_cost": [25, 30, 35, 40],
+          "notes": "Tree is consumed after 6 attacks. Grants cleave damage and bonus damage to buildings."
+        },
+        {
+          "id": 1904,
+          "name": "Grow",
+          "description": "Tiny gains bonus movement speed but loses attack speed with each level of Grow. He also gains bonus status resistance and increases the effects of his spells.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "bonus_movement_speed": [20, 30, 40],
+            "attack_speed_reduction": [20, 35, 50],
+            "status_resistance": [10, 15, 20],
+            "bonus_damage": [40, 80, 120]
+          },
+          "cooldown": [0, 0, 0],
+          "mana_cost": [0, 0, 0],
+          "notes": "Grow is a passive ability that permanently enhances Tiny's other abilities and attributes."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 1905,
+          "name": "Toss Requires Stone",
+          "description": "Toss no longer grabs allied units unless there are no enemies nearby. Instead, when no units are available, Tiny will grab and throw a stone. Stones deal reduced damage but stun for 1 second.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["enemies"],
+          "special_values": {
+            "stone_damage_reduction": [50, 50, 50, 50]
+          },
+          "notes": "Requires Aghanim's Shard to unlock."
+        }
+      ]
+    }
+  ]
+}

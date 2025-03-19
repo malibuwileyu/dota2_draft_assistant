@@ -1,0 +1,96 @@
+{
+  "heroes": [
+    {
+      "id": 37,
+      "name": "warlock",
+      "localized_name": "Warlock",
+      "abilities": [
+        {
+          "id": 3701,
+          "name": "Fatal Bonds",
+          "description": "Binds several enemy units together, causing a percentage of damage dealt to one unit to be felt by all others.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_share_percentage": [20, 25, 30, 35],
+            "count": [3, 4, 5, 6],
+            "search_aoe": [700, 700, 700, 700],
+            "cast_range": [900, 900, 900, 900],
+            "duration": [25, 25, 25, 25]
+          },
+          "cooldown": [25, 20, 15, 10],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "When a bonded unit takes damage, all other bonded units take a percentage of that damage."
+        },
+        {
+          "id": 3702,
+          "name": "Shadow Word",
+          "description": "Warlock whispers an incantation, healing an allied unit or damaging an enemy unit over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "duration": [10, 11, 12, 13],
+            "damage_per_second": [10, 20, 30, 40],
+            "cast_range": [500, 500, 500, 500],
+            "ally_healing": [15, 25, 35, 45],
+            "enemy_damage": [15, 25, 35, 45]
+          },
+          "cooldown": [14, 14, 14, 14],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Heals allies or damages enemies over time. Cannot be dispelled from allies."
+        },
+        {
+          "id": 3703,
+          "name": "Upheaval",
+          "description": "A powerful slowing effect that increases in intensity over time. The effect dissipates when Warlock stops channeling.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [16, 16, 16, 16],
+            "radius": [340, 380, 420, 460],
+            "max_slow": [84, 88, 92, 96],
+            "slow_per_second": [14, 16, 18, 20]
+          },
+          "cooldown": [50, 44, 38, 32],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Slow increases the longer Warlock channels. Continues for a short time after channeling stops."
+        },
+        {
+          "id": 3704,
+          "name": "Chaotic Offering",
+          "description": "Summons a powerful Golem from the depths of the Void to fight for Warlock. The Golem's landing stuns and deals initial damage. The Golem is a powerful melee unit with high health and damage.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "golem_stun_duration": [0.5, 0.75, 1.0],
+            "golem_hp": [1000, 2000, 3000],
+            "golem_dmg": [75, 125, 175],
+            "golem_armor": [6, 9, 12],
+            "stun_radius": [600, 600, 600],
+            "summon_duration": [60, 60, 60],
+            "scepter_golem_count": [1, 1, 1],
+            "shard_golem_damage": [40, 50, 60],
+            "shard_golem_hp_pct": [50, 50, 50],
+            "damage": [200, 300, 400]
+          },
+          "cooldown": [170, 160, 150],
+          "mana_cost": [200, 300, 400],
+          "notes": "Summons a powerful Golem. With Aghanim's Scepter, summons an additional Golem."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

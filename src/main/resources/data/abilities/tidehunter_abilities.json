@@ -1,0 +1,88 @@
+{
+  "heroes": [
+    {
+      "id": 29,
+      "name": "tidehunter",
+      "localized_name": "Tidehunter",
+      "abilities": [
+        {
+          "id": 2901,
+          "name": "Gush",
+          "description": "Tidehunter summons a gush of water to damage an enemy unit, reducing its movement speed and armor for a short duration.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "gush_damage": [110, 160, 210, 260],
+            "gush_slow_duration": [4, 4, 4, 4],
+            "gush_slow": [40, 45, 50, 55],
+            "gush_armor_reduction": [3, 4, 5, 6],
+            "gush_aoe_scepter": [700, 700, 700, 700],
+            "projectile_speed": [1800, 1800, 1800, 1800]
+          },
+          "cooldown": [12, 12, 12, 12],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "With Aghanim's Scepter, becomes a cone-shaped AoE spell that can hit multiple enemies."
+        },
+        {
+          "id": 2902,
+          "name": "Kraken Shell",
+          "description": "Provides damage block against physical attacks, and removes negative buffs when enough damage has accumulated.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "damage_cleanse": [600, 550, 500, 450],
+            "damage_block": [12, 24, 36, 48]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Blocks damage from physical attacks and periodically dispels debuffs when damage threshold is reached."
+        },
+        {
+          "id": 2903,
+          "name": "Anchor Smash",
+          "description": "Tidehunter swings his mighty anchor, damaging nearby enemies and reducing their attack damage for a duration.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "attack_damage_reduction": [30, 40, 50, 60],
+            "reduction_duration": [6, 6, 6, 6],
+            "radius": [400, 400, 400, 400],
+            "damage": [75, 125, 175, 225]
+          },
+          "cooldown": [7, 6, 5, 4],
+          "mana_cost": [30, 40, 50, 60],
+          "notes": "Reduces the base damage of affected enemies by a percentage. Does not affect bonus damage."
+        },
+        {
+          "id": 2904,
+          "name": "Ravage",
+          "description": "Slams the ground, causing tentacles to erupt in a radius around Tidehunter, damaging and stunning all enemies caught within it.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "ravage_damage": [200, 290, 380],
+            "duration": [2.4, 2.7, 3.0],
+            "radius": [1025, 1025, 1025],
+            "ravage_speed": [775, 775, 775]
+          },
+          "cooldown": [150, 130, 110],
+          "mana_cost": [150, 250, 350],
+          "notes": "The tentacles expand outward from Tidehunter at a speed of 775 units per second."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

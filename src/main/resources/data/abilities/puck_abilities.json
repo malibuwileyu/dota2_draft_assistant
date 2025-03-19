@@ -1,0 +1,104 @@
+{
+  "heroes": [
+    {
+      "id": 13,
+      "name": "puck",
+      "localized_name": "Puck",
+      "abilities": [
+        {
+          "id": 1301,
+          "name": "Illusory Orb",
+          "description": "Puck launches a magic orb that travels in a straight line, dealing damage to enemy units along the way. While the orb is in motion, Puck can launch itself to the orb's location using Ethereal Jaunt.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [70, 140, 210, 280],
+            "orb_speed": [651, 651, 651, 651],
+            "max_distance": [1950, 1950, 1950, 1950],
+            "orb_vision": [450, 450, 450, 450]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [80, 100, 120, 140],
+          "notes": "Provides flying vision along its path."
+        },
+        {
+          "id": 1302,
+          "name": "Waning Rift",
+          "description": "Puck releases a burst of dust that deals damage and silences enemy units in an area around it.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [400, 400, 400, 400],
+            "damage": [70, 140, 210, 280],
+            "silence_duration": [1.5, 2.0, 2.5, 3.0]
+          },
+          "cooldown": [15, 13, 11, 9],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Silences all enemies in the area of effect."
+        },
+        {
+          "id": 1303,
+          "name": "Phase Shift",
+          "description": "Puck briefly shifts into another dimension where it is immune from harm and hidden from enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [0.75, 1.5, 2.25, 3.0]
+          },
+          "cooldown": [6, 6, 6, 6],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Can be used to disjoint projectiles and dodge damage."
+        },
+        {
+          "id": 1304,
+          "name": "Ethereal Jaunt",
+          "description": "Puck teleports to where its Illusory Orb is currently located.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {},
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Can only be used while Illusory Orb is in flight."
+        },
+        {
+          "id": 1305,
+          "name": "Dream Coil",
+          "description": "Creates a coil of volatile magic that latches onto enemy Heroes, stunning them for a short duration. If the enemy heroes move too far from the center, the coil will snap, dealing additional damage and applying a longer stun.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "coil_radius": [400, 400, 400],
+            "initial_damage": [100, 150, 200],
+            "stun_duration": [0.5, 0.75, 1.0],
+            "coil_duration": [6, 8, 10],
+            "coil_break_radius": [600, 600, 600],
+            "coil_break_damage": [200, 250, 300],
+            "coil_break_stun": [1.5, 2.5, 3.5],
+            "scepter_coil_break_stun": [4.0, 5.0, 6.0],
+            "scepter_coil_duration": [8, 10, 12],
+            "scepter_stun_duration": [0.75, 1.0, 1.25]
+          },
+          "cooldown": [70, 65, 60],
+          "mana_cost": [100, 150, 200],
+          "notes": "With Aghanim's Scepter, Dream Coil stun pierces spell immunity, and increases duration and stun."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

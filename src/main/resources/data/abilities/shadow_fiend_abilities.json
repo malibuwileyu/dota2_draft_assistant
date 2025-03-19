@@ -1,0 +1,128 @@
+{
+  "heroes": [
+    {
+      "id": 11,
+      "name": "nevermore",
+      "localized_name": "Shadow Fiend",
+      "abilities": [
+        {
+          "id": 1101,
+          "name": "Shadowraze (Near)",
+          "description": "Shadow Fiend razes the ground directly in front of him, dealing damage to enemies in the area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "shadowraze_damage": [120, 200, 280, 360],
+            "shadowraze_radius": [250, 250, 250, 250],
+            "shadowraze_range": [200, 200, 200, 200],
+            "raze_stack_damage": [60, 60, 60, 60],
+            "raze_stack_duration": [8, 8, 8, 8]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [75, 80, 85, 90],
+          "notes": "Applies a stack that causes subsequent Shadowrazes to deal more damage."
+        },
+        {
+          "id": 1102,
+          "name": "Shadowraze (Medium)",
+          "description": "Shadow Fiend razes the ground at medium distance in front of him, dealing damage to enemies in the area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "shadowraze_damage": [120, 200, 280, 360],
+            "shadowraze_radius": [250, 250, 250, 250],
+            "shadowraze_range": [450, 450, 450, 450],
+            "raze_stack_damage": [60, 60, 60, 60],
+            "raze_stack_duration": [8, 8, 8, 8]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [75, 80, 85, 90],
+          "notes": "Applies a stack that causes subsequent Shadowrazes to deal more damage."
+        },
+        {
+          "id": 1103,
+          "name": "Shadowraze (Far)",
+          "description": "Shadow Fiend razes the ground far in front of him, dealing damage to enemies in the area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "shadowraze_damage": [120, 200, 280, 360],
+            "shadowraze_radius": [250, 250, 250, 250],
+            "shadowraze_range": [700, 700, 700, 700],
+            "raze_stack_damage": [60, 60, 60, 60],
+            "raze_stack_duration": [8, 8, 8, 8]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [75, 80, 85, 90],
+          "notes": "Applies a stack that causes subsequent Shadowrazes to deal more damage."
+        },
+        {
+          "id": 1104,
+          "name": "Necromastery",
+          "description": "Shadow Fiend captures the souls of units that die near him, gaining bonus damage for each soul.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "necromastery_damage_per_soul": [2, 2, 2, 2],
+            "necromastery_max_souls": [20, 28, 36, 44],
+            "necromastery_max_souls_scepter": [30, 42, 54, 66],
+            "soul_release_percent_base": [0.5, 0.5, 0.5, 0.5]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Half of the souls are lost on death. Can gain souls from denies."
+        },
+        {
+          "id": 1105,
+          "name": "Requiem of Souls",
+          "description": "Shadow Fiend gathers his captured souls to release them as lines of demonic energy, dealing damage to enemies near him. Enemies hit have their movement speed and attack damage reduced. Shadow Fiend gains movement speed for each enemy hero hit.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "requiem_damage_pct": [80, 80, 80],
+            "requiem_slow_duration": [5, 5, 5],
+            "requiem_reduction_ms": [20, 25, 30],
+            "requiem_reduction_damage": [50, 50, 50],
+            "requiem_line_width": [160, 160, 160],
+            "requiem_radius": [1000, 1000, 1000],
+            "requiem_line_speed": [700, 700, 700],
+            "soul_release_percent_scepter": [0.6, 0.6, 0.6]
+          },
+          "cooldown": [100, 90, 80],
+          "mana_cost": [150, 175, 200],
+          "notes": "Damage depends on the number of souls collected through Necromastery."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 1106,
+          "name": "Presence of the Dark Lord",
+          "description": "Shadow Fiend's presence reduces the armor of nearby enemy units.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["enemies"],
+          "special_values": {
+            "presence_armor_reduction": [6, 6, 6, 6],
+            "presence_radius": [900, 900, 900, 900]
+          },
+          "notes": "Affects all enemy units in the area, including buildings."
+        }
+      ]
+    }
+  ]
+}

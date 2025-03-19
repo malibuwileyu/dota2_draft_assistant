@@ -1,0 +1,100 @@
+{
+  "heroes": [
+    {
+      "id": 32,
+      "name": "riki",
+      "localized_name": "Riki",
+      "abilities": [
+        {
+          "id": 3201,
+          "name": "Smoke Screen",
+          "description": "Creates a cloud of smoke that silences enemies and causes them to miss most of their attacks.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [325, 325, 325, 325],
+            "miss_rate": [25, 30, 35, 40],
+            "silence_duration": [6, 6, 6, 6]
+          },
+          "cooldown": [13, 13, 13, 13],
+          "mana_cost": [75, 80, 85, 90],
+          "notes": "Enemies in the cloud are silenced and have a chance to miss their attacks."
+        },
+        {
+          "id": 3202,
+          "name": "Blink Strike",
+          "description": "Riki teleports behind the target unit and deals bonus damage with his next attack.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "physical",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "bonus_damage": [60, 90, 120, 150],
+            "cast_range": [500, 600, 700, 800],
+            "cooldown_scepter": [4, 4, 4, 4],
+            "charges": [2, 2, 3, 3]
+          },
+          "cooldown": [11, 10, 9, 8],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "Puts Riki behind the target. Can be cast on allies."
+        },
+        {
+          "id": 3203,
+          "name": "Backstab",
+          "description": "Riki strikes his enemies from behind, dealing bonus damage based on his agility. Backstab damage is applied when attacking from behind.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_multiplier": [0.6, 0.8, 1.0, 1.2],
+            "backstab_angle": [105, 105, 105, 105]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Deals bonus damage based on Riki's agility when attacking from behind."
+        },
+        {
+          "id": 3204,
+          "name": "Tricks of the Trade",
+          "description": "Riki blinks into his Smoke Screen, or a random point within 500 range, and phases out of the world while rapidly attacking all enemies in a 500 radius around him from the back. Each attack applies Backstab.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "duration": [4, 5, 6],
+            "attack_rate": [0.6, 0.5, 0.4],
+            "radius": [450, 450, 450],
+            "max_attacks": [7, 10, 13],
+            "seconds_per_attack": [0.6, 0.5, 0.4]
+          },
+          "cooldown": [70, 65, 60],
+          "mana_cost": [75, 75, 75],
+          "notes": "Riki is invulnerable during the duration. Attacks all enemies in radius from their backs."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 3205,
+          "name": "Cloak and Dagger",
+          "description": "Riki permanently has invisibility. If he attacks, he becomes visible briefly. Can be activated to make him visible and increase his movement speed.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "fade_time": [2.0, 1.5, 1.0, 0.5],
+            "fade_delay": [6, 5, 4, 3]
+          },
+          "notes": "Riki is permanently invisible when not attacking. Attacking breaks invisibility for a short time."
+        }
+      ]
+    }
+  ]
+}

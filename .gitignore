@@ -1,0 +1,92 @@
+# Java related
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# VS Code
+.vscode/
+.code-workspace
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# Application specific
+*.log
+logs/
+dota2assistant.db
+dota2assistant.db-journal
+
+# Agent support files
+CLAUDE.md
+
+# Avoid including compiled files
+*.dll
+*.so
+*.dylib
+*.exe
+
+# Local config files
+config.properties
+application.yml
+application.yaml
+application.properties
+application-local.properties
+application-dev.properties
+
+# Environment variables and secrets
+*.env
+.env*
+.env.local
+.env.development
+.groq_api_key
+
+docs/*
+data/benchmarks/*
+data/expert_reviews/*
+data/evaluation/*
+data/models/*
+data/scenarios/*
+data/validation_results/*
+
+/sc

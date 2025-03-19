@@ -1,0 +1,81 @@
+{
+  "heroes": [
+    {
+      "id": 1,
+      "name": "anti_mage",
+      "localized_name": "Anti-Mage",
+      "abilities": [
+        {
+          "id": 101,
+          "name": "Mana Break",
+          "description": "Burns an opponent's mana on each attack and deals damage equal to a percentage of the mana burned. Passively grants spell resistance.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "mana_burned_per_hit": [28, 40, 52, 64],
+            "mana_break_damage_percent": [60, 60, 60, 60],
+            "spell_resistance": [15, 20, 25, 30]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Does not stack with other mana break abilities."
+        },
+        {
+          "id": 102,
+          "name": "Blink",
+          "description": "Short distance teleportation that allows Anti-Mage to move in and out of combat.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "range": [925, 1000, 1075, 1150]
+          },
+          "cooldown": [15, 12, 9, 6],
+          "mana_cost": [60, 60, 60, 60],
+          "notes": "Anti-Mage briefly disappears from the map during the blink."
+        },
+        {
+          "id": 103,
+          "name": "Counterspell",
+          "description": "Passively grants magic resistance. When activated, creates an anti-magic shell around Anti-Mage that reflects targeted enemy spells back to their caster.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self", "enemies"],
+          "special_values": {
+            "duration": [1.2, 1.2, 1.2, 1.2],
+            "passive_magic_resistance": [20, 30, 40, 50]
+          },
+          "cooldown": [15, 11, 7, 3],
+          "mana_cost": [45, 50, 55, 60],
+          "notes": "Only reflects targeted spells, not area spells."
+        },
+        {
+          "id": 104,
+          "name": "Mana Void",
+          "description": "Creates a dangerous antimagic field at a target's location that deals damage for each point of mana missing from the target. Nearby enemies also take damage.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_mana": [0.8, 0.95, 1.1],
+            "radius": [450, 450, 450],
+            "stun_duration": [0.3, 0.45, 0.6]
+          },
+          "cooldown": [100, 80, 60],
+          "mana_cost": [125, 200, 275],
+          "notes": "Deals damage based on the target's missing mana, not current mana."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "heroes": [
+    {
+      "id": 20,
+      "name": "vengefulspirit",
+      "localized_name": "Vengeful Spirit",
+      "abilities": [
+        {
+          "id": 2001,
+          "name": "Magic Missile",
+          "description": "Vengeful Spirit launches a magic missile at a target enemy unit, dealing damage and stunning the target.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "magic_missile_damage": [100, 175, 250, 325],
+            "magic_missile_stun": [1.1, 1.4, 1.7, 2],
+            "magic_missile_speed": [1250, 1250, 1250, 1250]
+          },
+          "cooldown": [13, 12, 11, 10],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Cannot be disjointed."
+        },
+        {
+          "id": 2002,
+          "name": "Wave of Terror",
+          "description": "Vengeful Spirit sends out a wave that deals damage and reduces armor of enemy units in a line. Provides vision along its path.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "directional",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "wave_damage": [25, 50, 75, 100],
+            "wave_armor_reduction": [2, 3, 4, 5],
+            "wave_width": [300, 300, 300, 300],
+            "wave_range": [1400, 1400, 1400, 1400],
+            "wave_speed": [2000, 2000, 2000, 2000],
+            "wave_duration": [8, 8, 8, 8]
+          },
+          "cooldown": [20, 18, 16, 14],
+          "mana_cost": [40, 40, 40, 40],
+          "notes": "Provides flying vision along its path."
+        },
+        {
+          "id": 2003,
+          "name": "Vengeance Aura",
+          "description": "Vengeful Spirit's presence increases the damage of nearby allied units. When Vengeful Spirit dies, an illusion of her is created that deals and takes bonus damage.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["allies", "self"],
+          "special_values": {
+            "vengeance_aura_radius": [1200, 1200, 1200, 1200],
+            "bonus_damage_pct": [10, 16, 22, 28],
+            "bonus_damage_taken_pct": [100, 100, 100, 100],
+            "illusion_total_damage_in": [200, 200, 200, 200],
+            "illusion_total_damage_out": [100, 100, 100, 100],
+            "illusion_duration": [30, 30, 30, 30]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "When Vengeful Spirit dies, an illusion appears that deals 100% damage but takes 200% damage."
+        },
+        {
+          "id": 2004,
+          "name": "Nether Swap",
+          "description": "Instantly swaps positions with a target unit. If an allied unit is swapped, both units gain a damage reduction buff for a few seconds.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "nether_swap_cast_range": [700, 850, 1000],
+            "nether_swap_allied_buff_duration": [2, 2.5, 3],
+            "nether_swap_damage_reduction": [25, 30, 35]
+          },
+          "cooldown": [80, 65, 50],
+          "mana_cost": [100, 100, 100],
+          "notes": "Pierces spell immunity. Does not disjoint projectiles."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

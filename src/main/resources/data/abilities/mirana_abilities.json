@@ -1,0 +1,91 @@
+{
+  "heroes": [
+    {
+      "id": 9,
+      "name": "mirana",
+      "localized_name": "Mirana",
+      "abilities": [
+        {
+          "id": 901,
+          "name": "Starstorm",
+          "description": "Calls down a wave of meteors to damage nearby enemy units. The closest enemy unit to Mirana will be struck twice.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [75, 150, 225, 300],
+            "secondary_damage": [75, 150, 225, 300],
+            "radius": [425, 425, 425, 425],
+            "secondary_target_radius": [175, 175, 175, 175]
+          },
+          "cooldown": [12, 12, 12, 12],
+          "mana_cost": [80, 100, 120, 140],
+          "notes": "The second hit strikes the closest valid target to Mirana."
+        },
+        {
+          "id": 902,
+          "name": "Sacred Arrow",
+          "description": "Fires a long-range arrow with deadly precision, stunning and dealing damage to the first enemy unit it hits. The stun duration and damage increase with distance traveled, up to a maximum.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "arrow_max_stun": [5, 5, 5, 5],
+            "arrow_min_stun": [0.5, 0.5, 0.5, 0.5],
+            "arrow_bonus_damage": [140, 280, 420, 560],
+            "arrow_damage": [50, 140, 230, 320],
+            "arrow_speed": [857, 857, 857, 857],
+            "arrow_max_stun_range": [1500, 1500, 1500, 1500]
+          },
+          "cooldown": [17, 17, 17, 17],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Arrow damage and stun increases with distance traveled up to a maximum."
+        },
+        {
+          "id": 903,
+          "name": "Leap",
+          "description": "Mirana leaps forward into battle, granting bonus attack and movement speed to allied units upon landing.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["allies", "self"],
+          "special_values": {
+            "leap_distance": [550, 550, 550, 550],
+            "leap_speed": [1300, 1300, 1300, 1300],
+            "leap_speedbonus": [35, 40, 45, 50],
+            "leap_speedbonus_as": [35, 40, 45, 50],
+            "leap_buff_radius": [900, 900, 900, 900],
+            "leap_buff_duration": [2.5, 2.5, 2.5, 2.5]
+          },
+          "cooldown": [30, 25, 20, 15],
+          "mana_cost": [40, 40, 40, 40],
+          "notes": "Provides temporary bonus movement and attack speed to nearby allies."
+        },
+        {
+          "id": 904,
+          "name": "Moonlight Shadow",
+          "description": "Bathes Mirana and nearby allied heroes in moonlight, granting them invisibility. Invisibility is not lost when casting non-damaging spells.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "fade_delay": [0, 0, 0],
+            "duration": [15, 15, 15],
+            "fade_time": [1.0, 0.75, 0.5]
+          },
+          "cooldown": [160, 140, 120],
+          "mana_cost": [75, 75, 75],
+          "notes": "Invisibility is lost when attacking or using damaging items/abilities."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

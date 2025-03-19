@@ -1,0 +1,104 @@
+{
+  "heroes": [
+    {
+      "id": 7,
+      "name": "earthshaker",
+      "localized_name": "Earthshaker",
+      "abilities": [
+        {
+          "id": 701,
+          "name": "Fissure",
+          "description": "Slams the ground with a mighty totem, creating an impassable ridge of stone while stunning and damaging enemy units along its line.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "fissure_damage": [110, 170, 230, 290],
+            "fissure_stun_duration": [0.8, 1, 1.2, 1.4],
+            "fissure_length": [1600, 1600, 1600, 1600],
+            "fissure_duration": [6.5, 7, 7.5, 8],
+            "damage_radius": [225, 225, 225, 225],
+            "stun_radius": [225, 225, 225, 225]
+          },
+          "cooldown": [18, 17, 16, 15],
+          "mana_cost": [120, 125, 130, 135],
+          "notes": "Creates an impassable wall that blocks both allies and enemies."
+        },
+        {
+          "id": 702,
+          "name": "Enchant Totem",
+          "description": "Empowers Earthshaker's totem, causing it to deal extra damage on the next attack.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["self"],
+          "special_values": {
+            "attack_damage_bonus_percent": [100, 200, 300, 400],
+            "attack_range_bonus": [100, 100, 100, 100],
+            "buff_duration": [14, 14, 14, 14]
+          },
+          "cooldown": [5, 5, 5, 5],
+          "mana_cost": [45, 55, 65, 75],
+          "notes": "With Aghanim's Scepter, allows Earthshaker to leap to a target location."
+        },
+        {
+          "id": 703,
+          "name": "Aftershock",
+          "description": "Causes the earth to shake underfoot, adding additional damage and stun to nearby enemy units when Earthshaker casts his abilities.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "aftershock_radius": [350, 350, 350, 350],
+            "aftershock_damage": [70, 100, 130, 160],
+            "stun_duration": [1, 1.1, 1.2, 1.3]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Triggers when Earthshaker casts any of his abilities."
+        },
+        {
+          "id": 704,
+          "name": "Echo Slam",
+          "description": "Shockwaves travel through the ground, damaging enemy units. Each enemy hit causes an echo to damage nearby enemies.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "first_search_radius": [700, 700, 700],
+            "echo_search_radius": [700, 700, 700],
+            "echo_per_hero": [2, 2, 2],
+            "echo_per_creep": [1, 1, 1],
+            "base_damage": [100, 140, 180],
+            "echo_damage": [90, 110, 130]
+          },
+          "cooldown": [130, 120, 110],
+          "mana_cost": [150, 200, 250],
+          "notes": "Damage depends on the number of enemies in range, as each enemy hit creates an echo."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 705,
+          "name": "Spirit Cairn",
+          "description": "Creates a cairn upon Earthshaker's death that grants self experience, vision radius centered around it, and acts as a pathing blocker.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "cairn_radius": 75,
+            "experience_factor": 1
+          },
+          "notes": "Destroys the Spirit Cairn once Earthshaker respawns."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "match_id": 8192523180,
+  "radiant_win": true,
+  "start_time": 1740641560,
+  "duration": 1529,
+  "radiant_picks": [
+    {
+      "hero_id": 34,
+      "order": 8
+    },
+    {
+      "hero_id": 84,
+      "order": 12
+    },
+    {
+      "hero_id": 135,
+      "order": 15
+    },
+    {
+      "hero_id": 102,
+      "order": 16
+    },
+    {
+      "hero_id": 32,
+      "order": 23
+    }
+  ],
+  "dire_picks": [
+    {
+      "hero_id": 3,
+      "order": 7
+    },
+    {
+      "hero_id": 69,
+      "order": 13
+    },
+    {
+      "hero_id": 138,
+      "order": 14
+    },
+    {
+      "hero_id": 39,
+      "order": 17
+    },
+    {
+      "hero_id": 109,
+      "order": 22
+    }
+  ],
+  "radiant_bans": [
+    {
+      "hero_id": 78,
+      "order": 1
+    },
+    {
+      "hero_id": 43,
+      "order": 2
+    },
+    {
+      "hero_id": 120,
+      "order": 4
+    },
+    {
+      "hero_id": 16,
+      "order": 5
+    },
+    {
+      "hero_id": 86,
+      "order": 11
+    },
+    {
+      "hero_id": 131,
+      "order": 19
+    },
+    {
+      "hero_id": 75,
+      "order": 20
+    }
+  ],
+  "dire_bans": [
+    {
+      "hero_id": 21,
+      "order": 0
+    },
+    {
+      "hero_id": 92,
+      "order": 3
+    },
+    {
+      "hero_id": 126,
+      "order": 6
+    },
+    {
+      "hero_id": 67,
+      "order": 9
+    },
+    {
+      "hero_id": 105,
+      "order": 10
+    },
+    {
+      "hero_id": 136,
+      "order": 18
+    },
+    {
+      "hero_id": 112,
+      "order": 21
+    }
+  ],
+  "draft_sequence": [
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 21,
+      "order": 0
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 78,
+      "order": 1
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 43,
+      "order": 2
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 92,
+      "order": 3
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 120,
+      "order": 4
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 16,
+      "order": 5
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 126,
+      "order": 6
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 3,
+      "order": 7
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 34,
+      "order": 8
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 67,
+      "order": 9
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 105,
+      "order": 10
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 86,
+      "order": 11
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 84,
+      "order": 12
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 69,
+      "order": 13
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 138,
+      "order": 14
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 135,
+      "order": 15
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 102,
+      "order": 16
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 39,
+      "order": 17
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 136,
+      "order": 18
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 131,
+      "order": 19
+    },
+    {
+      "team": "radiant",
+      "action": "ban",
+      "hero_id": 75,
+      "order": 20
+    },
+    {
+      "team": "dire",
+      "action": "ban",
+      "hero_id": 112,
+      "order": 21
+    },
+    {
+      "team": "dire",
+      "action": "pick",
+      "hero_id": 109,
+      "order": 22
+    },
+    {
+      "team": "radiant",
+      "action": "pick",
+      "hero_id": 32,
+      "order": 23
+    }
+  ]
+}

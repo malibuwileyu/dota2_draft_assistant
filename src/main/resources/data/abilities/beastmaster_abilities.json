@@ -1,0 +1,111 @@
+{
+  "heroes": [
+    {
+      "id": 38,
+      "name": "beastmaster",
+      "localized_name": "Beastmaster",
+      "abilities": [
+        {
+          "id": 3801,
+          "name": "Wild Axes",
+          "description": "Beastmaster launches two axes in a horizontal arc that slice through trees and deal damage to enemy units in their path.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [40, 70, 100, 130],
+            "spread": [26, 26, 26, 26],
+            "axe_width": [135, 135, 135, 135],
+            "axe_speed": [1600, 1600, 1600, 1600],
+            "axe_distance": [1300, 1300, 1300, 1300]
+          },
+          "cooldown": [13, 12, 11, 10],
+          "mana_cost": [80, 90, 100, 110],
+          "notes": "Deals damage twice if both axes hit the same unit. Cuts down trees in its path."
+        },
+        {
+          "id": 3802,
+          "name": "Call of the Wild Hawk",
+          "description": "Beastmaster calls forth a hawk to scout for him. The hawk has flying movement, but is quite fragile.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "hawk_hp": [200, 300, 400, 500],
+            "hawk_speed": [430, 430, 430, 430],
+            "hawk_vision_day": [700, 900, 1100, 1300],
+            "hawk_vision_night": [700, 800, 900, 1000]
+          },
+          "cooldown": [30, 30, 30, 30],
+          "mana_cost": [30, 30, 30, 30],
+          "notes": "Summons a hawk for scouting. Higher levels provide increased vision range."
+        },
+        {
+          "id": 3803,
+          "name": "Call of the Wild Boar",
+          "description": "Beastmaster calls forth a boar to join him in battle. The boar attacks enemies and carries a poison attack that slows enemy units.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "boar_attack_range": [450, 450, 450, 450],
+            "boar_attack_speed": [1.5, 1.35, 1.2, 1.05],
+            "boar_base_damage": [16, 32, 48, 64],
+            "boar_hp": [200, 300, 400, 500],
+            "poison_slow": [20, 25, 30, 35],
+            "poison_duration": [3, 3, 3, 3],
+            "boar_movement_speed": [320, 330, 340, 350]
+          },
+          "cooldown": [40, 40, 40, 40],
+          "mana_cost": [40, 40, 40, 40],
+          "notes": "Summons a boar that deals physical damage and slows enemies with its poison attack."
+        },
+        {
+          "id": 3804,
+          "name": "Primal Roar",
+          "description": "Beastmaster lets loose a mighty roar, stunning a target enemy unit, and creating a shockwave that slows nearby enemies behind it.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [200, 250, 300],
+            "roar_range": [950, 950, 950],
+            "duration": [3, 3.5, 4],
+            "movespeed_slow": [50, 50, 50],
+            "slow_duration": [2, 3, 4],
+            "slow_width_start": [125, 125, 125],
+            "slow_width_end": [300, 300, 300],
+            "slow_distance": [900, 900, 900],
+            "bonus_damage_buildings": [0, 0, 0]
+          },
+          "cooldown": [100, 85, 70],
+          "mana_cost": [150, 175, 200],
+          "notes": "Stuns primary target and creates a cone of slowing effect behind them. Pierces spell immunity."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 3805,
+          "name": "Inner Beast",
+          "description": "Beastmaster's presence increases the attack speed of nearby allied units.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["allies"],
+          "special_values": {
+            "bonus_attack_speed": [15, 25, 35, 45],
+            "radius": [1200, 1200, 1200, 1200]
+          },
+          "notes": "Passively provides attack speed to nearby allies."
+        }
+      ]
+    }
+  ]
+}

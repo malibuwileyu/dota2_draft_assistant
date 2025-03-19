@@ -1,0 +1,96 @@
+{
+  "heroes": [
+    {
+      "id": 23,
+      "name": "kunkka",
+      "localized_name": "Kunkka",
+      "abilities": [
+        {
+          "id": 2301,
+          "name": "Torrent",
+          "description": "Summons a torrent that deals damage and launches enemy units into the air. The torrent takes 1.6 seconds to form and erupts for 1 second, at which point it deals damage and tosses enemy units into the air for 1.6 seconds.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "torrent_damage": [120, 180, 240, 300],
+            "slow_duration": [1.75, 2.5, 3.25, 4],
+            "movespeed_bonus": [25, 30, 35, 40],
+            "knockback_height": [350, 350, 350, 350],
+            "knockback_duration": [1.6, 1.6, 1.6, 1.6],
+            "delay": [1.6, 1.6, 1.6, 1.6],
+            "radius": [225, 225, 225, 225]
+          },
+          "cooldown": [16, 14, 12, 10],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Provides vision at the target area. Has a delay before triggering."
+        },
+        {
+          "id": 2302,
+          "name": "Tidebringer",
+          "description": "Kunkka's sword grants increased damage and cleaves a large area in front of him for a single strike. The cleave damage is not reduced with distance.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_bonus": [15, 35, 55, 75],
+            "cleave_damage": [150, 170, 190, 210],
+            "cleave_starting_width": [150, 150, 150, 150],
+            "cleave_ending_width": [425, 475, 525, 575],
+            "cleave_distance": [650, 750, 850, 950]
+          },
+          "cooldown": [7, 6, 5, 4],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Cleave damage ignores armor value but not armor type. Can be manually cast."
+        },
+        {
+          "id": 2303,
+          "name": "X Marks the Spot",
+          "description": "Kunkka targets an enemy or allied hero, marking their position with an X. After a delay, the marked hero will be called back to the X. Kunkka can trigger the return early by casting Return.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "duration": [4, 6, 8, 10],
+            "return_range": [350, 550, 750, 950],
+            "allied_duration": [4, 4, 4, 4]
+          },
+          "cooldown": [26, 20, 14, 8],
+          "mana_cost": [80, 80, 80, 80],
+          "notes": "Can target both enemies and allies. Return can be cast to recall the target early."
+        },
+        {
+          "id": 2304,
+          "name": "Ghostship",
+          "description": "Summons a ghostly ship that sails through battle before crashing, damaging and stunning all enemies caught near the crash site. Allied heroes near the wreck are given a buff that provides bonus movement speed and delayed damage reduction.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "ghostship_damage": [275, 400, 525],
+            "ghostship_speed": [650, 650, 650],
+            "ghostship_width": [425, 425, 425],
+            "stun_duration": [1.4, 1.4, 1.4],
+            "buff_duration": [10, 10, 10],
+            "ghostship_distance": [1000, 1000, 1000],
+            "ghostship_delay": [3.07, 3.07, 3.07],
+            "tooltip_rum_damage_reduction": [50, 50, 50],
+            "tooltip_rum_speed_bonus": [10, 10, 10]
+          },
+          "cooldown": [60, 50, 40],
+          "mana_cost": [125, 175, 225],
+          "notes": "Allied heroes in the area gain Rum buff, which gives movement speed and stores 50% of damage to be taken later."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

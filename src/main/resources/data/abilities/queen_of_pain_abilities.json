@@ -1,0 +1,88 @@
+{
+  "heroes": [
+    {
+      "id": 39,
+      "name": "queenofpain",
+      "localized_name": "Queen of Pain",
+      "abilities": [
+        {
+          "id": 3901,
+          "name": "Shadow Strike",
+          "description": "Throws a poisoned dagger that deals initial damage and then deals damage over time while slowing the target. The slow diminishes over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "strike_damage": [75, 150, 225, 300],
+            "duration_damage": [30, 50, 70, 90],
+            "duration": [15, 15, 15, 15],
+            "slow_movement": [20, 30, 40, 50],
+            "projectile_speed": [900, 900, 900, 900],
+            "duration_tick": [3, 3, 3, 3]
+          },
+          "cooldown": [16, 12, 8, 4],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Deals a burst of damage on impact, then damage over time. Slowing effect decreases over time."
+        },
+        {
+          "id": 3902,
+          "name": "Blink",
+          "description": "Short distance teleportation that allows Queen of Pain to move in and out of combat.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "blink_range": [1000, 1100, 1200, 1300],
+            "min_range": [200, 200, 200, 200]
+          },
+          "cooldown": [15, 12, 9, 6],
+          "mana_cost": [60, 60, 60, 60],
+          "notes": "Allows Queen of Pain to instantly teleport a short distance."
+        },
+        {
+          "id": 3903,
+          "name": "Scream of Pain",
+          "description": "Queen of Pain lets loose a piercing scream around her, damaging nearby enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [80, 160, 240, 320],
+            "radius": [450, 450, 450, 450],
+            "projectile_speed": [900, 900, 900, 900]
+          },
+          "cooldown": [7, 7, 7, 7],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Damage is done in a radius around Queen of Pain."
+        },
+        {
+          "id": 3904,
+          "name": "Sonic Wave",
+          "description": "Queen of Pain releases a deafening sonic wave in front of her, dealing heavy damage to all enemies caught in its path.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "directional",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [300, 400, 500],
+            "starting_width": [100, 100, 100],
+            "ending_width": [450, 450, 450],
+            "distance": [900, 900, 900],
+            "final_damage": [400, 500, 600]
+          },
+          "cooldown": [135, 100, 65],
+          "mana_cost": [250, 350, 450],
+          "notes": "Deals pure damage in a cone in front of Queen of Pain. Pierces spell immunity."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

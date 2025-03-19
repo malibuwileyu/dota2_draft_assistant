@@ -1,0 +1,94 @@
+{
+  "heroes": [
+    {
+      "id": 17,
+      "name": "storm_spirit",
+      "localized_name": "Storm Spirit",
+      "abilities": [
+        {
+          "id": 1701,
+          "name": "Static Remnant",
+          "description": "Storm Spirit creates an explosive static remnant that lasts 35 seconds. When an enemy comes within 250 range, the remnant explodes, dealing damage to enemies in a radius.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "static_remnant_damage": [140, 180, 220, 260],
+            "static_remnant_damage_radius": [260, 260, 260, 260],
+            "static_remnant_duration": [35, 35, 35, 35],
+            "static_remnant_vision": [600, 600, 600, 600],
+            "trigger_radius": [250, 250, 250, 250]
+          },
+          "cooldown": [3.5, 3.5, 3.5, 3.5],
+          "mana_cost": [70, 80, 90, 100],
+          "notes": "Provides vision around the remnant. Triggers when enemies come within 250 range."
+        },
+        {
+          "id": 1702,
+          "name": "Electric Vortex",
+          "description": "Storm Spirit creates a vortex that pulls an enemy unit to his location. With Aghanim's Scepter, it affects all enemies in a radius around Storm Spirit.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "electric_vortex_duration": [0.75, 1.25, 1.75, 2.25],
+            "electric_vortex_pull_aoe": [300, 300, 300, 300],
+            "electric_vortex_range": [300, 300, 300, 300],
+            "electric_vortex_self_slow": [60, 60, 60, 60],
+            "scepter_radius": [475, 475, 475, 475]
+          },
+          "cooldown": [16, 14, 12, 10],
+          "mana_cost": [85, 100, 115, 130],
+          "notes": "With Aghanim's Scepter, affects all enemies in a 475 radius."
+        },
+        {
+          "id": 1703,
+          "name": "Overload",
+          "description": "Casting a spell creates an electrical charge that grants Storm Spirit bonus damage and a slowing effect on his next attack. After the bonus is used, a new charge can be gained by casting another spell.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "overload_damage": [50, 70, 90, 110],
+            "overload_move_slow": [30, 40, 50, 60],
+            "overload_attack_slow": [30, 40, 50, 60],
+            "overload_aoe": [220, 220, 220, 220],
+            "overload_duration": [0.6, 0.6, 0.6, 0.6]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Overload charges stack. You can have multiple charges at once."
+        },
+        {
+          "id": 1704,
+          "name": "Ball Lightning",
+          "description": "Storm Spirit becomes a ball of lightning, moving at incredible speed across the map. While in Ball Lightning form, he damages enemies he passes through, and is invulnerable to spells and effects. The mana cost includes a flat amount plus a percentage based on the distance traveled.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "ball_lightning_damage": [10, 11, 12],
+            "ball_lightning_aoe": [200, 200, 200],
+            "ball_lightning_initial_mana_base": [100, 100, 100],
+            "ball_lightning_travel_cost_percent": [0.8, 0.7, 0.6],
+            "ball_lightning_move_speed": [1600, 2200, 2800],
+            "ball_lightning_vision": [400, 400, 400],
+            "ball_lightning_vision_duration": [3, 3, 3]
+          },
+          "cooldown": [0.55, 0.4, 0.25],
+          "mana_cost": [30, 30, 30],
+          "notes": "Mana cost is based on distance traveled. Initial mana cost plus percentage of max mana per 100 units."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

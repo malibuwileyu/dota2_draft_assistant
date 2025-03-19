@@ -1,0 +1,125 @@
+{
+  "heroes": [
+    {
+      "id": 4,
+      "name": "bloodseeker",
+      "localized_name": "Bloodseeker",
+      "abilities": [
+        {
+          "id": 401,
+          "name": "Bloodrage",
+          "description": "Causes the affected unit to attack faster and deal more spell damage at the cost of a percentage of its health per second.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "hp removal",
+          "affects": ["allies", "self", "enemies"],
+          "special_values": {
+            "cast_range": [800, 800, 800, 800],
+            "max_health_as_self_damage_per_second": [1.4, 1.4, 1.4, 1.4],
+            "attack_speed_bonus": [30, 45, 60, 75],
+            "spell_damage_amp": [15, 20, 25, 30],
+            "duration": [8, 8, 8, 8],
+            "self_attack_speed_bonus": [60, 90, 120, 150],
+            "scepter_percentage_per_hit": [3, 3, 3, 3],
+            "shard_pure_attack_damage": [35, 35, 35, 35]
+          },
+          "cooldown": [14, 12, 10, 8],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Causes a percentage of max health self-damage (non-lethal). Grants spell damage amplification and attack speed. Bloodseeker gets double attack speed when self-cast. Aghanim's Scepter adds 3% of target's max health as pure damage per hit. Aghanim's Shard adds 35 pure damage per attack."
+        },
+        {
+          "id": 402,
+          "name": "Blood Rite",
+          "description": "The ritual completes after a delay, causing any enemies caught in the area to take damage and become silenced.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "area",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "cast_range": [1500, 1500, 1500, 1500],
+            "radius": [600, 600, 600, 600],
+            "effect_delay": [2.6, 2.6, 2.6, 2.6],
+            "damage": [90, 140, 190, 240],
+            "silence_duration": [3, 4, 5, 6]
+          },
+          "cooldown": [15, 14, 13, 12],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Creates a visible area effect. Grants vision around the effect radius upon cast."
+        },
+        {
+          "id": 403,
+          "name": "Thirst",
+          "description": "Sensing blood of the mortally wounded, Bloodseeker gains bonus movement speed when an enemy hero's health falls below a certain threshold, with the bonuses increasing as their health falls further. These insatiable bonuses stack per hero.",
+          "type": "passive",
+          "pierces_immunity": true,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self", "enemies"],
+          "special_values": {
+            "enemy_max_health_for_min_bonus": [99, 99, 99, 99],
+            "enemy_max_health_for_max_bonus": [25, 25, 25, 25],
+            "max_move_speed_bonus_per_enemy": [16, 24, 32, 40],
+            "speed_linger_duration": [4, 4, 4, 4],
+            "visibility_health_threshold": [25, 25, 25, 25],
+            "deactivation_health_threshold": [99, 99, 99, 99],
+            "vision_linger_duration": [4, 4, 4, 4],
+            "bloodrush_move_speed_bonus": [6, 12, 18, 24],
+            "bloodrush_sanguivore_heal_bonus": [200, 200, 200, 200],
+            "bloodrush_buff_duration": [5, 5, 5, 5],
+            "bloodrush_cooldown": [15, 15, 15, 15],
+            "bloodrush_mana_cost": [50, 50, 50, 50]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Unlocks maximum movement speed for Bloodseeker. Grants True Sight over enemies below 25% health. Adds Bloodrush active component that temporarily boosts move speed and healing."
+        },
+        {
+          "id": 404,
+          "name": "Rupture",
+          "description": "Causes an enemy unit's skin to rupture, dealing initial damage based on its current health. If the unit moves, it takes damage based on the distance moved.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "cast_range": [800, 800, 800],
+            "current_health_as_first_damage": [10, 10, 10],
+            "moved_distance_as_bonus_damage_factor": [35, 45, 55],
+            "duration": [9, 10, 11],
+            "charge_replenish_time": [75, 70, 65],
+            "number_of_charges": [1, 1, 1]
+          },
+          "cooldown": [0, 0, 0],
+          "mana_cost": [100, 150, 200],
+          "notes": "Deals initial damage based on current health. Damage from movement is based on distance traveled. Uses charges instead of traditional cooldown. Roshan is immune to this ability."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 405,
+          "name": "Sanguivore",
+          "description": "The seeker is invigorated by the wounds of his enemies, and self-heals for the max health of the killed unit, or if Bloodseeker's allies kill a nearby enemy hero.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "enemy_hero_death_heal_radius": [300],
+            "ally_kill_factor": [0.5],
+            "deny_factor": [1],
+            "base_lifesteal": [25],
+            "hero_max_health_as_lifesteal": [1],
+            "self_level_factor": [1],
+            "creep_lifesteal_factor": [0.6],
+            "shard_max_health_to_barrier": [50],
+            "shard_max_barrier_decay_per_second": [1.5],
+            "scepter_lifesteal_percentage": [30]
+          },
+          "notes": "Can be bestowed by Illusions. Neither affected nor disabled by Break. Affected by Heal and Lifesteal Manipulation sources. Aghanim's Shard converts overheal into damage barrier. Aghanim's Scepter allows Bloodseeker to heal from pure damage dealt."
+        }
+      ]
+    }
+  ]
+}

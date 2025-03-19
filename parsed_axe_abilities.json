@@ -1,0 +1,143 @@
+{
+  "heroes": [
+    {
+      "id": 2,
+      "name": "axe",
+      "localized_name": "Axe",
+      "abilities": [
+        {
+          "id": 201,
+          "name": "Berserker's Call",
+          "description": "Axe taunts nearby enemies, forcing them to attack him while granting bonus armor.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": [
+            "enemies",
+            "self"
+          ],
+          "special_values": {},
+          "cooldown": [
+            20,
+            15,
+            10,
+            5
+          ],
+          "mana_cost": [
+            80,
+            90,
+            100,
+            110
+          ],
+          "notes": ""
+        },
+        {
+          "id": 202,
+          "name": "Battle Hunger",
+          "description": "Enrages an enemy, dealing damage over time until they kill a unit or the duration ends. Slows their movement speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": [
+            "enemies",
+            "self"
+          ],
+          "special_values": {},
+          "cooldown": [
+            20,
+            15,
+            10,
+            5
+          ],
+          "mana_cost": [
+            50,
+            60,
+            70,
+            80
+          ],
+          "notes": ""
+        },
+        {
+          "id": 203,
+          "name": "Counter Helix",
+          "description": "When attacked, Axe has a chance to spin, dealing pure damage to nearby enemies.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "pure",
+          "affects": [
+            "enemies"
+          ],
+          "special_values": {},
+          "cooldown": [
+            0.45,
+            0.4,
+            0.35,
+            0.3
+          ],
+          "mana_cost": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "notes": ""
+        },
+        {
+          "id": 204,
+          "name": "Culling Blade",
+          "description": "Axe executes an enemy below a health threshold, dealing massive damage. If successful, grants Axe and nearby allies bonus movement speed.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": [
+            "enemies",
+            "self"
+          ],
+          "special_values": {},
+          "cooldown": [
+            75,
+            65,
+            55
+          ],
+          "mana_cost": [
+            60,
+            120,
+            180
+          ],
+          "notes": ""
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 205,
+          "name": "Coat of Blood",
+          "description": "Axe permanently gains bonus armor whenever an enemy dies to Culling Blade or within 400 range.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": [
+            "self"
+          ],
+          "special_values": {
+            "armor_per_kill": [
+              0.2,
+              0.3,
+              0.4,
+              0.5
+            ],
+            "culling_kill_multiplier": [
+              3,
+              3,
+              3,
+              3
+            ]
+          },
+          "notes": "Scales with Culling Blade level. Stacks infinitely."
+        }
+      ]
+    }
+  ]
+}

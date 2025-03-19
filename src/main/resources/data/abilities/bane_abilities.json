@@ -1,0 +1,121 @@
+{
+  "heroes": [
+    {
+      "id": 3,
+      "name": "bane",
+      "localized_name": "Bane",
+      "abilities": [
+        {
+          "id": 301,
+          "name": "Enfeeble",
+          "description": "Deals damage per second while reducing the affected enemy unit's total attack damage and cast range.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "cast_range": [800, 900, 1000, 1100],
+            "damage_per_second": [12, 18, 24, 30],
+            "attack_damage_reduction": [55, 60, 65, 70],
+            "cast_range_factor": [0.7, 0.7, 0.7, 0.7],
+            "duration": [9, 9, 9, 9]
+          },
+          "cooldown": [28, 21, 14, 7],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Reduces total attack damage and cast range. Deals pure damage in 1-second intervals."
+        },
+        {
+          "id": 302,
+          "name": "Brain Sap",
+          "description": "Feasts on the vital energies of an enemy unit, self-heals and deals pure damage.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "cast_range": [625, 625, 625, 625],
+            "damage": [90, 160, 230, 300],
+            "damage_to_heal_factor": [1, 1, 1, 1],
+            "secondary_damage_to_heal_factor": [0.3, 0.3, 0.3, 0.3],
+            "shard_radius": [550, 550, 550, 550]
+          },
+          "cooldown": [17, 15, 13, 11],
+          "mana_cost": [120, 130, 140, 150],
+          "notes": "Heals immediately upon cast for damage dealt. Aghanim's Shard makes it an area ability affecting all enemies in radius and reduces cooldown to 14/12/10/8."
+        },
+        {
+          "id": 303,
+          "name": "Nightmare",
+          "description": "Puts the affected unit to sleep. Units affected are awaken when damaged. If the affected unit was directly attacked, the Nightmare is passed to the attacking unit.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "cast_range": [550, 600, 650, 700],
+            "set_vision_range": [200, 200, 200, 200],
+            "sleep_duration": [3.5, 4.5, 5.5, 6.5],
+            "invulnerability_duration": [1, 1, 1, 1],
+            "dream_stalker_attack_speed_bonus": [40, 60, 80, 100],
+            "sleepwalk_push_speed": [110, 110, 110, 110]
+          },
+          "cooldown": [24, 21, 18, 15],
+          "mana_cost": [120, 130, 140, 150],
+          "notes": "Can be cast on allies (disable help prevents this). The affected unit is invulnerable for the first second. Grants Bane bonus attack speed when attacking nightmared units. Has a sub-ability to end Nightmare."
+        },
+        {
+          "id": 304,
+          "name": "Fiend's Grip",
+          "description": "Grips and disables an enemy unit. Deals damage and steals mana correspondingly of the affected unit's max mana per interval.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "cast_range": [625, 625, 625],
+            "max_channel_time": [4.75, 5.25, 5.75],
+            "damage_interval": [0.5, 0.5, 0.5],
+            "damage_per_instance": [35, 55, 75],
+            "max_mana_loss_per_instance": [2.5, 2.5, 2.5],
+            "damage_to_heal_factor": [1, 1, 1],
+            "enemy_mana_loss_to_mana_restore_factor": [1, 1, 1],
+            "scepter_number_of_illusions": [2, 2, 2],
+            "scepter_damage_taken": [200, 200, 200],
+            "scepter_current_health_as_damage": [100, 100, 100],
+            "scepter_duration": [20, 20, 20]
+          },
+          "cooldown": [120, 110, 100],
+          "mana_cost": [200, 300, 400],
+          "notes": "Channeled ability that damages, drains mana, and disables. Heals and restores mana based on damage dealt and mana drained. Aghanim's Scepter creates illusions that also channel Fiend's Grip, reduces cooldown to 75/65/55."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 305,
+          "name": "Ichor of Nyctasha",
+          "description": "Nyctasha has an obsession with making sure Bane's attributes are always evenly distributed.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "attribute_factor": [0.33]
+          },
+          "notes": "Can be bestowed by Illusions. Neither affected nor disabled by Break. Affects all attribute sources including items."
+        },
+        {
+          "id": 306,
+          "name": "Hero Model",
+          "description": "Bane is considered a ground unit, despite its hero model showing otherwise. He also has the ability to attack Nightmare affected units without transferring Nightmare to itself.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "notes": "Can be bestowed by Illusions. Neither affected nor disabled by Break. All damage instances from Bane and its illusions do not wake up Nightmare affected units, except Fiend's Grip."
+        }
+      ]
+    }
+  ]
+}

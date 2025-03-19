@@ -1,0 +1,103 @@
+{
+  "heroes": [
+    {
+      "id": 36,
+      "name": "necrolyte",
+      "localized_name": "Necrophos",
+      "abilities": [
+        {
+          "id": 3601,
+          "name": "Death Pulse",
+          "description": "Necrophos releases a wave of death that damages enemy units and heals allied units in the area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "damage": [80, 120, 160, 200],
+            "heal": [70, 90, 110, 130],
+            "radius": [500, 500, 500, 500],
+            "projectile_speed": [1200, 1200, 1200, 1200]
+          },
+          "cooldown": [7, 6, 5, 4],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "Damages enemies and heals allies in the same radius."
+        },
+        {
+          "id": 3602,
+          "name": "Ghost Shroud",
+          "description": "Necrophos slips into the realm between life and death, becoming immune to physical damage, amplifying healing done to him, and increasing magic damage to/from Necrophos.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [4, 4, 4, 4],
+            "heal_amp": [50, 60, 70, 80],
+            "slow": [50, 50, 50, 50],
+            "magic_amp": [20, 20, 20, 20]
+          },
+          "cooldown": [20, 18, 16, 14],
+          "mana_cost": [90, 90, 90, 90],
+          "notes": "Provides physical damage immunity, but increases magical damage taken. Amplifies healing."
+        },
+        {
+          "id": 3603,
+          "name": "Heartstopper Aura",
+          "description": "Necrophos's presence causes nearby enemy units to lose a percentage of their max health over time.",
+          "type": "passive",
+          "pierces_immunity": true,
+          "behavior": "passive",
+          "damage_type": "hp_removal",
+          "affects": ["enemies"],
+          "special_values": {
+            "aura_radius": [1200, 1200, 1200, 1200],
+            "damage_pct": [0.5, 0.75, 1.0, 1.25]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Deals health removal damage that pierces spell immunity. Works on buildings."
+        },
+        {
+          "id": 3604,
+          "name": "Reaper's Scythe",
+          "description": "Necrophos rips away a portion of the enemy hero's life force based on how much life it is missing. If an enemy hero is killed by Reaper's Scythe, they're dead for additional time without buyback.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_health": [0.6, 0.75, 0.9],
+            "stun_duration": [1.5, 1.5, 1.5],
+            "respawn_constant": [10, 20, 30],
+            "cooldown_scepter": [70, 55, 40],
+            "cast_range_scepter": [900, 900, 900]
+          },
+          "cooldown": [100, 85, 70],
+          "mana_cost": [150, 340, 500],
+          "notes": "Deals damage based on how much health the target is missing. Prevents buyback and adds respawn time if it kills."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 3605,
+          "name": "Sadist",
+          "description": "Necrophos gains health and mana regeneration when he kills an enemy unit. Hero kills provide a greater bonus.",
+          "type": "innate",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "hero_regen": [5, 7, 9, 11],
+            "hero_regen_duration": [7, 7, 7, 7],
+            "creep_regen": [2, 2, 2, 2],
+            "creep_regen_duration": [3, 3, 3, 3]
+          },
+          "notes": "Grants health and mana regen stacks on kills, with greater bonuses for hero kills."
+        }
+      ]
+    }
+  ]
+}
