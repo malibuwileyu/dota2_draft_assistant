@@ -21,8 +21,14 @@
     </appender>
     
     <!-- Logger levels -->
-    <logger name="com.dota2assistant" level="INFO" />
+    <logger name="com.dota2assistant" level="WARN" />
+    <logger name="com.dota2assistant.Dota2DraftAssistant" level="INFO" />
     <logger name="org.springframework" level="WARN" />
+    
+    <!-- Extra verbose loggers that should only show errors -->
+    <logger name="com.dota2assistant.data.repository.HeroAbilitiesRepository" level="ERROR" />
+    <logger name="com.dota2assistant.ui.component.HeroCell" level="ERROR" />
+    <logger name="com.dota2assistant.data.repository.HeroRepository" level="WARN" />
     
     <!-- Root logger -->
     <root level="INFO">

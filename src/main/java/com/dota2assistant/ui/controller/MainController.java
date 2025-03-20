@@ -2,6 +2,7 @@ package com.dota2assistant.ui.controller;
 
 import com.dota2assistant.core.ai.AiDecisionEngine;
 import com.dota2assistant.core.analysis.AnalysisEngine;
+import com.dota2assistant.core.analysis.HeroRecommendation;
 import com.dota2assistant.core.draft.DraftEngine;
 import com.dota2assistant.core.draft.DraftMode;
 import com.dota2assistant.core.draft.DraftPhase;
@@ -19,6 +20,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.Control;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -28,6 +30,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.slf4j.Logger;
@@ -35,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.*;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -52,8 +56,8 @@ public class MainController implements Initializable {
     
     private ObservableList<Hero> allHeroes = FXCollections.observableArrayList();
     private ObservableList<Hero> filteredHeroes = FXCollections.observableArrayList();
-    private ObservableList<Hero> recommendedPicks = FXCollections.observableArrayList();
-    private ObservableList<Hero> recommendedBans = FXCollections.observableArrayList();
+    private ObservableList<HeroRecommendation> recommendedPicks = FXCollections.observableArrayList();
+    private ObservableList<HeroRecommendation> recommendedBans = FXCollections.observableArrayList();
     private ObservableList<String> draftTimeline = FXCollections.observableArrayList();
     
     private Hero selectedHero;
@@ -101,10 +105,10 @@ public class MainController implements Initializable {
     private FlowPane direBansPane;
     
     @FXML
-    private ListView<Hero> recommendedPicksListView;
+    private ListView<com.dota2assistant.core.analysis.HeroRecommendation> recommendedPicksListView;
     
     @FXML
-    private ListView<Hero> recommendedBansListView;
+    private ListView<com.dota2assistant.core.analysis.HeroRecommendation> recommendedBansListView;
     
     @FXML
     private ProgressBar radiantStrengthBar;
@@ -127,6 +131,15 @@ public class MainController implements Initializable {
     @FXML
     private Button actionButton;
     
+    @FXML
+    private ProgressBar radiantWinBar;
+    
+    @FXML
+    private ProgressBar winProgressBackground;
+    
+    @FXML
+    private Label winPercentageLabel;
+    
     public MainController(DraftEngine draftEngine, 
                           AiDecisionEngine aiEngine, 
                           AnalysisEngine analysisEngine,
@@ -146,8 +159,28 @@ public class MainController implements Initializable {
         setupHeroGrid();
         setupListeners();
         applyCssClasses();
+        setupWinProbabilityBar();
         resetUI();
         loadHeroes();
+    }
+    
+    /**
+     * Sets up the win probability bar colors and styles
+     */
+    private void setupWinProbabilityBar() {
+        // Apply direct styling to override any default theme settings
+        String radiantColor = "#92A525"; // Green
+        String direColor = "#C23C2A"; // Red
+        
+        // Apply styles directly to the progress bars
+        radiantWinBar.setStyle("-fx-accent: " + radiantColor + ";");
+        winProgressBackground.setStyle("-fx-accent: " + direColor + ";");
+        
+        // Set the initial progress (50/50)
+        radiantWinBar.setProgress(0.5);
+        winProgressBackground.setProgress(1.0);
+        
+        logger.info("Win probability bar styles applied - Radiant: {}, Dire: {}", radiantColor, direColor);
     }
     
     private void setupComboBoxes() {
@@ -185,9 +218,9 @@ public class MainController implements Initializable {
         recommendedPicksListView.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> {
                     if (newVal != null) {
-                        selectedHero = newVal;
+                        selectedHero = newVal.getHero();
                         if (heroGridView != null) {
-                            heroGridView.selectHero(newVal.getId());
+                            heroGridView.selectHero(newVal.getHero().getId());
                         }
                     }
                 });
@@ -197,9 +230,9 @@ public class MainController implements Initializable {
         recommendedBansListView.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> {
                     if (newVal != null) {
-                        selectedHero = newVal;
+                        selectedHero = newVal.getHero();
                         if (heroGridView != null) {
-                            heroGridView.selectHero(newVal.getId());
+                            heroGridView.selectHero(newVal.getHero().getId());
                         }
                     }
                 });
@@ -232,7 +265,7 @@ public class MainController implements Initializable {
         });
         
         // Log setup completion
-        logger.info("Hero grid setup complete");
+        logger.debug("Hero grid setup complete");
     }
     
     private void setupListeners() {
@@ -1032,23 +1065,72 @@ public class MainController implements Initializable {
     private void updateRecommendations() {
         executorService.submit(() -> {
             try {
-                List<Hero> picks = aiEngine.suggestPicks(
-                        draftEngine.getTeamPicks(Team.RADIANT),
-                        draftEngine.getTeamPicks(Team.DIRE),
-                        draftEngine.getBannedHeroes(),
-                        5
-                );
+                // Get team picks
+                List<Hero> radiantTeam = draftEngine.getTeamPicks(Team.RADIANT);
+                List<Hero> direTeam = draftEngine.getTeamPicks(Team.DIRE);
+                List<Hero> banned = draftEngine.getBannedHeroes();
                 
-                List<Hero> bans = aiEngine.suggestBans(
-                        draftEngine.getTeamPicks(Team.RADIANT),
-                        draftEngine.getTeamPicks(Team.DIRE),
-                        draftEngine.getBannedHeroes(),
-                        5
-                );
+                // Get hero suggestions
+                List<Hero> pickHeroes = aiEngine.suggestPicks(radiantTeam, direTeam, banned, 5);
+                List<Hero> banHeroes = aiEngine.suggestBans(radiantTeam, direTeam, banned, 5);
+                
+                // Convert to detailed recommendations
+                List<HeroRecommendation> pickRecommendations = new ArrayList<>();
+                List<HeroRecommendation> banRecommendations = new ArrayList<>();
+                
+                // Process pick recommendations
+                for (Hero hero : pickHeroes) {
+                    // Get synergy and counter metrics for the recommendation
+                    double synergyScore = analysisEngine.calculateSynergy(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+                    double counterScore = analysisEngine.calculateCounter(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+                    double winRate = analysisEngine.getHeroWinRate(hero);
+                    int pickCount = analysisEngine.getHeroPickCount(hero);
+                    
+                    // Generate synergy and counter reasons
+                    List<String> synergyReasons = generateSynergyReasons(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+                    List<String> counterReasons = generateCounterReasons(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+                    
+                    double score = 0.4 * synergyScore + 0.4 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
+                    
+                    // Create recommendation with detailed metrics and reasons
+                    HeroRecommendation recommendation = 
+                        new HeroRecommendation(
+                            hero, score, winRate, synergyScore, counterScore, pickCount, 
+                            synergyReasons, counterReasons
+                        );
+                    
+                    pickRecommendations.add(recommendation);
+                }
+                
+                // Process ban recommendations - similar approach as picks but with a focus on counters
+                for (Hero hero : banHeroes) {
+                    double synergyScore = analysisEngine.calculateSynergy(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+                    double counterScore = analysisEngine.calculateCounter(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+                    double winRate = analysisEngine.getHeroWinRate(hero);
+                    int pickCount = analysisEngine.getHeroPickCount(hero);
+                    
+                    List<String> synergyReasons = generateSynergyReasons(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+                    List<String> counterReasons = generateCounterReasons(hero, 
+                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+                    
+                    double score = 0.3 * synergyScore + 0.5 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
+                    
+                    banRecommendations.add(new HeroRecommendation(
+                        hero, score, winRate, synergyScore, counterScore, pickCount,
+                        synergyReasons, counterReasons
+                    ));
+                }
                 
                 Platform.runLater(() -> {
-                    recommendedPicks.setAll(picks);
-                    recommendedBans.setAll(bans);
+                    recommendedPicks.setAll(pickRecommendations);
+                    recommendedBans.setAll(banRecommendations);
                 });
             } catch (Exception e) {
                 logger.error("Failed to update recommendations", e);
@@ -1056,25 +1138,337 @@ public class MainController implements Initializable {
         });
     }
     
+    /**
+     * Generate synergy reasons for a hero with the given team
+     */
+    private List<String> generateSynergyReasons(Hero hero, List<Hero> team) {
+        List<String> reasons = new ArrayList<>();
+        
+        if (team.isEmpty()) {
+            return reasons;
+        }
+        
+        // Analyze entire team composition
+        int strengthCount = 0;
+        int agilityCount = 0;
+        int intelligenceCount = 0;
+        int carriesCount = 0;
+        int supportsCount = 0;
+        int disablersCount = 0;
+        int nukersCount = 0;
+        int initiatorCount = 0;
+        
+        for (Hero teammate : team) {
+            if (teammate.getPrimaryAttribute() != null) {
+                switch (teammate.getPrimaryAttribute()) {
+                    case "str": strengthCount++; break;
+                    case "agi": agilityCount++; break;
+                    case "int": intelligenceCount++; break;
+                }
+            }
+            
+            if (teammate.getRoles() != null) {
+                List<String> roles = teammate.getRoles();
+                if (roles.contains("Carry")) carriesCount++;
+                if (roles.contains("Support")) supportsCount++;
+                if (roles.contains("Disabler")) disablersCount++;
+                if (roles.contains("Nuker")) nukersCount++;
+                if (roles.contains("Initiator")) initiatorCount++;
+            }
+        }
+        
+        // Check if this hero fills a team gap
+        if (hero.getRoles() != null) {
+            List<String> roles = hero.getRoles();
+            if (roles.contains("Carry") && carriesCount == 0) {
+                reasons.add("Provides needed carry potential for your lineup");
+            }
+            if (roles.contains("Support") && supportsCount == 0) {
+                reasons.add("Adds critical support capabilities to your draft");
+            }
+            if (roles.contains("Disabler") && disablersCount < 2) {
+                reasons.add("Adds essential crowd control to your team");
+            }
+            if (roles.contains("Initiator") && initiatorCount == 0) {
+                reasons.add("Provides crucial initiation your team needs");
+            }
+        }
+        
+        if (reasons.size() >= 2) {
+            return reasons;
+        }
+        
+        // Find heroes with highest synergy
+        Map<Hero, Double> synergies = new HashMap<>();
+        for (Hero teammate : team) {
+            double synergyScore = analysisEngine.calculateHeroSynergy(hero, teammate);
+            if (synergyScore > 0.6) {
+                synergies.put(teammate, synergyScore);
+            }
+        }
+        
+        // Convert top synergies to specific tactical reasons
+        List<Map.Entry<Hero, Double>> topSynergies = synergies.entrySet().stream()
+            .sorted(Map.Entry.<Hero, Double>comparingByValue().reversed())
+            .limit(2)
+            .collect(Collectors.toList());
+        
+        // Specific synergy pairs based on hero names
+        Map<String, Map<String, String>> synergyPairs = new HashMap<>();
+        synergyPairs.put("Crystal Maiden", Map.of(
+            "Juggernaut", "Mana aura enables Jugg's Blade Fury spam",
+            "Phantom Assassin", "Slow enables easier Phantom Strike hits",
+            "Ursa", "Frostbite + Overpower combo secures early kills"
+        ));
+        
+        synergyPairs.put("Tiny", Map.of(
+            "Io", "Classic Tiny+Io relocation ganks",
+            "Centaur Warrunner", "Toss into Hoof Stomp combo"
+        ));
+        
+        synergyPairs.put("Vengeful Spirit", Map.of(
+            "Luna", "Aura stacking amplifies damage",
+            "Drow Ranger", "Swap saves + aura synergy"
+        ));
+        
+        for (Map.Entry<Hero, Double> entry : topSynergies) {
+            Hero teammate = entry.getKey();
+            double score = entry.getValue();
+            
+            // Check for specific synergy pairs first
+            String specificSynergy = null;
+            if (synergyPairs.containsKey(hero.getLocalizedName())) {
+                Map<String, String> pairings = synergyPairs.get(hero.getLocalizedName());
+                specificSynergy = pairings.get(teammate.getLocalizedName());
+            }
+            
+            if (specificSynergy == null && synergyPairs.containsKey(teammate.getLocalizedName())) {
+                Map<String, String> pairings = synergyPairs.get(teammate.getLocalizedName());
+                specificSynergy = pairings.get(hero.getLocalizedName());
+            }
+            
+            if (specificSynergy != null) {
+                reasons.add(specificSynergy);
+            } else {
+                // Use a general template with hero name
+                String reasonTemplate;
+                if (score > 0.75) {
+                    reasonTemplate = "Exceptional synergy with %s";
+                } else if (score > 0.65) {
+                    reasonTemplate = "Strong synergy with %s";
+                } else {
+                    reasonTemplate = "Good pairing with %s";
+                }
+                
+                reasons.add(String.format(reasonTemplate, teammate.getLocalizedName()));
+            }
+        }
+        
+        return reasons;
+    }
+    
+    /**
+     * Generate counter reasons for a hero against the given team
+     */
+    private List<String> generateCounterReasons(Hero hero, List<Hero> enemyTeam) {
+        List<String> reasons = new ArrayList<>();
+        
+        if (enemyTeam.isEmpty()) {
+            return reasons;
+        }
+        
+        // First check for specific strategic counters
+        if (enemyTeam.size() >= 3) {
+            // Team characteristic counters
+            boolean enemyIsPhysicalHeavy = enemyTeam.stream()
+                .filter(e -> "agi".equals(e.getPrimaryAttribute()))
+                .count() >= 2;
+                
+            boolean enemyIsMagicHeavy = enemyTeam.stream()
+                .filter(e -> "int".equals(e.getPrimaryAttribute()))
+                .count() >= 2;
+            
+            boolean enemyHasMobility = enemyTeam.stream().anyMatch(e -> 
+                e.getRoles() != null && (e.getRoles().contains("Escape") || e.getRoles().contains("Initiator")));
+                
+            boolean enemyHasLowHP = enemyTeam.stream()
+                .filter(e -> "int".equals(e.getPrimaryAttribute()) || "agi".equals(e.getPrimaryAttribute()))
+                .count() >= 3;
+                
+            // Check if this hero is good against these team traits
+            String heroName = hero.getLocalizedName();
+            if (enemyIsPhysicalHeavy) {
+                List<String> armorHeroes = Arrays.asList("Tiny", "Dragon Knight", "Ogre Magi", "Timbersaw", "Sven");
+                if (armorHeroes.contains(heroName)) {
+                    reasons.add("High armor is strong against physical-heavy enemy lineup");
+                }
+            }
+            
+            if (enemyIsMagicHeavy) {
+                List<String> magicResistHeroes = Arrays.asList("Anti-Mage", "Huskar", "Lifestealer", "Pudge");
+                if (magicResistHeroes.contains(heroName)) {
+                    reasons.add("Magic resistance counters enemy spell damage");
+                }
+            }
+            
+            if (enemyHasMobility) {
+                List<String> lockdownHeroes = Arrays.asList("Lion", "Shadow Shaman", "Bane", "Axe", "Legion Commander");
+                if (lockdownHeroes.contains(heroName)) {
+                    reasons.add("Lockdown abilities control enemy mobility heroes");
+                }
+            }
+            
+            if (enemyHasLowHP) {
+                List<String> burstHeroes = Arrays.asList("Lina", "Lion", "Tinker", "Zeus", "Morphling");
+                if (burstHeroes.contains(heroName)) {
+                    reasons.add("Burst damage exploits enemy's low HP pool");
+                }
+            }
+        }
+        
+        if (reasons.size() >= 2) {
+            return reasons;
+        }
+        
+        // Specific counter matchups for well-known counters
+        Map<String, Map<String, String>> counterPairs = new HashMap<>();
+        counterPairs.put("Anti-Mage", Map.of(
+            "Storm Spirit", "Mana Void punishes Storm's mana usage",
+            "Medusa", "Mana Break depletes Medusa's shield",
+            "Invoker", "Spell Shield negates Invoker's combo damage"
+        ));
+        
+        counterPairs.put("Earthshaker", Map.of(
+            "Broodmother", "Echo Slam destroys Broodmother's spiders",
+            "Meepo", "Echo Slam instantly kills multiple Meepos",
+            "Phantom Lancer", "Fissure and Echo counter PL's illusions"
+        ));
+        
+        counterPairs.put("Silencer", Map.of(
+            "Enigma", "Global Silence prevents Black Hole initiation",
+            "Tide Hunter", "Global Silence prevents Ravage initiation"
+        ));
+        
+        // Find specific hero counters first
+        for (Hero enemy : enemyTeam) {
+            if (counterPairs.containsKey(hero.getLocalizedName())) {
+                Map<String, String> matchups = counterPairs.get(hero.getLocalizedName());
+                String specificReason = matchups.get(enemy.getLocalizedName());
+                if (specificReason != null) {
+                    reasons.add(specificReason);
+                }
+            }
+        }
+        
+        // If we already have 2 reasons, return them
+        if (reasons.size() >= 2) {
+            return reasons;
+        }
+        
+        // Find heroes that this hero counters well
+        Map<Hero, Double> counters = new HashMap<>();
+        for (Hero enemy : enemyTeam) {
+            double counterScore = analysisEngine.calculateHeroCounter(hero, enemy);
+            if (counterScore > 0.6) {
+                counters.put(enemy, counterScore);
+            }
+        }
+        
+        // Convert top counters to reasons
+        List<Map.Entry<Hero, Double>> topCounters = counters.entrySet().stream()
+            .sorted(Map.Entry.<Hero, Double>comparingByValue().reversed())
+            .limit(2)
+            .collect(Collectors.toList());
+        
+        for (Map.Entry<Hero, Double> entry : topCounters) {
+            Hero enemy = entry.getKey();
+            double score = entry.getValue();
+            
+            String reasonTemplate;
+            if (score > 0.8) {
+                reasonTemplate = "Hard counters %s";
+            } else if (score > 0.7) {
+                reasonTemplate = "Strong counter to %s";
+            } else {
+                reasonTemplate = "Effective against %s";
+            }
+            
+            reasons.add(String.format(reasonTemplate, enemy.getLocalizedName()));
+        }
+        
+        return reasons;
+    }
+    
     private void updateDraftAnalysis() {
         executorService.submit(() -> {
             try {
                 double radiantStrength = analysisEngine.calculateTeamStrength(draftEngine.getTeamPicks(Team.RADIANT));
                 double direStrength = analysisEngine.calculateTeamStrength(draftEngine.getTeamPicks(Team.DIRE));
+                double radiantWinProbability = analysisEngine.predictWinProbability(
+                        draftEngine.getTeamPicks(Team.RADIANT),
+                        draftEngine.getTeamPicks(Team.DIRE)
+                );
                 String analysis = analysisEngine.analyzeDraft(
                         draftEngine.getTeamPicks(Team.RADIANT),
                         draftEngine.getTeamPicks(Team.DIRE)
                 );
                 
                 Platform.runLater(() -> {
+                    // Update team strength bars
                     radiantStrengthBar.setProgress(radiantStrength);
                     direStrengthBar.setProgress(direStrength);
                     analysisTextArea.setText(analysis);
+                    
+                    // Update win percentage visualization
+                    updateWinProbabilityBar(radiantWinProbability);
                 });
             } catch (Exception e) {
                 logger.error("Failed to update draft analysis", e);
             }
         });
+    }
+    
+    /**
+     * Updates the win probability visualization bar
+     * 
+     * @param radiantWinProbability Value between 0 and 1 representing Radiant's win probability
+     */
+    private void updateWinProbabilityBar(double radiantWinProbability) {
+        // Ensure probability is between 0 and 1
+        radiantWinProbability = Math.max(0, Math.min(1, radiantWinProbability));
+        
+        // Calculate Dire's probability
+        double direWinProbability = 1 - radiantWinProbability;
+        
+        // Format percentages for display
+        String radiantPercentText = String.format("%.1f%%", radiantWinProbability * 100);
+        String direPercentText = String.format("%.1f%%", direWinProbability * 100);
+        
+        // Update the label
+        winPercentageLabel.setText(radiantPercentText + " - " + direPercentText);
+        
+        // Update the progress bar
+        radiantWinBar.setProgress(radiantWinProbability);
+        
+        // Set colors to ensure they always apply
+        String radiantColor = "#92A525"; // Green
+        String direColor = "#C23C2A"; // Red
+        
+        // Reapply styles
+        radiantWinBar.setStyle("-fx-accent: " + radiantColor + ";");
+        winProgressBackground.setStyle("-fx-accent: " + direColor + ";");
+        
+        // Add some visual emphasis if one team has a significant advantage
+        if (radiantWinProbability > 0.6) {
+            winPercentageLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + radiantColor + ";");
+        } else if (direWinProbability > 0.6) {
+            winPercentageLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + direColor + ";");
+        } else {
+            winPercentageLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
+        }
+        
+        logger.debug("Updated win probability bar: Radiant {}%, Dire {}%", 
+                    radiantWinProbability * 100, direWinProbability * 100);
     }
     
     private void startTimer() {
@@ -1136,6 +1530,9 @@ public class MainController implements Initializable {
         // Reset progress bars
         radiantStrengthBar.setProgress(0);
         direStrengthBar.setProgress(0);
+        
+        // Reset win probability bar
+        updateWinProbabilityBar(0.5); // Reset to 50/50
         
         // Reset team highlights
         highlightCurrentTeam(null);
@@ -1281,18 +1678,24 @@ public class MainController implements Initializable {
         }
     }
     
-    private static class HeroListCell extends ListCell<Hero> {
+    private static class HeroListCell extends ListCell<HeroRecommendation> {
         @Override
-        protected void updateItem(Hero hero, boolean empty) {
-            super.updateItem(hero, empty);
+        protected void updateItem(HeroRecommendation recommendation, boolean empty) {
+            super.updateItem(recommendation, empty);
             
-            if (empty || hero == null) {
+            if (empty || recommendation == null) {
                 setText(null);
                 setGraphic(null);
             } else {
-                // Create a more informative cell with hero name and primary attribute
-                HBox container = new HBox(5);
-                container.setAlignment(Pos.CENTER_LEFT);
+                // Get the hero object from the recommendation
+                Hero hero = recommendation.getHero();
+                
+                // Create a more informative cell with hero name, primary attribute, and reasoning
+                VBox mainContainer = new VBox(3);
+                mainContainer.setPadding(new Insets(5));
+                
+                HBox topRow = new HBox(5);
+                topRow.setAlignment(Pos.CENTER_LEFT);
                 
                 // Add a small icon or indicator based on primary attribute
                 Label attributeIndicator = new Label();
@@ -1315,29 +1718,53 @@ public class MainController implements Initializable {
                 nameLabel.setMaxWidth(Double.MAX_VALUE);
                 HBox.setHgrow(nameLabel, Priority.ALWAYS);
                 
-                container.getChildren().addAll(attributeIndicator, nameLabel);
+                // Add score indicator (percentage)
+                String scoreText = String.format("%.0f%%", recommendation.getScore() * 100);
+                Label scoreLabel = new Label(scoreText);
+                scoreLabel.getStyleClass().add("recommendation-score");
+                
+                topRow.getChildren().addAll(attributeIndicator, nameLabel, scoreLabel);
+                
+                // Create a VBox for the detailed info
+                VBox infoContainer = new VBox(2);
                 
                 // Add roles if available
                 if (hero.getRoles() != null && !hero.getRoles().isEmpty()) {
                     String roles = String.join(", ", hero.getRoles());
-                    if (roles.length() > 20) {
-                        roles = roles.substring(0, 18) + "...";
+                    if (roles.length() > 30) {
+                        roles = roles.substring(0, 28) + "...";
                     }
                     Label rolesLabel = new Label(roles);
                     rolesLabel.getStyleClass().add("hero-roles");
                     rolesLabel.setFont(Font.font(null, FontWeight.LIGHT, 10));
                     rolesLabel.setOpacity(0.7);
-                    
-                    // Create a VBox to stack name and roles
-                    VBox infoContainer = new VBox(2);
-                    infoContainer.getChildren().addAll(nameLabel, rolesLabel);
-                    
-                    // Update the container
-                    container.getChildren().remove(nameLabel);
-                    container.getChildren().add(infoContainer);
+                    infoContainer.getChildren().add(rolesLabel);
                 }
                 
-                setGraphic(container);
+                // Add win rate info if available
+                if (recommendation.getWinRate() >= 0) {
+                    Label winRateLabel = new Label("Win rate: " + recommendation.getWinRateFormatted());
+                    winRateLabel.setFont(Font.font(null, FontWeight.NORMAL, 11));
+                    infoContainer.getChildren().add(winRateLabel);
+                }
+                
+                // Add reasoning text
+                String reasoning = recommendation.getReasoningFormatted();
+                if (reasoning != null && !reasoning.isEmpty()) {
+                    Label reasoningLabel = new Label(reasoning);
+                    reasoningLabel.setWrapText(true);
+                    reasoningLabel.setMaxWidth(Double.MAX_VALUE);
+                    reasoningLabel.setPrefWidth(Control.USE_COMPUTED_SIZE);
+                    reasoningLabel.setFont(Font.font(null, FontWeight.NORMAL, 11));
+                    reasoningLabel.getStyleClass().add("recommendation-reasoning");
+                    infoContainer.getChildren().add(reasoningLabel);
+                }
+                
+                // Add all containers together
+                mainContainer.getChildren().addAll(topRow, infoContainer);
+                mainContainer.getStyleClass().add("recommendation-cell");
+                
+                setGraphic(mainContainer);
                 setText(null);
             }
         }

@@ -379,11 +379,11 @@ public class HeroRepository {
         // First try to load from cache
         if (!heroCache.isEmpty()) {
             heroes.addAll(heroCache.values());
-            logger.info("Loaded {} heroes from cache", heroes.size());
+            logger.debug("Loaded {} heroes from cache", heroes.size());
             return heroes;
         }
         
-        logger.info("Cache is empty, attempting to load heroes from database");
+        logger.debug("Cache is empty, attempting to load heroes from database");
         
         // Try to load from database first
         try (Connection conn = dbManager.getConnection();
@@ -417,7 +417,7 @@ public class HeroRepository {
                 
                 // Enhance heroes with ability data if available
                 if (heroAbilitiesRepository != null) {
-                    logger.info("Enhancing heroes with ability data from HeroAbilitiesRepository");
+                    logger.debug("Enhancing heroes with ability data from HeroAbilitiesRepository");
                     heroAbilitiesRepository.enhanceHeroesWithAbilities(heroes);
                 }
                 
@@ -436,7 +436,7 @@ public class HeroRepository {
             
             // Enhance heroes with ability data if available
             if (heroAbilitiesRepository != null) {
-                logger.info("Enhancing heroes with ability data from HeroAbilitiesRepository");
+                logger.debug("Enhancing heroes with ability data from HeroAbilitiesRepository");
                 heroAbilitiesRepository.enhanceHeroesWithAbilities(heroes);
             }
             

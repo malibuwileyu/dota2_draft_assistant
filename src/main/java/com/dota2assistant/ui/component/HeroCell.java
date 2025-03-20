@@ -165,7 +165,7 @@ public class HeroCell extends VBox {
                 
                 if (imageUrl.startsWith("/")) {
                     // Load from local resources
-                    logger.info("Hero {} (ID: {}) - Trying to load image from: {}", 
+                    logger.debug("Hero {} (ID: {}) - Trying to load image from: {}", 
                                hero.getLocalizedName(), hero.getId(), imageUrl);
                                
                     InputStream is = getClass().getResourceAsStream(imageUrl);
@@ -173,7 +173,7 @@ public class HeroCell extends VBox {
                         Image image = new Image(is);
                         if (!image.isError()) {
                             imageView.setImage(image);
-                            logger.info("Successfully loaded local image for {} (ID: {})", 
+                            logger.debug("Successfully loaded local image for {} (ID: {})", 
                                        hero.getLocalizedName(), hero.getId());
                             return;
                         } else {

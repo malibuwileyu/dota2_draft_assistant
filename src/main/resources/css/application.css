@@ -358,3 +358,44 @@
 .hero-roles {
     -fx-text-fill: #bdc3c7;
 }
+
+/* Win Probability Bar styling */
+#winProgressBackground {
+    -fx-background-color: transparent;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+}
+
+#winProgressBackground .bar {
+    -fx-background-insets: 1;
+    -fx-background-radius: 2;
+    -fx-opacity: 0.9;
+}
+
+#radiantWinBar {
+    -fx-background-color: transparent;
+}
+
+#radiantWinBar .bar {
+    -fx-background-insets: 1;
+    -fx-background-radius: 2;
+    -fx-effect: dropshadow(gaussian, rgba(146, 165, 37, 0.7), 3, 0, 0, 0);
+    -fx-opacity: 0.9;
+}
+
+/* Recommendation cell styling */
+.recommendation-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+}
+
+.recommendation-reasoning {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-style: italic;
+    -fx-wrap-text: true;
+}
+
+.recommendation-score {
+    -fx-font-weight: bold;
+    -fx-text-fill: -highlight;
+}

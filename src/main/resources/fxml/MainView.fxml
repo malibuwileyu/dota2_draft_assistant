@@ -66,65 +66,82 @@
     </top>
     
     <center>
-        <HBox spacing="10">
+        <VBox spacing="10">
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
+        
+            <!-- Win Probability Visualization -->
+            <HBox spacing="5" alignment="CENTER">
+                <Label text="Radiant" style="-fx-text-fill: -radiant; -fx-font-weight: bold;" />
+                
+                <!-- Custom StackPane to create a two-colored progress bar -->
+                <StackPane HBox.hgrow="ALWAYS">
+                    <ProgressBar fx:id="winProgressBackground" progress="1.0" style="-fx-accent: #C23C2A;" maxWidth="Infinity" prefHeight="20" />
+                    <ProgressBar fx:id="radiantWinBar" progress="0.5" style="-fx-accent: #92A525;" maxWidth="Infinity" prefHeight="20" />
+                    <Label fx:id="winPercentageLabel" text="50% - 50%" style="-fx-font-weight: bold; -fx-text-fill: white;" />
+                </StackPane>
+                
+                <Label text="Dire" style="-fx-text-fill: -dire; -fx-font-weight: bold;" />
+            </HBox>
             
-            <!-- Left Column - Radiant Team -->
-            <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
-                <Label text="Radiant Team" style="-fx-font-weight: bold;" />
-                
-                <GridPane fx:id="radiantPicksGrid" alignment="CENTER" hgap="5" vgap="5">
-                    <!-- Heroes will be added here dynamically -->
-                </GridPane>
-                
-                <Separator />
-                
-                <Label text="Bans" />
-                <FlowPane fx:id="radiantBansPane" hgap="5" vgap="5" />
-            </VBox>
-            
-            <!-- Center - Hero Selection -->
-            <VBox spacing="10" HBox.hgrow="ALWAYS">
-                <Label text="Available Heroes" style="-fx-font-weight: bold;" />
-                
-                <HBox spacing="10">
-                    <TextField fx:id="heroSearchField" promptText="Search heroes..." HBox.hgrow="ALWAYS" />
-                    <ComboBox fx:id="heroFilterComboBox" />
-                </HBox>
-                
-                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="false" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
-                    <FlowPane fx:id="heroSelectionPane" hgap="10" vgap="10">
+            <!-- Three-column layout for teams and hero selection -->
+            <HBox spacing="10" VBox.vgrow="ALWAYS">
+                <!-- Left Column - Radiant Team -->
+                <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
+                    <Label text="Radiant Team" style="-fx-font-weight: bold;" />
+                    
+                    <GridPane fx:id="radiantPicksGrid" alignment="CENTER" hgap="5" vgap="5">
                         <!-- Heroes will be added here dynamically -->
-                    </FlowPane>
-                </ScrollPane>
+                    </GridPane>
+                    
+                    <Separator />
+                    
+                    <Label text="Bans" />
+                    <FlowPane fx:id="radiantBansPane" hgap="5" vgap="5" />
+                </VBox>
                 
-                <HBox spacing="10" alignment="CENTER">
-                    <Button fx:id="actionButton" text="Select Action" onAction="#onHeroAction" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                </HBox>
+                <!-- Center - Hero Selection -->
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="Available Heroes" style="-fx-font-weight: bold;" />
+                    
+                    <HBox spacing="10">
+                        <TextField fx:id="heroSearchField" promptText="Search heroes..." HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="heroFilterComboBox" />
+                    </HBox>
+                    
+                    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="false" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
+                        <FlowPane fx:id="heroSelectionPane" hgap="10" vgap="10">
+                            <!-- Heroes will be added here dynamically -->
+                        </FlowPane>
+                    </ScrollPane>
+                    
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button fx:id="actionButton" text="Select Action" onAction="#onHeroAction" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    </HBox>
+                    
+                    <!-- Debug buttons for direct ban/pick functionality -->
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button text="Force Ban Selected" onAction="#onForceBanHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <Button text="Force Pick Selected" onAction="#onForcePickHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    </HBox>
+                </VBox>
                 
-                <!-- Debug buttons for direct ban/pick functionality -->
-                <HBox spacing="10" alignment="CENTER">
-                    <Button text="Force Ban Selected" onAction="#onForceBanHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                    <Button text="Force Pick Selected" onAction="#onForcePickHero" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                </HBox>
-            </VBox>
-            
-            <!-- Right Column - Dire Team -->
-            <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
-                <Label text="Dire Team" style="-fx-font-weight: bold;" />
-                
-                <GridPane fx:id="direPicksGrid" alignment="CENTER" hgap="5" vgap="5">
-                    <!-- Heroes will be added here dynamically -->
-                </GridPane>
-                
-                <Separator />
-                
-                <Label text="Bans" />
-                <FlowPane fx:id="direBansPane" hgap="5" vgap="5" />
-            </VBox>
-        </HBox>
+                <!-- Right Column - Dire Team -->
+                <VBox spacing="10" alignment="TOP_CENTER" HBox.hgrow="ALWAYS" maxWidth="250">
+                    <Label text="Dire Team" style="-fx-font-weight: bold;" />
+                    
+                    <GridPane fx:id="direPicksGrid" alignment="CENTER" hgap="5" vgap="5">
+                        <!-- Heroes will be added here dynamically -->
+                    </GridPane>
+                    
+                    <Separator />
+                    
+                    <Label text="Bans" />
+                    <FlowPane fx:id="direBansPane" hgap="5" vgap="5" />
+                </VBox>
+            </HBox>
+        </VBox>
     </center>
     
     <right>

@@ -40,11 +40,11 @@ public class HeroAbilitiesRepository {
             // First try to load the combined file
             Path combinedPath = Paths.get("src/main/resources/data/abilities/hero_abilities.json");
             if (Files.exists(combinedPath)) {
-                logger.info("Loading hero abilities from combined file: {}", combinedPath);
+                logger.debug("Loading hero abilities from combined file: {}", combinedPath);
                 loadCombinedHeroAbilities(combinedPath);
             } else {
                 // If combined file doesn't exist, try individual hero files
-                logger.info("Combined hero abilities file not found, trying individual hero files");
+                logger.debug("Combined hero abilities file not found, trying individual hero files");
                 loadIndividualHeroAbilities();
             }
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class HeroAbilitiesRepository {
                 }
             }
             
-            logger.info("Loaded abilities for {} heroes from combined file", container.getHeroes().size());
+            logger.debug("Loaded abilities for {} heroes from combined file", container.getHeroes().size());
         }
     }
     
@@ -129,7 +129,7 @@ public class HeroAbilitiesRepository {
                         heroCounters.put(heroKey, heroData.getCounters());
                     }
                     
-                    logger.info("Loaded abilities data for hero: {}", heroData.getLocalizedName());
+                    logger.debug("Loaded abilities data for hero: {}", heroData.getLocalizedName());
                 } else {
                     // Fallback to direct format
                     HeroAbilitiesData heroData = objectMapper.readValue(file.toFile(), HeroAbilitiesData.class);
@@ -157,7 +157,7 @@ public class HeroAbilitiesRepository {
                         heroCounters.put(heroKey, heroData.getCounters());
                     }
                     
-                    logger.info("Loaded abilities data for hero: {}", heroData.getLocalizedName());
+                    logger.debug("Loaded abilities data for hero: {}", heroData.getLocalizedName());
                 }
             } catch (Exception e) {
                 logger.error("Failed to load hero abilities from file: {}", file, e);

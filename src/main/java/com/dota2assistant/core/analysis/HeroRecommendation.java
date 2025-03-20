@@ -166,49 +166,77 @@ public class HeroRecommendation {
      */
     public String getReasoningFormatted() {
         StringBuilder reasoning = new StringBuilder();
+        boolean hasTeamPicks = !synergyReasons.isEmpty();
+        boolean hasEnemyPicks = !counterReasons.isEmpty();
         
+        // Early draft phase with no heroes picked
+        if (!hasTeamPicks && !hasEnemyPicks) {
+            // Focus on the hero's intrinsic strengths
+            switch (hero.getId() % 8) {
+                case 0:
+                    reasoning.append("Versatile first pick that's difficult to counter. ");
+                    break;
+                case 1:
+                    reasoning.append("Strong meta hero with excellent laning presence. ");
+                    break;
+                case 2:
+                    reasoning.append("Power pick with lane dominance and scaling potential. ");
+                    break;
+                case 3:
+                    reasoning.append("Enables multiple strategies, hard to plan against. ");
+                    break;
+                case 4:
+                    reasoning.append("Safe first phase pick with low counterpick risk. ");
+                    break;
+                case 5:
+                    reasoning.append("Meta-defining hero with game-changing ultimates. ");
+                    break;
+                case 6:
+                    reasoning.append("Flexible on lanes and role assignments. ");
+                    break;
+                case 7:
+                    reasoning.append("Provides essential utility that any team needs. ");
+                    break;
+            }
+            
+            // Add win-rate info if positive
+            if (winRate > 0.52) {
+                reasoning.append(String.format("%.1f%% win rate in current meta. ", winRate * 100));
+            }
+            return reasoning.toString().trim();
+        }
+        
+        // Regular draft with some picks already made
         if (winRate >= 0) {
             // For high enough win rates, emphasize this is a strong hero
             if (winRate > 0.55) {
                 reasoning.append(String.format("Strong hero with %.1f%% win rate. ", winRate * 100));
-            } else {
-                reasoning.append(String.format("Win rate: %.1f%%. ", winRate * 100));
+            } else if (winRate > 0.52) {
+                reasoning.append(String.format("Above average win rate (%.1f%%). ", winRate * 100));
             }
         }
         
         // If pick/ban count is significant, mention it's a meta pick
         if (pickCount >= 5) {
-            reasoning.append(String.format("Popular in pro meta (%d matches). ", pickCount));
+            reasoning.append(String.format("Popular in pro meta. ", pickCount));
         }
         
         // Add specific synergy reasons if available
-        if (!synergyReasons.isEmpty()) {
-            // Select top 2 synergy reasons maximum
+        if (hasTeamPicks) {
+            // Select top 1-2 synergy reasons maximum (we want to be terse)
             int reasonCount = Math.min(2, synergyReasons.size());
             for (int i = 0; i < reasonCount; i++) {
                 reasoning.append(synergyReasons.get(i)).append(". ");
             }
         }
-        // Otherwise use generic synergy description based on score
-        else if (synergyScore > 0.7) {
-            reasoning.append("Strong synergy with current picks. ");
-        } else if (synergyScore > 0.4) {
-            reasoning.append("Good synergy with current picks. ");
-        }
         
         // Add specific counter reasons if available
-        if (!counterReasons.isEmpty()) {
-            // Select top 2 counter reasons maximum
+        if (hasEnemyPicks) {
+            // Select top 1-2 counter reasons maximum (we want to be terse)
             int reasonCount = Math.min(2, counterReasons.size());
             for (int i = 0; i < reasonCount; i++) {
                 reasoning.append(counterReasons.get(i)).append(". ");
             }
-        }
-        // Otherwise use generic counter description based on score
-        else if (counterScore > 0.7) {
-            reasoning.append("Strong counter to enemy picks. ");
-        } else if (counterScore > 0.4) {
-            reasoning.append("Good counter to enemy picks. ");
         }
         
         return reasoning.toString().trim();
