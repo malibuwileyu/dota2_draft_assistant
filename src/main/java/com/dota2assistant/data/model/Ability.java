@@ -1,5 +1,7 @@
 package com.dota2assistant.data.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Ability {
     private int id;
     private String name;
@@ -10,6 +12,8 @@ public class Ability {
     private String[] affects; // enemies, allies, self
     private double[] cooldown;
     private double[] manaCost;
+    @JsonProperty("pierces_immunity")
+    private Boolean piercesImmunity;
     
     public Ability() {
     }
@@ -77,7 +81,11 @@ public class Ability {
     }
     
     public boolean isPiercesImmunity() {
-        // Check affects or other properties to determine if ability pierces immunity
+        if (piercesImmunity != null) {
+            return piercesImmunity;
+        }
+        
+        // Fallback to checking affects as before
         if (affects != null) {
             for (String affect : affects) {
                 if ("Magic Immune".equalsIgnoreCase(affect)) {
@@ -86,6 +94,14 @@ public class Ability {
             }
         }
         return false;
+    }
+    
+    public Boolean getPiercesImmunity() {
+        return piercesImmunity;
+    }
+    
+    public void setPiercesImmunity(Boolean piercesImmunity) {
+        this.piercesImmunity = piercesImmunity;
     }
 
     public double[] getCooldown() {

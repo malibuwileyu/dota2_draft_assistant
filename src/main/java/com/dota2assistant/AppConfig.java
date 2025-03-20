@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 @ComponentScan(basePackages = "com.dota2assistant")
+@PropertySource("classpath:application.properties")
+@PropertySource(value = "file:./application.properties.override", ignoreResourceNotFound = true)
 public class AppConfig {
 
     @Bean
@@ -54,13 +57,15 @@ public class AppConfig {
     }
     
     @Bean
-    public org.springframework.context.support.PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+    public static org.springframework.context.support.PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new org.springframework.context.support.PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
     }
 
     @Bean
@@ -74,13 +79,6 @@ public class AppConfig {
     public DatabaseManager sqliteDatabaseManager(PropertyLoader propertyLoader) {
         String dbFile = propertyLoader.getProperty("database.file", "dota2assistant.db");
         return new SqliteDatabaseManager(dbFile);
-    }
-    
-    @Bean
-    @ConditionalOnProperty(name = "database.type", havingValue = "postgresql")
-    public DatabaseManager postgresqlDatabaseManager() {
-        // The actual connection settings are injected via @Value annotations in PostgreSqlDatabaseManager
-        return new PostgreSqlDatabaseManager();
     }
 
     @Bean

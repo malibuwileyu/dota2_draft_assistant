@@ -56,12 +56,55 @@ mvn javafx:jlink jpackage
 
 ## Configuration
 
+You can configure the application in two ways:
+
+### Option 1: Edit application.properties.override (recommended)
+
+Create or edit `application.properties.override` in the application root directory:
+
+```properties
+# Database configuration (choose one)
+# SQLite (default)
+database.type=sqlite
+database.file=dota2assistant.db
+
+# PostgreSQL (requires PostgreSQL server)
+# database.type=postgresql
+# database.url=jdbc:postgresql://localhost:5432/dota2_draft_assistant
+# database.username=dota2_user
+# database.password=password
+
+# Logging
+logging.level.root=INFO
+logging.level.com.dota2assistant=DEBUG
+
+# Application settings
+default.rank=legend  # immortal, divine, ancient, legend, archon, crusader, guardian, herald
+default.difficulty=0.8  # 0.0 to 1.0
+```
+
+### Option 2: Edit default properties
+
 Edit `src/main/resources/application.properties` to customize:
 
 - API settings
 - Default rank for statistics
 - AI difficulty level
 - Draft timer settings
+
+### PostgreSQL Setup
+
+To use PostgreSQL instead of SQLite:
+
+1. Install PostgreSQL server
+2. Create a database and user:
+   ```sql
+   CREATE DATABASE dota2_draft_assistant;
+   CREATE USER dota2_user WITH PASSWORD 'password';
+   GRANT ALL PRIVILEGES ON DATABASE dota2_draft_assistant TO dota2_user;
+   ```
+3. Run the schema creation scripts in the `scripts` folder
+4. Update your configuration to use PostgreSQL as shown above
 
 ## Project Structure
 

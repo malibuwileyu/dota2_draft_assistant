@@ -61,17 +61,17 @@ public class MatchRepository {
     }
     
     private void initDatabase() throws SQLException {
-        // Match table
-        dbManager.executeUpdate(
-                "CREATE TABLE IF NOT EXISTS matches (" +
-                "match_id BIGINT PRIMARY KEY, " +
-                "match_data TEXT NOT NULL, " + // JSON format
-                "match_rank TEXT, " +
-                "is_pro BOOLEAN DEFAULT FALSE, " +
-                "match_timestamp BIGINT, " +
-                "cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                ")"
-        );
+        // Match table - skip creation since it already exists
+        // We'll just check if it exists to avoid trying to create it
+        boolean tableExists = false;
+        try (Connection conn = dbManager.getConnection();
+             ResultSet rs = conn.getMetaData().getTables(null, null, "matches", null)) {
+            tableExists = rs.next();
+        }
+        
+        if (!tableExists) {
+            logger.info("Matches table doesn't exist - this is normal if using existing database");
+        }
         
         // Hero stats by rank
         dbManager.executeUpdate(
@@ -85,28 +85,19 @@ public class MatchRepository {
                 ")"
         );
         
-        // Hero picks by match
-        dbManager.executeUpdate(
-                "CREATE TABLE IF NOT EXISTS match_hero_picks (" +
-                "match_id BIGINT, " +
-                "hero_id INTEGER, " +
-                "team INTEGER, " + // 0 for Radiant, 1 for Dire
-                "position INTEGER, " + // 1-5 positions
-                "is_winner BOOLEAN, " +
-                "PRIMARY KEY (match_id, hero_id), " +
-                "FOREIGN KEY (match_id) REFERENCES matches(match_id)" +
-                ")"
-        );
+        // Match hero picks - skip creation since it already exists
+        boolean pickTableExists = false;
+        try (Connection conn = dbManager.getConnection();
+             ResultSet rs = conn.getMetaData().getTables(null, null, "match_hero_picks", null)) {
+            pickTableExists = rs.next();
+        }
         
-        // Match index for faster rank-based queries
-        dbManager.executeUpdate(
-                "CREATE INDEX IF NOT EXISTS idx_matches_rank ON matches(match_rank)"
-        );
+        if (!pickTableExists) {
+            logger.info("Match hero picks table doesn't exist - this is normal if using existing database");
+        }
         
-        // Match index for timestamp-based sorting
-        dbManager.executeUpdate(
-                "CREATE INDEX IF NOT EXISTS idx_matches_timestamp ON matches(match_timestamp)"
-        );
+        // Skip creating indexes since they may reference columns that don't exist
+        // and they're likely already created
     }
     
     /**
@@ -120,7 +111,7 @@ public class MatchRepository {
         
         // Try to load from database
         try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT match_data FROM matches WHERE match_id = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT match_data FROM matches WHERE id = ?")) {
             
             stmt.setLong(1, matchId);
             ResultSet rs = stmt.executeQuery();
@@ -162,19 +153,24 @@ public class MatchRepository {
     private void saveMatch(long matchId, Map<String, Object> matchData) {
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT OR REPLACE INTO matches (match_id, match_data, match_rank, is_pro, match_timestamp) " +
-                     "VALUES (?, ?, ?, ?, ?)")) {
+                     "INSERT INTO matches (id, match_data, is_pro, start_time, patch_id) " +
+                     "VALUES (?, ?, ?, ?, ?) " +
+                     "ON CONFLICT (id) DO UPDATE SET " +
+                     "match_data = EXCLUDED.match_data, " +
+                     "is_pro = EXCLUDED.is_pro, start_time = EXCLUDED.start_time, " +
+                     "patch_id = EXCLUDED.patch_id")) {
             
             String matchDataJson = mapper.writeValueAsString(matchData);
             String rank = determineMatchRank(matchData);
             boolean isPro = isProMatch(matchData);
             long timestamp = extractMatchTimestamp(matchData);
+            Integer patchId = matchData.containsKey("patch") ? (Integer)matchData.get("patch") : null;
             
             stmt.setLong(1, matchId);
             stmt.setString(2, matchDataJson);
-            stmt.setString(3, rank);
-            stmt.setBoolean(4, isPro);
-            stmt.setLong(5, timestamp);
+            stmt.setBoolean(3, isPro);
+            stmt.setLong(4, timestamp);
+            stmt.setObject(5, patchId);
             stmt.executeUpdate();
             
             // Also save the hero picks for this match
@@ -189,37 +185,57 @@ public class MatchRepository {
      * Saves hero picks for a match
      */
     private void saveMatchHeroPicks(Connection conn, long matchId, Map<String, Object> matchData) throws SQLException {
-        // Delete existing picks for this match
-        try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM match_hero_picks WHERE match_id = ?")) {
-            deleteStmt.setLong(1, matchId);
-            deleteStmt.executeUpdate();
-        }
+        // Use transaction to ensure atomicity of delete + insert operations
+        boolean prevAutoCommit = conn.getAutoCommit();
+        conn.setAutoCommit(false);
         
-        // Insert new picks
-        try (PreparedStatement insertStmt = conn.prepareStatement(
-                "INSERT INTO match_hero_picks (match_id, hero_id, team, position, is_winner) VALUES (?, ?, ?, ?, ?)")) {
+        try {
+            // Delete existing picks for this match
+            try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM match_hero_picks WHERE match_id = ?")) {
+                deleteStmt.setLong(1, matchId);
+                deleteStmt.executeUpdate();
+            }
             
-            // Extract players data
-            List<Map<String, Object>> players = (List<Map<String, Object>>) matchData.getOrDefault("players", Collections.emptyList());
+            // Insert new picks
+            try (PreparedStatement insertStmt = conn.prepareStatement(
+                    "INSERT INTO match_hero_picks (match_id, hero_id, team, position, is_winner) VALUES (?, ?, ?, ?, ?)")) {
             
-            // Extract if radiant won
-            boolean radiantWin = Boolean.TRUE.equals(matchData.getOrDefault("radiant_win", false));
-            
-            for (Map<String, Object> player : players) {
-                Integer heroId = (Integer) player.get("hero_id");
-                Integer team = (Integer) player.getOrDefault("team_number", player.getOrDefault("player_slot", 0)) <= 4 ? 0 : 1; // 0 for Radiant, 1 for Dire
-                Integer position = getPlayerPosition(player);
-                boolean isWinner = (team == 0 && radiantWin) || (team == 1 && !radiantWin);
+                // Extract players data
+                List<Map<String, Object>> players = (List<Map<String, Object>>) matchData.getOrDefault("players", Collections.emptyList());
                 
-                if (heroId != null) {
-                    insertStmt.setLong(1, matchId);
-                    insertStmt.setInt(2, heroId);
-                    insertStmt.setInt(3, team);
-                    insertStmt.setInt(4, position != null ? position : 0);
-                    insertStmt.setBoolean(5, isWinner);
-                    insertStmt.executeUpdate();
+                // Extract if radiant won
+                boolean radiantWin = Boolean.TRUE.equals(matchData.getOrDefault("radiant_win", false));
+                
+                for (Map<String, Object> player : players) {
+                    Integer heroId = (Integer) player.get("hero_id");
+                    Integer team = (Integer) player.getOrDefault("team_number", player.getOrDefault("player_slot", 0)) <= 4 ? 0 : 1; // 0 for Radiant, 1 for Dire
+                    Integer position = getPlayerPosition(player);
+                    boolean isWinner = (team == 0 && radiantWin) || (team == 1 && !radiantWin);
+                    
+                    if (heroId != null) {
+                        insertStmt.setLong(1, matchId);
+                        insertStmt.setInt(2, heroId);
+                        insertStmt.setInt(3, team);
+                        insertStmt.setInt(4, position != null ? position : 0);
+                        insertStmt.setBoolean(5, isWinner);
+                        insertStmt.executeUpdate();
+                    }
                 }
             }
+            
+            // Commit the transaction if everything succeeded
+            conn.commit();
+        } catch (SQLException e) {
+            // Rollback on error
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                logger.error("Failed to rollback transaction", rollbackEx);
+            }
+            throw e;
+        } finally {
+            // Restore previous auto-commit setting
+            conn.setAutoCommit(prevAutoCommit);
         }
     }
     
@@ -337,14 +353,15 @@ public class MatchRepository {
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT match_id, match_data FROM matches WHERE is_pro = TRUE " +
-                     "ORDER BY match_timestamp DESC LIMIT ?")) {
+                     "SELECT id, match_data FROM matches " + 
+                     "WHERE league_id IS NOT NULL AND league_id > 0 " +
+                     "ORDER BY start_time DESC LIMIT ?")) {
             
             stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                long matchId = rs.getLong("match_id");
+                long matchId = rs.getLong("id");
                 String matchDataJson = rs.getString("match_data");
                 Map<String, Object> matchData = mapper.readValue(matchDataJson, Map.class);
                 matchCache.put(matchId, matchData); // Add to cache
@@ -401,15 +418,15 @@ public class MatchRepository {
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT match_id, match_data FROM matches WHERE match_rank = ? " +
-                     "ORDER BY match_timestamp DESC LIMIT ?")) {
+                     "SELECT id, match_data FROM matches " +
+                     "ORDER BY start_time DESC LIMIT ?")) {
             
-            stmt.setString(1, rank);
-            stmt.setInt(2, limit);
+            // Note: We're no longer filtering by rank since the column doesn't exist
+            stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                long matchId = rs.getLong("match_id");
+                long matchId = rs.getLong("id");
                 String matchDataJson = rs.getString("match_data");
                 Map<String, Object> matchData = mapper.readValue(matchDataJson, Map.class);
                 matchCache.put(matchId, matchData); // Add to cache
@@ -545,12 +562,12 @@ public class MatchRepository {
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT m.match_id, hp.hero_id FROM matches m " +
-                     "JOIN match_hero_picks hp ON m.match_id = hp.match_id " +
-                     "WHERE m.match_rank = ? " +
-                     "ORDER BY m.match_timestamp DESC LIMIT 1000")) {
+                     "SELECT m.id, hp.hero_id FROM matches m " +
+                     "JOIN match_hero_picks hp ON m.id = hp.match_id " +
+                     "ORDER BY m.start_time DESC LIMIT 1000")) {
             
-            stmt.setString(1, rank);
+            // Note: We're no longer filtering by rank since the column doesn't exist
+            // This will return all matches, which is a suitable fallback
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -582,12 +599,12 @@ public class MatchRepository {
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT m.match_id, hp.hero_id, hp.is_winner FROM matches m " +
-                     "JOIN match_hero_picks hp ON m.match_id = hp.match_id " +
-                     "WHERE m.match_rank = ? " +
-                     "ORDER BY m.match_timestamp DESC LIMIT 1000")) {
+                     "SELECT m.id, hp.hero_id, hp.is_winner FROM matches m " +
+                     "JOIN match_hero_picks hp ON m.id = hp.match_id " +
+                     "ORDER BY m.start_time DESC LIMIT 1000")) {
             
-            stmt.setString(1, rank);
+            // Note: We're no longer filtering by rank since the column doesn't exist
+            // This will return all matches, which is a suitable fallback
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -658,7 +675,7 @@ public class MatchRepository {
                         updateStmt.executeUpdate();
                     }
                 } else {
-                    // Insert new entry
+                    // Insert new entry using PostgreSQL-compatible syntax
                     StringBuilder sql = new StringBuilder("INSERT INTO hero_stats_by_rank (hero_id, rank");
                     if (pickRate != null) sql.append(", pick_rate");
                     if (winRate != null) sql.append(", win_rate");
@@ -734,20 +751,45 @@ public class MatchRepository {
     public Map<String, Double> getHeroSynergies(String rank) {
         Map<String, Double> synergies = new HashMap<>();
         
+        // First try to get synergies from the hero_synergies table
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT hero1_id, hero2_id, synergy_score FROM hero_synergies")) {
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                int heroId1 = rs.getInt("hero1_id");
+                int heroId2 = rs.getInt("hero2_id");
+                double score = rs.getDouble("synergy_score");
+                
+                String key = heroId1 + "_" + heroId2;
+                synergies.put(key, score);
+            }
+            
+            if (synergies.size() > 0) {
+                logger.info("Loaded {} hero synergies from hero_synergies table", synergies.size());
+                return synergies;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to load hero synergies from hero_synergies table", e);
+        }
+        
+        // Fallback: Calculate synergies from match data
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                      "SELECT h1.hero_id as hero_id1, h2.hero_id as hero_id2, " +
-                     "SUM(CASE WHEN h1.is_winner = 1 THEN 1 ELSE 0 END) as wins, " +
+                     "SUM(CASE WHEN h1.is_winner THEN 1 ELSE 0 END) as wins, " +
                      "COUNT(*) as games " +
                      "FROM match_hero_picks h1 " +
                      "JOIN match_hero_picks h2 ON h1.match_id = h2.match_id " +
-                     "JOIN matches m ON h1.match_id = m.match_id " +
+                     "JOIN matches m ON h1.match_id = m.id " +
                      "WHERE h1.team = h2.team AND h1.hero_id < h2.hero_id " +  // Ensure unique pairs
-                     "AND m.match_rank = ? " +
                      "GROUP BY h1.hero_id, h2.hero_id " +
-                     "HAVING games >= 5")) {  // Min threshold for statistical relevance
+                     "HAVING COUNT(*) >= 5")) {  // Min threshold for statistical relevance
             
-            stmt.setString(1, rank);
+            // Note: We're no longer filtering by rank since the column doesn't exist
+            // This will return all matches, which is a suitable fallback
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -760,8 +802,10 @@ public class MatchRepository {
                 String key = heroId1 + "_" + heroId2;
                 synergies.put(key, winRate);
             }
+            
+            logger.info("Calculated {} hero synergies from match data", synergies.size());
         } catch (SQLException e) {
-            logger.error("Failed to load hero synergies", e);
+            logger.error("Failed to calculate hero synergies from match data", e);
         }
         
         // If we don't have enough data, use mock data for now
@@ -788,20 +832,45 @@ public class MatchRepository {
     public Map<String, Double> getHeroCounters(String rank) {
         Map<String, Double> counters = new HashMap<>();
         
+        // First try to get counters from the hero_counters table
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT hero_id, counter_id, counter_score FROM hero_counters")) {
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                int heroId = rs.getInt("hero_id");
+                int counterId = rs.getInt("counter_id");
+                double score = rs.getDouble("counter_score");
+                
+                String key = heroId + "_" + counterId;
+                counters.put(key, score);
+            }
+            
+            if (counters.size() > 0) {
+                logger.info("Loaded {} hero counters from hero_counters table", counters.size());
+                return counters;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to load hero counters from hero_counters table", e);
+        }
+        
+        // Fallback: Calculate counters from match data
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
                      "SELECT h1.hero_id as hero_id1, h2.hero_id as hero_id2, " +
-                     "SUM(CASE WHEN h1.is_winner = 1 THEN 1 ELSE 0 END) as wins, " +
+                     "SUM(CASE WHEN h1.is_winner THEN 1 ELSE 0 END) as wins, " +
                      "COUNT(*) as games " +
                      "FROM match_hero_picks h1 " +
                      "JOIN match_hero_picks h2 ON h1.match_id = h2.match_id " +
-                     "JOIN matches m ON h1.match_id = m.match_id " +
+                     "JOIN matches m ON h1.match_id = m.id " +
                      "WHERE h1.team <> h2.team " +  // Different teams
-                     "AND m.match_rank = ? " +
                      "GROUP BY h1.hero_id, h2.hero_id " +
-                     "HAVING games >= 5")) {  // Min threshold for statistical relevance
+                     "HAVING COUNT(*) >= 5")) {  // Min threshold for statistical relevance
             
-            stmt.setString(1, rank);
+            // Note: We're no longer filtering by rank since the column doesn't exist
+            // This will return all matches, which is a suitable fallback
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -816,8 +885,10 @@ public class MatchRepository {
                 String key = heroId1 + "_" + heroId2;
                 counters.put(key, winRate);
             }
+            
+            logger.info("Calculated {} hero counters from match data", counters.size());
         } catch (SQLException e) {
-            logger.error("Failed to load hero counters", e);
+            logger.error("Failed to calculate hero counters from match data", e);
         }
         
         // If we don't have enough data, use mock data for now

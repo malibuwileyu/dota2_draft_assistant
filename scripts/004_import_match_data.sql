@@ -6,13 +6,13 @@ CREATE TEMPORARY TABLE temp_match_drafts (match_id BIGINT, data JSONB);
 
 -- Create a function to load match details
 CREATE OR REPLACE FUNCTION load_match_details()
-RETURNS VOID AS $$
+RETURNS VOID AS $$$
 DECLARE
     json_file TEXT;
     match_id BIGINT;
     match_data JSONB;
     draft_data JSONB;
-    player_data JSONB;
+    player_entry JSONB;
     patch_id INTEGER;
     match_data_row RECORD;
 BEGIN
@@ -49,14 +49,14 @@ BEGIN
         ) ON CONFLICT (id) DO NOTHING;
         
         -- Insert player data
-        FOR player_data IN SELECT jsonb_array_elements(match_data->'players') AS player
+        FOR player_entry IN SELECT value FROM jsonb_array_elements(match_data->'players')
         LOOP
             -- Insert player record if it doesn't exist
             INSERT INTO players (account_id, steam_id, personaname, last_match_time)
             VALUES (
-                (player_data.player->>'account_id')::bigint,
-                player_data.player->>'steamid',
-                player_data.player->>'personaname',
+                (player_entry->>'account_id')::bigint,
+                player_entry->>'steamid',
+                player_entry->>'personaname',
                 CURRENT_TIMESTAMP
             ) ON CONFLICT (account_id) DO UPDATE SET 
                 last_match_time = CURRENT_TIMESTAMP,
@@ -69,39 +69,39 @@ BEGIN
                 hero_damage, tower_damage, hero_healing, last_hits, lane
             ) VALUES (
                 match_id,
-                (player_data.player->>'account_id')::bigint,
-                (player_data.player->>'hero_id')::integer,
-                (player_data.player->>'player_slot')::integer,
-                player_data.player->>'isRadiant' = 'true',
-                (player_data.player->>'kills')::integer,
-                (player_data.player->>'deaths')::integer,
-                (player_data.player->>'assists')::integer,
-                (player_data.player->>'gold_per_min')::real,
-                (player_data.player->>'xp_per_min')::real,
-                (player_data.player->>'hero_damage')::integer,
-                (player_data.player->>'tower_damage')::integer,
-                (player_data.player->>'hero_healing')::integer,
-                (player_data.player->>'last_hits')::integer,
-                (player_data.player->>'lane')::integer
+                (player_entry->>'account_id')::bigint,
+                (player_entry->>'hero_id')::integer,
+                (player_entry->>'player_slot')::integer,
+                player_entry->>'isRadiant' = 'true',
+                (player_entry->>'kills')::integer,
+                (player_entry->>'deaths')::integer,
+                (player_entry->>'assists')::integer,
+                (player_entry->>'gold_per_min')::real,
+                (player_entry->>'xp_per_min')::real,
+                (player_entry->>'hero_damage')::integer,
+                (player_entry->>'tower_damage')::integer,
+                (player_entry->>'hero_healing')::integer,
+                (player_entry->>'last_hits')::integer,
+                (player_entry->>'lane')::integer
             ) ON CONFLICT DO NOTHING;
             
             -- Update player hero statistics
             INSERT INTO player_heroes (account_id, hero_id, games, wins, last_played)
             VALUES (
-                (player_data.player->>'account_id')::bigint,
-                (player_data.player->>'hero_id')::integer,
+                (player_entry->>'account_id')::bigint,
+                (player_entry->>'hero_id')::integer,
                 1,
                 CASE WHEN 
-                    (player_data.player->>'isRadiant' = 'true' AND match_data->>'radiant_win' = 'true') OR
-                    (player_data.player->>'isRadiant' = 'false' AND match_data->>'radiant_win' = 'false')
+                    (player_entry->>'isRadiant' = 'true' AND match_data->>'radiant_win' = 'true') OR
+                    (player_entry->>'isRadiant' = 'false' AND match_data->>'radiant_win' = 'false')
                 THEN 1 ELSE 0 END,
                 CURRENT_TIMESTAMP
             )
             ON CONFLICT (account_id, hero_id) DO UPDATE SET
                 games = player_heroes.games + 1,
                 wins = player_heroes.wins + CASE WHEN 
-                    (player_data.player->>'isRadiant' = 'true' AND match_data->>'radiant_win' = 'true') OR
-                    (player_data.player->>'isRadiant' = 'false' AND match_data->>'radiant_win' = 'false')
+                    (player_entry->>'isRadiant' = 'true' AND match_data->>'radiant_win' = 'true') OR
+                    (player_entry->>'isRadiant' = 'false' AND match_data->>'radiant_win' = 'false')
                 THEN 1 ELSE 0 END,
                 last_played = CURRENT_TIMESTAMP;
         END LOOP;
@@ -111,7 +111,7 @@ $$ LANGUAGE plpgsql;
 
 -- Create a function to load draft data
 CREATE OR REPLACE FUNCTION load_match_drafts()
-RETURNS VOID AS $$
+RETURNS VOID AS $$$
 DECLARE
     draft_data_row RECORD;
     draft_action JSONB;
@@ -179,7 +179,7 @@ $$ LANGUAGE plpgsql;
 
 -- Function to load a single match file
 CREATE OR REPLACE FUNCTION load_match_file(file_path TEXT, match_id BIGINT, is_draft BOOLEAN)
-RETURNS VOID AS $$
+RETURNS VOID AS $$$
 DECLARE
     json_content TEXT;
     parsed_data JSONB;
@@ -229,95 +229,136 @@ DECLARE
     file_path TEXT;
     match_id BIGINT;
     file_name TEXT;
+    details_exists BOOLEAN;
 BEGIN
-    -- Import match details - using relative path for better compatibility
-    FOR file_name IN 
-        SELECT 'src/main/resources/data/matches/details/' || file 
-        FROM pg_ls_dir('src/main/resources/data/matches/details/') AS file
-        WHERE file LIKE 'match_%.json'
-    LOOP
-        -- Extract match ID from filename
-        match_id := (regexp_replace(file_name, '.*match_([0-9]+)\.json$', E'\\1'))::BIGINT;
+    -- Check if details directory exists
+    BEGIN
+        PERFORM pg_ls_dir('H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/details/');
+        details_exists := true;
+    EXCEPTION WHEN OTHERS THEN
+        details_exists := false;
+    END;
+
+    -- Import match details if directory exists
+    IF details_exists THEN
+        FOR file_name IN 
+            SELECT 'H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/details/' || file 
+            FROM pg_ls_dir('H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/details/') AS file
+            WHERE file LIKE 'match_%.json'
+        LOOP
+            -- Extract match ID from filename
+            match_id := (regexp_replace(file_name, '.*match_([0-9]+)\.json$', E'\\1'))::BIGINT;
+            
+            -- Load the match file
+            PERFORM load_match_file(file_name, match_id, false);
+        END LOOP;
+    END IF;
+    
+    -- Process the match details if we loaded any
+    IF details_exists THEN
+        PERFORM load_match_details();
+    END IF;
+    
+    -- Check if drafts directory exists
+    DECLARE
+        drafts_exists BOOLEAN;
+    BEGIN
+        BEGIN
+            PERFORM pg_ls_dir('H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/drafts/');
+            drafts_exists := true;
+        EXCEPTION WHEN OTHERS THEN
+            drafts_exists := false;
+        END;
         
-        -- Load the match file
-        PERFORM load_match_file(file_name, match_id, false);
-    END LOOP;
-    
-    -- Process the match details
-    PERFORM load_match_details();
-    
-    -- Import draft data - using relative path for better compatibility
-    FOR file_name IN 
-        SELECT 'src/main/resources/data/matches/drafts/' || file 
-        FROM pg_ls_dir('src/main/resources/data/matches/drafts/') AS file
-        WHERE file LIKE 'draft_%.json'
-    LOOP
-        -- Extract match ID from filename
-        match_id := (regexp_replace(file_name, '.*draft_([0-9]+)\.json$', E'\\1'))::BIGINT;
+        -- Import draft data if directory exists
+        IF drafts_exists THEN
+            FOR file_name IN 
+                SELECT 'H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/drafts/' || file 
+                FROM pg_ls_dir('H:/Projects/dota2_draft_assistant/src/main/resources/data/matches/drafts/') AS file
+                WHERE file LIKE 'draft_%.json'
+            LOOP
+                -- Extract match ID from filename
+                match_id := (regexp_replace(file_name, '.*draft_([0-9]+)\.json$', E'\\1'))::BIGINT;
+                
+                -- Load the draft file
+                PERFORM load_match_file(file_name, match_id, true);
+            END LOOP;
+        END IF;
         
-        -- Load the draft file
-        PERFORM load_match_file(file_name, match_id, true);
-    END LOOP;
-    
-    -- Process the draft data
-    PERFORM load_match_drafts();
-END$$;
+        -- Process the draft data if we loaded any
+        IF drafts_exists THEN
+            PERFORM load_match_drafts();
+        END IF;
+    END;
+END $$;
 
 -- Calculate hero synergies based on match data
-INSERT INTO hero_synergies (hero1_id, hero2_id, games, wins, synergy_score)
-WITH hero_pairs AS (
-    SELECT 
-        LEAST(mp1.hero_id, mp2.hero_id) AS hero1_id,
-        GREATEST(mp1.hero_id, mp2.hero_id) AS hero2_id,
-        COUNT(*) AS total_games,
-        SUM(CASE WHEN 
-            (mp1.is_radiant AND m.radiant_win) OR
-            (NOT mp1.is_radiant AND NOT m.radiant_win)
-        THEN 1 ELSE 0 END) AS total_wins
-    FROM match_players mp1
-    JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.hero_id < mp2.hero_id AND mp1.is_radiant = mp2.is_radiant
-    JOIN matches m ON mp1.match_id = m.id
-    GROUP BY LEAST(mp1.hero_id, mp2.hero_id), GREATEST(mp1.hero_id, mp2.hero_id)
-)
-SELECT 
-    hero1_id, 
-    hero2_id, 
-    total_games AS games, 
-    total_wins AS wins,
-    (total_wins::float / NULLIF(total_games, 0)) * 100 AS synergy_score
-FROM hero_pairs
-ON CONFLICT (hero1_id, hero2_id) DO UPDATE SET
-    games = EXCLUDED.games,
-    wins = EXCLUDED.wins,
-    synergy_score = EXCLUDED.synergy_score;
+DO $$
+BEGIN
+    -- Only perform calculations if we have match data
+    IF EXISTS (SELECT 1 FROM matches LIMIT 1) THEN
+        INSERT INTO hero_synergies (hero1_id, hero2_id, games, wins, synergy_score)
+        WITH hero_pairs AS (
+            SELECT 
+                LEAST(mp1.hero_id, mp2.hero_id) AS hero1_id,
+                GREATEST(mp1.hero_id, mp2.hero_id) AS hero2_id,
+                COUNT(*) AS total_games,
+                SUM(CASE WHEN 
+                    (mp1.is_radiant AND m.radiant_win) OR
+                    (NOT mp1.is_radiant AND NOT m.radiant_win)
+                THEN 1 ELSE 0 END) AS total_wins
+            FROM match_players mp1
+            JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.hero_id < mp2.hero_id AND mp1.is_radiant = mp2.is_radiant
+            JOIN matches m ON mp1.match_id = m.id
+            GROUP BY LEAST(mp1.hero_id, mp2.hero_id), GREATEST(mp1.hero_id, mp2.hero_id)
+        )
+        SELECT 
+            hero1_id, 
+            hero2_id, 
+            total_games AS games, 
+            total_wins AS wins,
+            (total_wins::float / NULLIF(total_games, 0)) * 100 AS synergy_score
+        FROM hero_pairs
+        ON CONFLICT (hero1_id, hero2_id) DO UPDATE SET
+            games = EXCLUDED.games,
+            wins = EXCLUDED.wins,
+            synergy_score = EXCLUDED.synergy_score;
+    END IF;
+END $$;
 
 -- Calculate hero counters based on match data
-INSERT INTO hero_counters (hero_id, counter_id, games, wins, counter_score)
-WITH hero_counters AS (
-    SELECT 
-        mp1.hero_id AS hero_id,
-        mp2.hero_id AS counter_id,
-        COUNT(*) AS total_games,
-        SUM(CASE WHEN 
-            (mp1.is_radiant AND NOT m.radiant_win) OR
-            (NOT mp1.is_radiant AND m.radiant_win)
-        THEN 1 ELSE 0 END) AS counter_wins
-    FROM match_players mp1
-    JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.is_radiant != mp2.is_radiant
-    JOIN matches m ON mp1.match_id = m.id
-    GROUP BY mp1.hero_id, mp2.hero_id
-)
-SELECT 
-    hero_id, 
-    counter_id, 
-    total_games AS games, 
-    counter_wins AS wins,
-    (counter_wins::float / NULLIF(total_games, 0)) * 100 AS counter_score
-FROM hero_counters
-ON CONFLICT (hero_id, counter_id) DO UPDATE SET
-    games = EXCLUDED.games,
-    wins = EXCLUDED.wins,
-    counter_score = EXCLUDED.counter_score;
+DO $$
+BEGIN
+    -- Only perform calculations if we have match data
+    IF EXISTS (SELECT 1 FROM matches LIMIT 1) THEN
+        INSERT INTO hero_counters (hero_id, counter_id, games, wins, counter_score)
+        WITH hero_counters AS (
+            SELECT 
+                mp1.hero_id AS hero_id,
+                mp2.hero_id AS counter_id,
+                COUNT(*) AS total_games,
+                SUM(CASE WHEN 
+                    (mp1.is_radiant AND NOT m.radiant_win) OR
+                    (NOT mp1.is_radiant AND m.radiant_win)
+                THEN 1 ELSE 0 END) AS counter_wins
+            FROM match_players mp1
+            JOIN match_players mp2 ON mp1.match_id = mp2.match_id AND mp1.is_radiant != mp2.is_radiant
+            JOIN matches m ON mp1.match_id = m.id
+            GROUP BY mp1.hero_id, mp2.hero_id
+        )
+        SELECT 
+            hero_id, 
+            counter_id, 
+            total_games AS games, 
+            counter_wins AS wins,
+            (counter_wins::float / NULLIF(total_games, 0)) * 100 AS counter_score
+        FROM hero_counters
+        ON CONFLICT (hero_id, counter_id) DO UPDATE SET
+            games = EXCLUDED.games,
+            wins = EXCLUDED.wins,
+            counter_score = EXCLUDED.counter_score;
+    END IF;
+END $$;
 
 -- Drop temporary functions and tables
 DROP FUNCTION load_match_file(TEXT, BIGINT, BOOLEAN);

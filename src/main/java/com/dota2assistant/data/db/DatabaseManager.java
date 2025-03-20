@@ -48,7 +48,7 @@ public interface DatabaseManager {
      * @return a list of objects
      * @throws SQLException if a database access error occurs
      */
-    <T> List<T> query(String sql, SqliteDatabaseManager.ResultSetHandler<T> handler, Object... params) throws SQLException;
+    <T> List<T> query(String sql, ResultSetHandler<T> handler, Object... params) throws SQLException;
     
     /**
      * Executes a SQL query with parameters and returns a single object.
@@ -60,7 +60,7 @@ public interface DatabaseManager {
      * @return the object, or null if no result
      * @throws SQLException if a database access error occurs
      */
-    <T> T queryForObject(String sql, SqliteDatabaseManager.ResultSetHandler<T> handler, Object... params) throws SQLException;
+    <T> T queryForObject(String sql, ResultSetHandler<T> handler, Object... params) throws SQLException;
     
     /**
      * Executes a SQL update statement with parameters.

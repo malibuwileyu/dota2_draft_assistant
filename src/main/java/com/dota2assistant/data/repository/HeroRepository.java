@@ -55,7 +55,7 @@ public class HeroRepository {
                 "localized_name TEXT NOT NULL, " +
                 "primary_attr TEXT, " +
                 "attack_type TEXT, " +
-                "image_url TEXT, " +
+                "image_path TEXT, " +
                 "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                 ")"
         );
@@ -113,23 +113,27 @@ public class HeroRepository {
         
         dbManager.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS hero_synergies (" +
-                "hero_id1 INTEGER, " +
-                "hero_id2 INTEGER, " +
+                "hero1_id INTEGER, " +
+                "hero2_id INTEGER, " +
                 "synergy_score REAL, " +
-                "PRIMARY KEY (hero_id1, hero_id2), " +
-                "FOREIGN KEY (hero_id1) REFERENCES heroes(id), " +
-                "FOREIGN KEY (hero_id2) REFERENCES heroes(id)" +
+                "games INTEGER, " +
+                "wins INTEGER, " +
+                "PRIMARY KEY (hero1_id, hero2_id), " +
+                "FOREIGN KEY (hero1_id) REFERENCES heroes(id), " +
+                "FOREIGN KEY (hero2_id) REFERENCES heroes(id)" +
                 ")"
         );
         
         dbManager.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS hero_counters (" +
-                "hero_id1 INTEGER, " +
-                "hero_id2 INTEGER, " +
+                "hero_id INTEGER, " +
+                "counter_id INTEGER, " +
                 "counter_score REAL, " +
-                "PRIMARY KEY (hero_id1, hero_id2), " +
-                "FOREIGN KEY (hero_id1) REFERENCES heroes(id), " +
-                "FOREIGN KEY (hero_id2) REFERENCES heroes(id)" +
+                "games INTEGER, " +
+                "wins INTEGER, " +
+                "PRIMARY KEY (hero_id, counter_id), " +
+                "FOREIGN KEY (hero_id) REFERENCES heroes(id), " +
+                "FOREIGN KEY (counter_id) REFERENCES heroes(id)" +
                 ")"
         );
     }
@@ -379,9 +383,53 @@ public class HeroRepository {
             return heroes;
         }
         
-        logger.info("Cache is empty, attempting to load heroes from local resources");
+        logger.info("Cache is empty, attempting to load heroes from database");
         
-        // Try to load from local resources first (fastest)
+        // Try to load from database first
+        try (Connection conn = dbManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM heroes")) {
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Hero hero = new Hero(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("localized_name")
+                );
+                hero.setPrimaryAttribute(rs.getString("primary_attr"));
+                hero.setAttackType(rs.getString("attack_type"));
+                hero.setImageUrl(rs.getString("image_path"));
+                
+                loadHeroRoles(conn, hero);
+                loadHeroRoleFrequency(conn, hero);
+                loadHeroAttributes(conn, hero);
+                loadHeroAbilities(conn, hero);
+                loadHeroSynergies(conn, hero);
+                loadHeroCounters(conn, hero);
+                
+                heroes.add(hero);
+                heroCache.put(hero.getId(), hero);
+                logger.debug("Loaded hero from database: {} ({})", hero.getLocalizedName(), hero.getId());
+            }
+            
+            if (!heroes.isEmpty()) {
+                logger.info("Loaded {} heroes from database", heroes.size());
+                
+                // Enhance heroes with ability data if available
+                if (heroAbilitiesRepository != null) {
+                    logger.info("Enhancing heroes with ability data from HeroAbilitiesRepository");
+                    heroAbilitiesRepository.enhanceHeroesWithAbilities(heroes);
+                }
+                
+                return heroes;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to load heroes from database: {}", e.getMessage(), e);
+        }
+        
+        logger.info("No heroes loaded from database, trying local resources");
+        
+        // Try loading from local resources as fallback
         heroes = loadHeroesFromLocalResources();
         if (!heroes.isEmpty()) {
             logger.info("Successfully loaded {} heroes from local resources", heroes.size());
@@ -400,7 +448,7 @@ public class HeroRepository {
             return heroes;
         }
         
-        logger.info("No heroes loaded from local resources, trying database");
+        logger.info("No heroes loaded from local resources or database");
         
         // Try to load from database as fallback
         try (Connection conn = dbManager.getConnection();
@@ -415,7 +463,7 @@ public class HeroRepository {
                 );
                 hero.setPrimaryAttribute(rs.getString("primary_attr"));
                 hero.setAttackType(rs.getString("attack_type"));
-                hero.setImageUrl(rs.getString("image_url"));
+                hero.setImageUrl(rs.getString("image_path"));
                 
                 loadHeroRoles(conn, hero);
                 loadHeroRoleFrequency(conn, hero);
@@ -482,7 +530,7 @@ public class HeroRepository {
                 );
                 hero.setPrimaryAttribute(rs.getString("primary_attr"));
                 hero.setAttackType(rs.getString("attack_type"));
-                hero.setImageUrl(rs.getString("image_url"));
+                hero.setImageUrl(rs.getString("image_path"));
                 
                 loadHeroRoles(conn, hero);
                 loadHeroRoleFrequency(conn, hero);
@@ -516,8 +564,12 @@ public class HeroRepository {
     public void saveHero(Hero hero) {
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT OR REPLACE INTO heroes (id, name, localized_name, primary_attr, attack_type, image_url) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)")) {
+                     "INSERT INTO heroes (id, name, localized_name, primary_attr, attack_type, image_path) " +
+                     "VALUES (?, ?, ?, ?, ?, ?) " +
+                     "ON CONFLICT (id) DO UPDATE SET " +
+                     "name = EXCLUDED.name, localized_name = EXCLUDED.localized_name, " +
+                     "primary_attr = EXCLUDED.primary_attr, attack_type = EXCLUDED.attack_type, " +
+                     "image_path = EXCLUDED.image_path")) {
             
             stmt.setInt(1, hero.getId());
             stmt.setString(2, hero.getName());
@@ -666,20 +718,20 @@ public class HeroRepository {
     
     private void loadHeroSynergies(Connection conn, Hero hero) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT hero_id2, synergy_score FROM hero_synergies WHERE hero_id1 = ?")) {
+                "SELECT hero2_id, synergy_score FROM hero_synergies WHERE hero1_id = ?")) {
             
             stmt.setInt(1, hero.getId());
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                hero.addSynergy(rs.getInt("hero_id2"), rs.getDouble("synergy_score"));
+                hero.addSynergy(rs.getInt("hero2_id"), rs.getDouble("synergy_score"));
             }
         }
     }
     
     private void saveHeroSynergies(Connection conn, Hero hero) throws SQLException {
         try (PreparedStatement deleteStmt = conn.prepareStatement(
-                "DELETE FROM hero_synergies WHERE hero_id1 = ?")) {
+                "DELETE FROM hero_synergies WHERE hero1_id = ?")) {
             
             deleteStmt.setInt(1, hero.getId());
             deleteStmt.executeUpdate();
@@ -690,7 +742,7 @@ public class HeroRepository {
         }
         
         try (PreparedStatement insertStmt = conn.prepareStatement(
-                "INSERT INTO hero_synergies (hero_id1, hero_id2, synergy_score) VALUES (?, ?, ?)")) {
+                "INSERT INTO hero_synergies (hero1_id, hero2_id, synergy_score, games, wins) VALUES (?, ?, ?, 10, 5)")) {
             
             for (Map.Entry<Integer, Double> entry : hero.getSynergies().entrySet()) {
                 insertStmt.setInt(1, hero.getId());
@@ -703,20 +755,20 @@ public class HeroRepository {
     
     private void loadHeroCounters(Connection conn, Hero hero) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT hero_id2, counter_score FROM hero_counters WHERE hero_id1 = ?")) {
+                "SELECT counter_id, counter_score FROM hero_counters WHERE hero_id = ?")) {
             
             stmt.setInt(1, hero.getId());
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                hero.addCounter(rs.getInt("hero_id2"), rs.getDouble("counter_score"));
+                hero.addCounter(rs.getInt("counter_id"), rs.getDouble("counter_score"));
             }
         }
     }
     
     private void saveHeroCounters(Connection conn, Hero hero) throws SQLException {
         try (PreparedStatement deleteStmt = conn.prepareStatement(
-                "DELETE FROM hero_counters WHERE hero_id1 = ?")) {
+                "DELETE FROM hero_counters WHERE hero_id = ?")) {
             
             deleteStmt.setInt(1, hero.getId());
             deleteStmt.executeUpdate();
@@ -727,7 +779,7 @@ public class HeroRepository {
         }
         
         try (PreparedStatement insertStmt = conn.prepareStatement(
-                "INSERT INTO hero_counters (hero_id1, hero_id2, counter_score) VALUES (?, ?, ?)")) {
+                "INSERT INTO hero_counters (hero_id, counter_id, counter_score) VALUES (?, ?, ?)")) {
             
             for (Map.Entry<Integer, Double> entry : hero.getCounters().entrySet()) {
                 insertStmt.setInt(1, hero.getId());
@@ -741,7 +793,8 @@ public class HeroRepository {
     private void saveSynergies(Map<String, Double> synergies) {
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT OR REPLACE INTO hero_synergies (hero_id1, hero_id2, synergy_score) VALUES (?, ?, ?)")) {
+                     "INSERT INTO hero_synergies (hero1_id, hero2_id, synergy_score, games, wins) VALUES (?, ?, ?, 10, 5) " +
+                     "ON CONFLICT (hero1_id, hero2_id) DO UPDATE SET synergy_score = EXCLUDED.synergy_score")) {
             
             for (Map.Entry<String, Double> entry : synergies.entrySet()) {
                 String[] ids = entry.getKey().split("_");
@@ -767,7 +820,8 @@ public class HeroRepository {
     private void saveCounters(Map<String, Double> counters) {
         try (Connection conn = dbManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT OR REPLACE INTO hero_counters (hero_id1, hero_id2, counter_score) VALUES (?, ?, ?)")) {
+                     "INSERT INTO hero_counters (hero_id, counter_id, counter_score, games, wins) VALUES (?, ?, ?, 10, 5) " +
+                     "ON CONFLICT (hero_id, counter_id) DO UPDATE SET counter_score = EXCLUDED.counter_score")) {
             
             for (Map.Entry<String, Double> entry : counters.entrySet()) {
                 String[] ids = entry.getKey().split("_");

@@ -1,0 +1,28 @@
+# Dota 2 Draft Assistant Configuration Override
+# This file overrides settings in the default application.properties
+
+# Logging configuration
+logging.level.root=INFO
+logging.level.com.dota2assistant=DEBUG
+
+# Database configuration - uncomment one of the sections below
+
+# SQLite configuration
+database.type=sqlite
+database.file=dota2assistant.db
+
+# PostgreSQL configuration - enable once PostgreSQL is set up
+# database.type=postgresql
+# database.url=jdbc:postgresql://localhost:5432/dota2_draft_assistant
+# database.username=dota2_user
+# database.password=password
+
+# Application settings
+default.rank=legend
+default.difficulty=0.8
+
+# Groq API settings
+groq.api.enabled=true
+groq.api.url=https://api.groq.com/openai
+groq.api.model=llama3-8b-8192
+groq.api.key=dummy-key

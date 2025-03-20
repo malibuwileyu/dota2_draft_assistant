@@ -33,7 +33,7 @@ BEGIN
     SELECT 
         (hero->>'id')::INTEGER AS id,
         hero->>'name' AS name,
-        hero->>'localized_name' AS localized_name,
+        COALESCE(hero->>'localized_name', hero->>'name') AS localized_name,
         hero->>'primary_attr' AS primary_attr,
         hero->>'attack_type' AS attack_type,
         hero->>'roles' AS roles,
@@ -60,7 +60,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Use the function to load heroes data
-SELECT load_hero_json('src/main/resources/data/heroes.json');
+SELECT load_hero_json('H:/Projects/dota2_draft_assistant/src/main/resources/data/heroes.json');
 
 -- Drop the function and temporary table
 DROP FUNCTION load_hero_json(TEXT);

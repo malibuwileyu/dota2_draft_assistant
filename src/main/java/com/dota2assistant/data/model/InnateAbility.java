@@ -18,8 +18,10 @@ public class InnateAbility {
     private String damageType;
     private String[] affects;
     @JsonProperty("special_values")
-    private Map<String, double[]> specialValues = new HashMap<>();
+    private Map<String, Object> specialValues = new HashMap<>();
     private String notes;
+    @JsonProperty("pierces_immunity")
+    private Boolean piercesImmunity;
     
     public InnateAbility() {
     }
@@ -87,11 +89,11 @@ public class InnateAbility {
         this.affects = affects;
     }
 
-    public Map<String, double[]> getSpecialValues() {
+    public Map<String, Object> getSpecialValues() {
         return specialValues;
     }
 
-    public void setSpecialValues(Map<String, double[]> specialValues) {
+    public void setSpecialValues(Map<String, Object> specialValues) {
         this.specialValues = specialValues;
     }
 
@@ -101,6 +103,30 @@ public class InnateAbility {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public boolean isPiercesImmunity() {
+        if (piercesImmunity != null) {
+            return piercesImmunity;
+        }
+        
+        // Fallback to checking affects
+        if (affects != null) {
+            for (String affect : affects) {
+                if ("Magic Immune".equalsIgnoreCase(affect)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public Boolean getPiercesImmunity() {
+        return piercesImmunity;
+    }
+    
+    public void setPiercesImmunity(Boolean piercesImmunity) {
+        this.piercesImmunity = piercesImmunity;
     }
 
     @Override

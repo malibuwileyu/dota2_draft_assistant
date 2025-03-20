@@ -11,7 +11,9 @@ DECLARE
     hero_id INTEGER;
     ability_data JSONB;
     ability_id INTEGER;
-    hero_data RECORD;
+    hero_row JSONB;
+    ability_row JSONB;
+    innate_ability JSONB;
 BEGIN
     -- Read the file content using platform-compatible approach
     IF current_setting('server_version_num')::integer >= 100000 THEN
@@ -24,76 +26,82 @@ BEGIN
                      substring(file_path from '(.*)src'), file_path, substring(file_path from '(.*)src'), substring(file_path from '(.*)src'));
     END IF;
     
-    -- Process the JSON data
-    FOR hero_data IN SELECT * FROM jsonb_array_elements((SELECT data->'heroes' FROM temp_abilities LIMIT 1)) AS hero
+    -- Process the JSON data - extract the heroes array
+    FOR hero_row IN 
+        SELECT jsonb_array_elements((SELECT data->'heroes' FROM temp_abilities LIMIT 1))
     LOOP
         -- Get the hero ID
-        hero_id := (hero_data.hero->>'id')::INTEGER;
+        hero_id := (hero_row->>'id')::INTEGER;
         
-        -- Insert regular abilities
-        FOR ability_data IN SELECT jsonb_array_elements(hero_data.hero->'abilities') AS ability
-        LOOP
-            -- Insert into abilities table
-            INSERT INTO abilities (
-                hero_id, name, localized_name, description, ability_type, behavior, damage_type, is_ultimate
-            ) VALUES (
-                hero_id,
-                ability_data.ability->>'name',
-                ability_data.ability->>'name',
-                ability_data.ability->>'description',
-                ability_data.ability->>'type',
-                ability_data.ability->>'behavior',
-                ability_data.ability->>'damage_type',
-                CASE WHEN ability_data.ability->>'type' = 'ultimate' THEN TRUE ELSE FALSE END
-            )
-            RETURNING id INTO ability_id;
-            
-            -- Insert special values as ability attributes
-            IF ability_data.ability->'special_values' IS NOT NULL THEN
-                INSERT INTO ability_attributes (ability_id, name, value, is_core)
-                SELECT 
-                    ability_id,
-                    key,
-                    jsonb_typeof(value) = 'array' 
-                        ? jsonb_array_elements_text(value)::TEXT
-                        : value::TEXT,
-                    TRUE
-                FROM jsonb_each(ability_data.ability->'special_values')
-                WHERE jsonb_typeof(value) != 'object';
-            END IF;
-        END LOOP;
-        
-        -- Insert innate abilities
-        IF hero_data.hero->'innate_abilities' IS NOT NULL AND jsonb_array_length(hero_data.hero->'innate_abilities') > 0 THEN
-            FOR ability_data IN SELECT jsonb_array_elements(hero_data.hero->'innate_abilities') AS ability
+        -- Process regular abilities
+        IF (hero_row->'abilities') IS NOT NULL THEN
+            FOR ability_row IN 
+                SELECT jsonb_array_elements(hero_row->'abilities')
             LOOP
                 -- Insert into abilities table
                 INSERT INTO abilities (
                     hero_id, name, localized_name, description, ability_type, behavior, damage_type, is_ultimate
                 ) VALUES (
                     hero_id,
-                    ability_data.ability->>'name',
-                    ability_data.ability->>'name',
-                    ability_data.ability->>'description',
+                    ability_row->>'name',
+                    ability_row->>'name',
+                    ability_row->>'description',
+                    ability_row->>'type',
+                    ability_row->>'behavior',
+                    ability_row->>'damage_type',
+                    CASE WHEN ability_row->>'type' = 'ultimate' THEN TRUE ELSE FALSE END
+                )
+                RETURNING id INTO ability_id;
+                
+                -- Insert special values as ability attributes
+                IF (ability_row->'special_values') IS NOT NULL THEN
+                    INSERT INTO ability_attributes (ability_id, name, value, is_core)
+                    SELECT 
+                        ability_id,
+                        key,
+                        CASE WHEN jsonb_typeof(value) = 'array' 
+                            THEN (SELECT string_agg(t::TEXT, ',') FROM jsonb_array_elements_text(value) AS t)
+                            ELSE value::TEXT
+                        END,
+                        TRUE
+                    FROM jsonb_each(ability_row->'special_values')
+                    WHERE jsonb_typeof(value) != 'object';
+                END IF;
+            END LOOP;
+        END IF;
+        
+        -- Process innate abilities
+        IF (hero_row->'innate_abilities') IS NOT NULL AND jsonb_array_length(hero_row->'innate_abilities') > 0 THEN
+            FOR innate_ability IN 
+                SELECT jsonb_array_elements(hero_row->'innate_abilities')
+            LOOP
+                -- Insert into abilities table
+                INSERT INTO abilities (
+                    hero_id, name, localized_name, description, ability_type, behavior, damage_type, is_ultimate
+                ) VALUES (
+                    hero_id,
+                    innate_ability->>'name',
+                    innate_ability->>'name',
+                    innate_ability->>'description',
                     'innate',
-                    ability_data.ability->>'behavior',
+                    innate_ability->>'behavior',
                     'none',
                     FALSE
                 )
                 RETURNING id INTO ability_id;
                 
                 -- Insert special values as ability attributes
-                IF ability_data.ability->'special_values' IS NOT NULL THEN
+                IF (innate_ability->'special_values') IS NOT NULL THEN
                     INSERT INTO ability_attributes (ability_id, name, value, is_core)
                     SELECT 
                         ability_id,
                         key,
                         CASE WHEN jsonb_typeof(value) = 'array' 
-                            THEN (SELECT jsonb_array_elements_text(value) LIMIT 1)::TEXT
+                            THEN (SELECT string_agg(t::TEXT, ',') FROM jsonb_array_elements_text(value) AS t)
                             ELSE value::TEXT
                         END,
                         TRUE
-                    FROM jsonb_each(ability_data.ability->'special_values')
+                    FROM jsonb_each(innate_ability->'special_values')
                     WHERE jsonb_typeof(value) != 'object';
                 END IF;
             END LOOP;
@@ -103,7 +111,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Use the function to load abilities data
-SELECT load_abilities_json('src/main/resources/data/abilities/all_heroes_abilities.json');
+SELECT load_abilities_json('H:/Projects/dota2_draft_assistant/src/main/resources/data/abilities/all_heroes_abilities.json');
 
 -- Drop the function and temporary table
 DROP FUNCTION load_abilities_json(TEXT);

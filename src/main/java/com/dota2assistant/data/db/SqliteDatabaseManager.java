@@ -93,7 +93,19 @@ public class SqliteDatabaseManager implements DatabaseManager {
     private boolean isSchemaInitialized(Connection conn) throws SQLException {
         try (Statement stmt = conn.createStatement()) {
             try (ResultSet rs = stmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='db_version'")) {
-                return rs.next();
+                boolean hasTable = rs.next();
+                
+                // If we have the heroes table, the schema is already initialized
+                try (ResultSet rs2 = stmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='heroes'")) {
+                    if (rs2.next()) {
+                        logger.info("Heroes table exists, schema is already initialized");
+                        return true;
+                    }
+                } catch (SQLException e) {
+                    // Ignore
+                }
+                
+                return hasTable;
             } catch (SQLException e) {
                 return false;
             }

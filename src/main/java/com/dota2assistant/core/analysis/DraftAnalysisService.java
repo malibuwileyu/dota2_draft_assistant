@@ -1,5 +1,7 @@
 package com.dota2assistant.core.analysis;
 
+import com.dota2assistant.core.draft.DraftMode;
+import com.dota2assistant.core.draft.DraftPhase;
 import com.dota2assistant.core.draft.DraftState;
 import com.dota2assistant.core.draft.Team;
 import com.dota2assistant.data.model.DraftData;

@@ -39,13 +39,13 @@ public class GroqLpuIntegration {
     @Value("${groq.api.enabled:false}")
     private boolean groqEnabled;
     
-    @Value("${groq.api.url:https://api.groq.com/openapi/v1}")
+    @Value("${groq.api.url:https://api.groq.com}")
     private String groqApiUrl;
     
     @Value("${groq.api.model:llama3-medium-8b}")
     private String groqApiModel;
     
-    @Value("${groq.api.key:default-key}")
+    @Value("${groq.api.key:dummy-key}")
     private String groqApiKey;
     
     @Value("${groq.api.timeout:10000}")
@@ -442,7 +442,8 @@ public class GroqLpuIntegration {
         }
         
         try {
-            String apiUrl = groqApiUrl + "/chat/completions";
+            String apiUrl = groqApiUrl + "/v1/chat/completions";
+            logger.info("Calling Groq API at URL: {}", apiUrl);
             
             // Set up headers
             HttpHeaders headers = new HttpHeaders();

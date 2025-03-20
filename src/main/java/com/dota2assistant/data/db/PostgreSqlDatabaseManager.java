@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * PostgreSQL implementation of the DatabaseManager interface.
  */
 @Component
+//@Primary
 @ConditionalOnProperty(name = "database.type", havingValue = "postgresql")
 public class PostgreSqlDatabaseManager implements DatabaseManager {
     
@@ -42,12 +44,14 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
             // Initialize database connection
             checkConnection();
             logger.info("PostgreSQL database connection initialized successfully");
+            logger.info("DATABASE TYPE: PostgreSQL - Using connection URL: {}", dbUrl);
         } catch (ClassNotFoundException e) {
             logger.error("PostgreSQL JDBC driver not found", e);
             throw new RuntimeException("PostgreSQL JDBC driver not found", e);
         } catch (SQLException e) {
-            logger.error("Failed to initialize PostgreSQL database connection", e);
-            throw new RuntimeException("Failed to initialize PostgreSQL database connection", e);
+            logger.error("Failed to initialize PostgreSQL database connection - connection will be retried. Error: {}", e.getMessage());
+            logger.debug("Connection failure details:", e);
+            // Don't throw exception - we'll try to reconnect when needed
         }
     }
     
