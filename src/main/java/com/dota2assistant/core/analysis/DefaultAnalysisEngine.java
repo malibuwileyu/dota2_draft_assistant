@@ -324,8 +324,12 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         
         // Convert to description strings
         return counterPairs.stream()
-                .map(pair -> pair.getCounterHero() + " counters " + pair.getCounteredHero() + 
-                           " (" + Math.round(pair.getScore() * 100) + "% advantage)")
+                .map(pair -> {
+                    // Cap the advantage percentage at 100% for display purposes
+                    int displayPercentage = (int)Math.min(Math.round(pair.getScore() * 100), 100);
+                    return pair.getCounterHero() + " counters " + pair.getCounteredHero() + 
+                           " (" + displayPercentage + "% advantage)";
+                })
                 .collect(Collectors.toList());
     }
 
