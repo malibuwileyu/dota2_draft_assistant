@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * This test class focuses on the win probability bar fix implementation.
  * It simulates the logic in updateWinProbabilityBar method from MainController
@@ -180,5 +183,67 @@ public class UpdateWinProbabilityTest {
         // Cap extreme probabilities to keep the UI more balanced
         // Cap at 0.75 (75%) to 0.25 (25%) range
         return Math.max(0.25, Math.min(0.75, probability));
+    }
+    
+    /**
+     * Tests the fix for contradictory counter relationships
+     */
+    @Test
+    @DisplayName("Test counter relationship contradiction prevention")
+    public void testCounterRelationshipContradiction() {
+        // Simulated hero counter scores
+        Map<String, Double> counterScores = new HashMap<>();
+        counterScores.put("1_2", 0.65);  // Hero 1 counters Hero 2 at 65%
+        counterScores.put("2_1", 0.60);  // Hero 2 also counters Hero 1 but less effectively
+        
+        // Test that only the stronger counter is returned
+        String result = resolveHeroCounterRelationship(
+                "Hero1", 1, "Hero2", 2, counterScores);
+        
+        assertEquals("Hero1 counters Hero2", result, 
+                "Only the stronger counter relationship should be returned");
+        
+        // Test with reversed strengths
+        counterScores.clear();
+        counterScores.put("1_2", 0.60);
+        counterScores.put("2_1", 0.70);
+        
+        result = resolveHeroCounterRelationship(
+                "Hero1", 1, "Hero2", 2, counterScores);
+        
+        assertEquals("Hero2 counters Hero1", result,
+                "Only the stronger counter relationship should be returned");
+        
+        // Test with equal strengths - no counter should be determined
+        counterScores.clear();
+        counterScores.put("1_2", 0.65);
+        counterScores.put("2_1", 0.65);
+        
+        result = resolveHeroCounterRelationship(
+                "Hero1", 1, "Hero2", 2, counterScores);
+        
+        assertNull(result, "No counter should be determined when counter scores are equal");
+    }
+    
+    /**
+     * Helper method to simulate the new counter relationship logic
+     */
+    private String resolveHeroCounterRelationship(
+            String hero1Name, int hero1Id, String hero2Name, int hero2Id, 
+            Map<String, Double> counterScores) {
+        
+        String key1 = hero1Id + "_" + hero2Id;
+        String key2 = hero2Id + "_" + hero1Id;
+        
+        double hero1CountersHero2 = counterScores.getOrDefault(key1, 0.5);
+        double hero2CountersHero1 = counterScores.getOrDefault(key2, 0.5);
+        
+        if (hero1CountersHero2 > 0.55 && hero1CountersHero2 > hero2CountersHero1) {
+            return hero1Name + " counters " + hero2Name;
+        } else if (hero2CountersHero1 > 0.55 && hero2CountersHero1 > hero1CountersHero2) {
+            return hero2Name + " counters " + hero1Name;
+        }
+        
+        return null; // No significant counter relationship
     }
 }

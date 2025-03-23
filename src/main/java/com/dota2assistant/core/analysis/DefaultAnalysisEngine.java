@@ -292,41 +292,49 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
 
     @Override
     public List<String> identifyCounters(List<Hero> team1Picks, List<Hero> team2Picks) {
-        List<CounterPair> counterPairs = new ArrayList<>();
+        Map<String, CounterPair> counterPairMap = new HashMap<>();
+        
+        // Map to track hero pair relationships by a normalized key (smaller ID first)
+        // This helps prevent contradictions like A counters B and B counters A
+        Map<String, Double> heroMatchupAdvantages = new HashMap<>();
         
         // Check each hero from team1 against each hero from team2
         for (Hero hero1 : team1Picks) {
             for (Hero hero2 : team2Picks) {
-                String key = hero1.getId() + "_" + hero2.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
+                // Create keys for both directions
+                String key1 = hero1.getId() + "_" + hero2.getId();
+                String key2 = hero2.getId() + "_" + hero1.getId();
                 
-                // Only include significant counters
-                if (counterScore > 0.55) {
-                    counterPairs.add(new CounterPair(
-                            hero1.getLocalizedName(),
+                // Get counter scores in both directions
+                double team1CountersTeam2 = counters.getOrDefault(key1, 0.5);
+                double team2CountersTeam1 = counters.getOrDefault(key2, 0.5);
+                
+                // Create a normalized identifier for this hero pair
+                String pairKey = Math.min(hero1.getId(), hero2.getId()) + "_" + Math.max(hero1.getId(), hero2.getId());
+                
+                // Calculate which hero has the real advantage overall
+                // Only one hero can counter the other in a pair - the one with the higher counter score
+                if (team1CountersTeam2 > 0.55 && team1CountersTeam2 > team2CountersTeam1) {
+                    // Team 1 hero counters team 2 hero
+                    heroMatchupAdvantages.put(pairKey, team1CountersTeam2);
+                    counterPairMap.put(pairKey, new CounterPair(
+                            hero1.getLocalizedName(), 
                             hero2.getLocalizedName(),
-                            counterScore));
+                            team1CountersTeam2));
+                } else if (team2CountersTeam1 > 0.55 && team2CountersTeam1 > team1CountersTeam2) {
+                    // Team 2 hero counters team 1 hero
+                    heroMatchupAdvantages.put(pairKey, team2CountersTeam1);
+                    counterPairMap.put(pairKey, new CounterPair(
+                            hero2.getLocalizedName(), 
+                            hero1.getLocalizedName(),
+                            team2CountersTeam1));
                 }
+                // If neither hero has a significant advantage or they're equal, don't add any counter
             }
         }
         
-        // Check each hero from team2 against each hero from team1
-        for (Hero hero1 : team2Picks) {
-            for (Hero hero2 : team1Picks) {
-                String key = hero1.getId() + "_" + hero2.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
-                
-                // Only include significant counters
-                if (counterScore > 0.55) {
-                    counterPairs.add(new CounterPair(
-                            hero1.getLocalizedName(),
-                            hero2.getLocalizedName(),
-                            counterScore));
-                }
-            }
-        }
-        
-        // Sort by counter score
+        // Convert to list and sort by counter score
+        List<CounterPair> counterPairs = new ArrayList<>(counterPairMap.values());
         counterPairs.sort(Comparator.comparing(CounterPair::getScore).reversed());
         
         // Convert to description strings
