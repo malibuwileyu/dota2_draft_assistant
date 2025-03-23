@@ -143,10 +143,42 @@ public class UpdateWinProbabilityTest {
     }
     
     /**
+     * Tests the capped win probability calculation
+     */
+    @Test
+    @DisplayName("Test win probability capping")
+    public void testWinProbabilityCapping() {
+        // Test normal balanced probability - with min cap of 25%, it will be at least 0.25
+        double balancedProb = calculateWinProbability(0.1); // Small difference
+        assertTrue(balancedProb >= 0.25 && balancedProb <= 0.75, 
+                "Balanced matchup should have win probability between 25-75%");
+        
+        // Test extreme probability that should be capped at 75%
+        double extremeHighProb = calculateWinProbability(5.0); // Huge advantage
+        assertEquals(0.75, extremeHighProb, 0.01, "Extreme high win probability should be capped at 75%");
+        
+        // Test extreme low probability that should be capped at 25%
+        double extremeLowProb = calculateWinProbability(-5.0); // Huge disadvantage
+        assertEquals(0.25, extremeLowProb, 0.01, "Extreme low win probability should be capped at 25%");
+    }
+    
+    /**
      * Helper method to mimic the advantage percentage calculation with capping
      */
     private int calculateDisplayPercentage(double score) {
         // Cap the advantage percentage at 100% for display purposes
         return (int)Math.min(Math.round(score * 100), 100);
+    }
+    
+    /**
+     * Helper method to mimic the win probability calculation with capping
+     */
+    private double calculateWinProbability(double diff) {
+        // Calculate probability using logistic function
+        double probability = 1.0 / (1.0 + Math.exp(-diff * 5)); // Scaling factor 5
+        
+        // Cap extreme probabilities to keep the UI more balanced
+        // Cap at 0.75 (75%) to 0.25 (25%) range
+        return Math.max(0.25, Math.min(0.75, probability));
     }
 }

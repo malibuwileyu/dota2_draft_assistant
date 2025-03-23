@@ -157,10 +157,12 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         
         // Win probability
         double radiantWinProb = predictWinProbability(radiantPicks, direPicks);
+        double direWinProb = 1.0 - radiantWinProb;
+        
         analysis.append("\n\nEstimated win probability: Radiant ")
                 .append(Math.round(radiantWinProb * 100))
                 .append("% / Dire ")
-                .append(Math.round((1 - radiantWinProb) * 100))
+                .append(Math.round(direWinProb * 100))
                 .append("%");
         
         return analysis.toString();
@@ -178,6 +180,7 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         double radiantStrength = calculateTeamStrength(radiantPicks);
         double direStrength = calculateTeamStrength(direPicks);
         double radiantWinProb = predictWinProbability(radiantPicks, direPicks);
+        double direWinProb = 1.0 - radiantWinProb;
         
         // Determine overall advantage
         summary.append("Draft Summary:\n\n");
@@ -188,7 +191,7 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
                     .append("% win probability).\n\n");
         } else if (radiantWinProb < 0.45) {
             summary.append("Dire has drafted a stronger team composition (")
-                    .append(Math.round((1 - radiantWinProb) * 100))
+                    .append(Math.round(direWinProb * 100))
                     .append("% win probability).\n\n");
         } else {
             summary.append("Both teams have drafted well-balanced compositions.\n\n");
@@ -278,8 +281,12 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         
         // Convert to description strings
         return synergyPairs.stream()
-                .map(pair -> pair.getHero1() + " + " + pair.getHero2() + 
-                           " (" + Math.round(pair.getScore() * 100) + "% win rate together)")
+                .map(pair -> {
+                    // Cap the synergy percentage at 100% for display purposes
+                    int displayPercentage = (int)Math.min(Math.round(pair.getScore() * 100), 100);
+                    return pair.getHero1() + " + " + pair.getHero2() + 
+                           " (" + displayPercentage + "% win rate together)";
+                })
                 .collect(Collectors.toList());
     }
 
@@ -446,7 +453,12 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         
         // Convert to probability (using logistic function)
         double diff = radiantScore - direScore;
-        return 1.0 / (1.0 + Math.exp(-diff * 5)); // Scaling factor 5 to make it more pronounced
+        // Calculate probability using logistic function
+        double probability = 1.0 / (1.0 + Math.exp(-diff * 5)); // Scaling factor 5
+        
+        // Cap extreme probabilities to keep the UI more balanced
+        // Cap at 0.75 (75%) to 0.25 (25%) range
+        return Math.max(0.25, Math.min(0.75, probability));
     }
     
     /**
