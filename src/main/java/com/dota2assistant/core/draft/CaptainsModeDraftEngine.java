@@ -147,8 +147,8 @@ public class CaptainsModeDraftEngine implements DraftEngine {
             startTimer();
         }
         
-        // Update player turn property based on the current team
-        playerTurnProperty.set(draftState.getCurrentTeam() == Team.RADIANT);
+        // When the engine is initialized, playerTurnProperty starts as undefined
+        // It will be properly set in updatePlayerTurnProperty() which will be called from advanceToNextTurn()
         
         logger.info("Draft initialized: {} with timer {}", draftMode, timerEnabled);
     }
@@ -280,6 +280,18 @@ public class CaptainsModeDraftEngine implements DraftEngine {
         logger.info("Draft reset");
     }
     
+    /**
+     * Sets whether the current turn is considered the player's turn.
+     * Used by MainController to update the UI appropriately.
+     *
+     * @param isPlayerTurn true if it's the player's turn, false otherwise
+     */
+    public void setPlayerTurn(boolean isPlayerTurn) {
+        // This method allows direct external modification of the playerTurnProperty
+        playerTurnProperty.set(isPlayerTurn);
+        logger.info("playerTurnProperty explicitly set to: {}", isPlayerTurn);
+    }
+
     @Override
     public ReadOnlyBooleanProperty playerTurnProperty() {
         // Make sure this is updated whenever the state changes
@@ -331,7 +343,10 @@ public class CaptainsModeDraftEngine implements DraftEngine {
         }
         
         // Update player turn property
-        playerTurnProperty.set(draftState.getCurrentTeam() == Team.RADIANT);
+        // Note: In our implementation, the playerTurnProperty is set to true when
+        // it's the player's turn. The MainController will set this up properly by
+        // determining if the current team matches the player's chosen team.
+        // We unset this here because it now needs to be managed by the MainController
         
         logger.info("Advanced to next turn: {} {}", 
                 draftState.getCurrentTeam(), 

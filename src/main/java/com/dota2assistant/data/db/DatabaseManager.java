@@ -4,9 +4,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Interface for database operations.
+ * Provides methods for database connectivity, querying, and transaction management.
  */
 public interface DatabaseManager {
     
@@ -91,6 +94,73 @@ public interface DatabaseManager {
      * @throws SQLException if a database access error occurs
      */
     int[] executeBatch(String sql, List<Object[]> batchParams) throws SQLException;
+    
+    /**
+     * Begins a database transaction.
+     * 
+     * @throws SQLException if a database access error occurs
+     */
+    void beginTransaction() throws SQLException;
+    
+    /**
+     * Commits a database transaction.
+     * 
+     * @throws SQLException if a database access error occurs
+     */
+    void commitTransaction() throws SQLException;
+    
+    /**
+     * Rolls back a database transaction.
+     * 
+     * @throws SQLException if a database access error occurs
+     */
+    void rollbackTransaction() throws SQLException;
+    
+    /**
+     * Executes a SQL script containing multiple statements.
+     * 
+     * @param script the SQL script to execute
+     * @throws SQLException if a database access error occurs
+     */
+    void executeScript(String script) throws SQLException;
+    
+    /**
+     * Check the health status of the database connection
+     * 
+     * @return true if the database is available and responding, false otherwise
+     */
+    default boolean healthCheck() {
+        try (Connection conn = getConnection()) {
+            if (conn != null && !conn.isClosed()) {
+                try (java.sql.Statement stmt = conn.createStatement()) {
+                    stmt.execute("SELECT 1");
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Get detailed health status information about the database connection
+     * 
+     * @return A Map containing health status information
+     */
+    default Map<String, Object> getHealthStatus() {
+        HashMap<String, Object> status = new HashMap<>();
+        try {
+            boolean isHealthy = healthCheck();
+            status.put("healthy", isHealthy);
+            status.put("timestamp", System.currentTimeMillis());
+            return status;
+        } catch (Exception e) {
+            status.put("healthy", false);
+            status.put("error", e.getMessage());
+            return status;
+        }
+    }
     
     /**
      * Interface for mapping ResultSet rows to objects.

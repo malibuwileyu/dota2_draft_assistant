@@ -22,6 +22,9 @@ public class InnateAbility {
     private String notes;
     @JsonProperty("pierces_immunity")
     private Boolean piercesImmunity;
+    private Object cooldown; // Can be a number or array depending on the ability
+    @JsonProperty("mana_cost")
+    private Object manaCost; // Can be a number or array depending on the ability
     
     public InnateAbility() {
     }
@@ -127,6 +130,22 @@ public class InnateAbility {
     
     public void setPiercesImmunity(Boolean piercesImmunity) {
         this.piercesImmunity = piercesImmunity;
+    }
+
+    public Object getCooldown() {
+        return cooldown;
+    }
+
+    public void setCooldown(Object cooldown) {
+        this.cooldown = cooldown;
+    }
+    
+    public Object getManaCost() {
+        return manaCost;
+    }
+    
+    public void setManaCost(Object manaCost) {
+        this.manaCost = manaCost;
     }
 
     @Override

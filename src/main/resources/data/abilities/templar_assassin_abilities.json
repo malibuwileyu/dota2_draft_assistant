@@ -1,0 +1,119 @@
+{
+  "heroes": [
+    {
+      "id": 46,
+      "name": "templar_assassin",
+      "localized_name": "Templar Assassin",
+      "abilities": [
+        {
+          "id": 4601,
+          "name": "Psi Blades",
+          "description": "Templar Assassin's psi blade extends the range of her attack and enables her to spill damage to units behind the target.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "attack_range_bonus": [60, 120, 180, 240],
+            "bonus_attack_range": [60, 120, 180, 240],
+            "attack_spill_width": [75, 75, 75, 75],
+            "attack_spill_range": [590, 630, 670, 710]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Spill damage is based on the damage dealt to the primary target after all reductions."
+        },
+        {
+          "id": 4602,
+          "name": "Meld",
+          "description": "Templar Assassin conceals herself, becoming invisible as long as she remains still. Attacking to break invisibility will deal bonus damage and reduce the target's armor for a duration.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "bonus_damage": [40, 80, 120, 160],
+            "armor_reduction": [3, 5, 7, 9],
+            "bonus_attack_range": [100, 100, 100, 100],
+            "duration": [10, 10, 10, 10],
+            "fade_time": [0.75, 0.75, 0.75, 0.75]
+          },
+          "cooldown": [6, 6, 6, 6],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "The armor reduction effect lingers for the full duration even after the bonus damage is used."
+        },
+        {
+          "id": 4603,
+          "name": "Psionic Trap",
+          "description": "Templar Assassin places a psionic trap that slows enemies when sprung. Traps are invisible and grant limited vision around them.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "movement_slow": [30, 40, 50],
+            "trap_radius": [400, 400, 400],
+            "trap_duration_tooltip": [5, 5, 5],
+            "max_traps": [4, 8, 12],
+            "trap_fade_time": [2, 2, 2]
+          },
+          "cooldown": [8, 8, 8],
+          "mana_cost": [15, 15, 15],
+          "notes": "Templar Assassin can have multiple traps active at once. Traps must be sprung manually using the Trap sub-ability."
+        },
+        {
+          "id": 4604,
+          "name": "Trap",
+          "description": "Springs the nearest trap. Trapped enemies are slowed based on how long the trap has been active.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "trap_duration": [5, 5, 5],
+            "max_charge_duration": [6, 6, 6]
+          },
+          "cooldown": [0.5, 0.5, 0.5],
+          "mana_cost": [0, 0, 0],
+          "notes": "The slow increases gradually as the trap charges up to its maximum value."
+        },
+        {
+          "id": 4605,
+          "name": "Self Trap",
+          "description": "Teleport to a selected trap. Upon arrival, the trap is triggered and Templar Assassin gains bonus armor and damage for a short duration.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "base_damage": [150, 200, 250],
+            "bonus_armor": [15, 25, 35],
+            "duration": [5, 5, 5]
+          },
+          "cooldown": [60, 50, 40],
+          "mana_cost": [100, 100, 100],
+          "notes": "Self Trap is only available when Templar Assassin has Aghanim's Scepter."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4606,
+          "name": "Psionic Projection",
+          "description": "Templar Assassin's mastery of psionic energy grants her an innate ability to protect herself from harm.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "damage_absorb": [100, 200, 300, 400]
+          },
+          "notes": "Refraction absorbs both physical and magical damage instances while providing bonus damage on attacks."
+        }
+      ]
+    }
+  ]
+}

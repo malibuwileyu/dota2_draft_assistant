@@ -5,24 +5,37 @@
 logging.level.root=INFO
 logging.level.com.dota2assistant=DEBUG
 
-# Database configuration - uncomment one of the sections below
+# Database configuration
 
-# SQLite configuration
-database.type=sqlite
-database.file=dota2assistant.db
+# PostgreSQL configuration
+database.type=postgresql
+database.url=jdbc:postgresql://localhost:5432/dota2_draft_assistant
+database.username=dota2_user
+database.password=password
 
-# PostgreSQL configuration - enable once PostgreSQL is set up
-# database.type=postgresql
-# database.url=jdbc:postgresql://localhost:5432/dota2_draft_assistant
-# database.username=dota2_user
-# database.password=password
+# Connection Pool settings
+database.pool.size=15
+database.pool.idle.timeout=300000
+database.pool.max.lifetime=1800000
+database.pool.connection.timeout=30000
 
 # Application settings
 default.rank=legend
 default.difficulty=0.8
+app.environment=development
 
 # Groq API settings
 groq.api.enabled=true
 groq.api.url=https://api.groq.com/openai
 groq.api.model=llama3-8b-8192
 groq.api.key=dummy-key
+
+# OpenDota API settings
+opendota.api.key=f92c56cb-2abb-42ba-baf8-aee2be0d4375
+
+# Steam Authentication Settings
+# DO NOT COMMIT YOUR REAL KEY TO VERSION CONTROL
+# This is a hardcoded API key for development - replace with your own key
+steam.api.key=42A0C9F06F162BD5220B252E417B0D83
+steam.auth.return_url=http://localhost:8080/login/oauth2/code/steam
+steam.auth.realm=http://localhost:8080

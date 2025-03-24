@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 42,
+      "name": "wraith_king",
+      "localized_name": "Wraith King",
+      "abilities": [
+        {
+          "id": 1,
+          "name": "Wraithfire Blast",
+          "description": "Sears an enemy unit with a spectral fire projectile that stuns and damages on hit, then slows and damages over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "first_damage": [75, 90, 105, 120],
+            "damage_per_second": [20, 40, 60, 80],
+            "stun_duration": [1, 1.2, 1.4, 1.6],
+            "move_speed_slow": [20, 20, 20, 20],
+            "slow_duration": [2, 2, 2, 2]
+          },
+          "cooldown": [17, 14, 11, 8],
+          "mana_cost": [95, 110, 125, 140],
+          "notes": "Projectile speed: 1200. Cast range: 525. Projectile can be disjointed or spell blocked."
+        },
+        {
+          "id": 2,
+          "name": "Bone Guard",
+          "description": "The King can summon skeletons to fight for him.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["allies"],
+          "special_values": {
+            "max_charges": [2, 4, 6, 8],
+            "skeleton_duration": [40, 40, 40, 40],
+            "skeleton_spawn_per_charge": [1, 1, 1, 1],
+            "building_damage_factor": [0.39, 0.39, 0.39, 0.39],
+            "hero_damage_factor": [1.25, 1.25, 1.25, 1.25]
+          },
+          "cooldown": [50, 50, 50, 50],
+          "mana_cost": [70, 80, 90, 100],
+          "notes": "Gains 2 charges per hero kill and 0.5 charges per creep kill. Skeletons benefit from Vampiric Spirit's effects."
+        },
+        {
+          "id": 3,
+          "name": "Mortal Strike",
+          "description": "Wraith King has a chance to deal critical damage on his attacks.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "crit_chance": [15, 15, 15, 15],
+            "crit_damage": [150, 200, 250, 300]
+          },
+          "cooldown": [],
+          "mana_cost": [],
+          "notes": "Gives Wraith King a chance to deal critical damage on each attack."
+        },
+        {
+          "id": 4,
+          "name": "Reincarnation",
+          "description": "Wraith King's undying loyalty to his subjects compels him to resurrect whenever he is slain.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "reincarnation_delay": [3, 3, 3],
+            "slow_radius": [900, 900, 900]
+          },
+          "cooldown": [200, 130, 60],
+          "mana_cost": [150, 150, 150],
+          "notes": "When killed, Wraith King will reincarnate after a short delay. Upon reincarnation, enemies near Wraith King are slowed."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5,
+          "name": "Vampiric Spirit",
+          "description": "Provides lifesteal to Wraith King and his controlled units. When he would die, he instead enters Wraith Form, gaining unobstructed movement and bonus attack and movement speed.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self", "allies"],
+          "special_values": {
+            "lifesteal_percent": [16, 24, 32, 40],
+            "move_speed_bonus": [10, 15, 20, 25],
+            "attack_speed_bonus": [30, 45, 60, 75],
+            "wraith_form_duration": [3.5, 4, 4.5, 5],
+            "respawn_time_reduction": [3.5, 4, 4.5, 5]
+          },
+          "cooldown": [],
+          "mana_cost": [],
+          "notes": "Provides lifesteal for Wraith King and his Skeleton Warriors. Has reduced effectiveness on creeps (0.6 factor)."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "heroes": [
+    {
+      "id": 50,
+      "name": "dazzle",
+      "localized_name": "Dazzle",
+      "abilities": [
+        {
+          "id": 5001,
+          "name": "Poison Touch",
+          "description": "Releases a cone of poison that damages enemies over time and slows their movement speed. The slow increases with each enemy attack.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_second": [16, 28, 40, 52],
+            "initial_movement_slow": [16, 18, 20, 22],
+            "max_movement_slow": [32, 36, 40, 44],
+            "duration": [7, 7, 7, 7],
+            "radius": [500, 500, 500, 500]
+          },
+          "cooldown": [27, 23, 19, 15],
+          "mana_cost": [125, 130, 135, 140],
+          "notes": "Slow intensifies with each attack against the affected target."
+        },
+        {
+          "id": 5002,
+          "name": "Shallow Grave",
+          "description": "When cast on an ally, prevents them from dying. Their health cannot go below 1 HP for the duration. Also grants heal amplification based on missing health.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "duration": [3.5, 4, 4.5, 5],
+            "heal_amp_per_10_percent": [2, 4, 6, 8],
+            "cast_range": [550, 650, 750, 850]
+          },
+          "cooldown": [36, 30, 24, 18],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Can be cast on spell immune allies. Cannot be purged."
+        },
+        {
+          "id": 5003,
+          "name": "Shadow Wave",
+          "description": "Sends out a wave of healing shadow energy that heals friendly units and damages nearby enemies. The wave bounces between nearby allies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "physical",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "heal_and_damage": [50, 100, 150, 200],
+            "max_targets": [3, 4, 5, 6],
+            "bounce_radius": [475, 475, 475, 475],
+            "cast_range": [550, 550, 550, 550]
+          },
+          "cooldown": [10, 10, 10, 10],
+          "mana_cost": [80, 90, 100, 110],
+          "notes": "Heals allies and damages enemies near those allies. Damage is physical and affected by armor values."
+        },
+        {
+          "id": 5004,
+          "name": "Nothl Projection",
+          "description": "Dazzle creates a shadow version of himself that can cast abilities with enhanced effects.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [4, 5, 6],
+            "cast_range": [600, 600, 600]
+          },
+          "cooldown": [40, 35, 30],
+          "mana_cost": [100, 150, 200],
+          "notes": "Abilities cast during Nothl Projection have enhanced effects: Poison Touch applies hex, Shallow Grave heals upon expiration, Shadow Wave grants allies an instant attack."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5005,
+          "name": "Weave",
+          "description": "Dazzle's abilities weave patterns of light and shadow, reducing armor of enemy units and increasing armor of allied units affected by his abilities.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "armor_per_stack": [0.5, 0.75, 1, 1.25],
+            "max_stacks": [10, 10, 10, 10],
+            "duration": [10, 10, 10, 10]
+          },
+          "notes": "Each time an enemy is affected by Dazzle's abilities, they lose armor. Each time an ally is affected, they gain armor."
+        }
+      ]
+    }
+  ]
+}

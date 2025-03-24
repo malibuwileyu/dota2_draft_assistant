@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 47,
+      "name": "viper",
+      "localized_name": "Viper",
+      "abilities": [
+        {
+          "id": 4701,
+          "name": "Poison Attack",
+          "description": "Adds a poison effect to Viper's attack, slowing enemy movement speed, reducing their magic resistance, and causing damage over time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_second": [4, 8, 12, 16],
+            "movement_slow": [3, 6, 9, 12],
+            "magic_resistance_reduction": [4, 6, 8, 10],
+            "duration": [2, 2, 2, 2],
+            "max_stacks": [6, 6, 8, 8]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Stacks independently. Attacking a target refreshes the duration on all stacks."
+        },
+        {
+          "id": 4702,
+          "name": "Nethertoxin",
+          "description": "Creates a pool of Nethertoxin at a target location that deals increasing magical damage over time and reduces attack speed of enemies inside.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "min_damage": [7.5, 10, 12.5, 15],
+            "max_damage": [17.5, 32.5, 47.5, 62.5],
+            "radius": [400, 400, 400, 400],
+            "attack_speed_slow": [30, 40, 50, 60],
+            "duration": [8, 8, 8, 8]
+          },
+          "cooldown": [14, 14, 14, 14],
+          "mana_cost": [70, 70, 70, 70],
+          "notes": "Damage ramps up over time, reaching maximum damage after 4 seconds."
+        },
+        {
+          "id": 4703,
+          "name": "Corrosive Skin",
+          "description": "Causes damage to those who attack Viper while also slowing their attack speed. Meanwhile, Viper gains increased magic resistance.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "magic_resistance": [10, 15, 20, 25],
+            "damage": [8, 16, 24, 32],
+            "attack_slow": [8, 16, 24, 32],
+            "duration": [3, 3, 3, 3],
+            "radius": [1400, 1400, 1400, 1400]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Only triggered when enemies damage Viper with attacks or spells."
+        },
+        {
+          "id": 4704,
+          "name": "Viper Strike",
+          "description": "Strikes an enemy with venom, slowing movement and attack speed while dealing damage over time.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "cast_range": [500, 500, 500],
+            "duration": [5.3, 5.3, 5.3],
+            "damage_per_second": [20, 35, 50],
+            "movement_slow": [40, 45, 50],
+            "attack_slow": [40, 60, 80]
+          },
+          "cooldown": [90, 80, 70],
+          "mana_cost": [125, 175, 225],
+          "notes": "Can be upgraded with Aghanim's Scepter to reduce cooldown and allow multiple casts."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4705,
+          "name": "Predator",
+          "description": "Viper's attacks deal additional physical damage based on the target's current health and Viper's level.",
+          "type": "passive",
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "base_damage_factor": [0.15, 0.15, 0.15, 0.15],
+            "level_damage_factor": [0.05, 0.05, 0.05, 0.05]
+          },
+          "notes": "Damage calculation: (Base Factor + Level Factor * Viper's Level) * Target's Current HP"
+        }
+      ]
+    }
+  ]
+}

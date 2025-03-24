@@ -18,6 +18,8 @@ public class PropertyLoader {
      */
     public PropertyLoader() {
         loadProperties(DEFAULT_PROPERTIES_FILE);
+        // Try to load override properties if they exist
+        loadExternalFile("./application.properties.override");
         loadEnvironmentVariables();
     }
     
@@ -32,7 +34,7 @@ public class PropertyLoader {
     }
     
     /**
-     * Loads properties from the specified file path.
+     * Loads properties from the specified file path in classpath.
      * 
      * @param propertiesFilePath The path to the properties file to load
      */
@@ -50,16 +52,70 @@ public class PropertyLoader {
     }
     
     /**
+     * Loads properties from an external file on the file system.
+     * 
+     * @param filePath The file system path to the properties file
+     */
+    private void loadExternalFile(String filePath) {
+        java.io.File file = new java.io.File(filePath);
+        if (file.exists() && file.isFile()) {
+            try (java.io.FileInputStream fis = new java.io.FileInputStream(file)) {
+                properties.load(fis);
+                System.out.println("Loaded external properties from " + filePath);
+            } catch (IOException e) {
+                System.err.println("Error loading external properties from " + filePath + ": " + e.getMessage());
+            }
+        } else {
+            System.out.println("External properties file not found: " + filePath);
+        }
+    }
+    
+    /**
      * Loads sensitive values from environment variables
      */
     private void loadEnvironmentVariables() {
         // API keys should always be loaded from environment variables for security
+        
+        // Load Groq API key
         String groqApiKey = System.getenv("GROQ_API_KEY");
         if (groqApiKey != null && !groqApiKey.isEmpty()) {
             properties.setProperty("groq.api.key", groqApiKey);
             System.out.println("Loaded Groq API key from environment variable");
         } else {
             System.out.println("No Groq API key found in environment variables");
+        }
+        
+        // Load Steam API key
+        String steamApiKey = System.getenv("STEAM_API_KEY");
+        if (steamApiKey != null && !steamApiKey.isEmpty()) {
+            properties.setProperty("steam.api.key", steamApiKey);
+            System.out.println("Loaded Steam API key from environment variable");
+        } else {
+            // Make sure we have a valid key in the properties
+            String currentKey = properties.getProperty("steam.api.key", "");
+            if (currentKey.isEmpty() || currentKey.equals("${STEAM_API_KEY}")) {
+                // Set a hardcoded key for development
+                properties.setProperty("steam.api.key", "42A0C9F06F162BD5220B252E417B0D83");
+                System.out.println("Setting hardcoded Steam API key for development");
+            } else {
+                System.out.println("Using Steam API key from properties file");
+            }
+        }
+        
+        // Load OpenDota API key
+        String openDotaApiKey = System.getenv("OPENDOTA_API_KEY");
+        if (openDotaApiKey != null && !openDotaApiKey.isEmpty()) {
+            properties.setProperty("opendota.api.key", openDotaApiKey);
+            System.out.println("Loaded OpenDota API key from environment variable");
+        } else {
+            // Check if we have a valid key in the properties
+            String currentKey = properties.getProperty("opendota.api.key", "");
+            if (currentKey.isEmpty()) {
+                // The key from application.properties.override should be loaded here if it exists
+                System.out.println("No OpenDota API key found in environment variables or properties");
+            } else {
+                System.out.println("Using OpenDota API key from properties file");
+            }
         }
     }
     

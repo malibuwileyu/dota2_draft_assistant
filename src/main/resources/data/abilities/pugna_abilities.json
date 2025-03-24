@@ -1,0 +1,95 @@
+{
+  "heroes": [
+    {
+      "id": 45,
+      "name": "pugna",
+      "localized_name": "Pugna",
+      "abilities": [
+        {
+          "id": 4501,
+          "name": "Nether Blast",
+          "description": "Deals magical damage in an area, affecting both enemies and structures.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies", "buildings"],
+          "special_values": {
+            "damage": [95, 170, 245, 320],
+            "building_damage_factor": [0.65, 0.65, 0.65, 0.65]
+          },
+          "cooldown": [5, 5, 5, 5],
+          "mana_cost": [100, 115, 130, 145],
+          "notes": "Deals reduced damage to buildings."
+        },
+        {
+          "id": 4502,
+          "name": "Decrepify",
+          "description": "Turns a unit ethereal, rendering it immune to physical damage but more vulnerable to magical damage. Also slows the unit's movement speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies", "allies", "self"],
+          "special_values": {
+            "duration": [3, 3.5, 4, 4.5],
+            "movement_slow": [45, 50, 55, 60],
+            "magic_resistance_reduction": [20, 30, 40, 50],
+            "heal_amp": [25, 25, 25, 25]
+          },
+          "cooldown": [16, 13, 10, 7],
+          "mana_cost": [80, 80, 80, 80],
+          "notes": "Can be cast on allies to protect them from physical damage or on enemies to make them vulnerable to magical damage."
+        },
+        {
+          "id": 4503,
+          "name": "Nether Ward",
+          "description": "Summons a ward that damages nearby enemy heroes when they cast spells, based on the mana spent.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_mana": [0.25, 0.35, 0.45, 0.55],
+            "base_damage": [50, 70, 90, 110],
+            "radius": [1400, 1400, 1400, 1400],
+            "duration": [18, 22, 26, 30]
+          },
+          "cooldown": [40, 40, 40, 40],
+          "mana_cost": [80, 80, 80, 80],
+          "notes": "Deals damage when enemies cast spells within its radius."
+        },
+        {
+          "id": 4504,
+          "name": "Life Drain",
+          "description": "Channels a beam of energy at a target, draining its health and transferring it to Pugna.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies", "allies", "self"],
+          "special_values": {
+            "damage_per_second": [150, 250, 350],
+            "max_channel_time": [10, 10, 10]
+          },
+          "cooldown": [7, 7, 7],
+          "mana_cost": [100, 150, 200],
+          "notes": "Can be cast on allies to heal them. When cast on self, restores mana instead of health."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4505,
+          "name": "Oblivion Savant",
+          "description": "Allows Pugna to cast abilities while channeling.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {},
+          "notes": "Pugna can cast other abilities while channeling Life Drain."
+        }
+      ]
+    }
+  ]
+}

@@ -73,6 +73,7 @@ application.yaml
 application.properties
 application-local.properties
 application-dev.properties
+application.properties.override
 
 # Environment variables and secrets
 *.env

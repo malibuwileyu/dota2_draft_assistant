@@ -1,0 +1,102 @@
+{
+  "heroes": [
+    {
+      "id": 59,
+      "name": "huskar",
+      "localized_name": "Huskar",
+      "abilities": [
+        {
+          "id": 5901,
+          "name": "Inner Fire",
+          "description": "Huskar pushes nearby enemies away, dealing damage and silencing them.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [400, 400, 400, 400],
+            "damage": [105, 170, 235, 300],
+            "silence_duration": [1.5, 2, 2.5, 3],
+            "knockback_distance": [400, 400, 400, 400]
+          },
+          "cooldown": [17, 15, 13, 11],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Health Cost: 75/100/125/150. With Aghanim's Shard, adds movement speed slow and heals Huskar based on damage dealt."
+        },
+        {
+          "id": 5902,
+          "name": "Burning Spear",
+          "description": "Huskar sets his spears aflame, dealing damage over time with each attack. Multiple hits stack. Each use costs Huskar a percentage of his current health.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_second": [5, 10, 15, 20],
+            "duration": [9, 9, 9, 9],
+            "health_cost_percent": [4, 4, 4, 4]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Can be set to autocast. Health Cost: 4% of current health per attack."
+        },
+        {
+          "id": 5903,
+          "name": "Berserker's Blood",
+          "description": "Huskar's perseverance in battle increases as his health gets lower, granting increased attack speed and magic resistance.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "max_attack_speed": [170, 220, 270, 320],
+            "max_magic_resistance": [15, 20, 25, 30],
+            "health_regen_per_strength": [0.1, 0.2, 0.3, 0.4]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Attack speed and magic resistance increase as health decreases."
+        },
+        {
+          "id": 5904,
+          "name": "Life Break",
+          "description": "Huskar hurls himself at an enemy hero, dealing a percentage of their current health in damage while sacrificing a percentage of his own. While charging, Huskar is debuff immune.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies", "self"],
+          "special_values": {
+            "health_damage_percent": [32, 38, 44],
+            "health_cost_percent": [32, 38, 44],
+            "slow_duration": [4, 5, 6],
+            "movement_slow": [50, 50, 50],
+            "attack_slow": [50, 50, 50]
+          },
+          "cooldown": [16, 14, 12],
+          "mana_cost": [0, 0, 0],
+          "notes": "Health Cost: 32%/38%/44% of current health. Aghanim's Scepter increases cast range and adds a taunt effect."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5905,
+          "name": "Blood Magic",
+          "description": "Huskar's mana is permanently replaced by health costs, which are treated as magical damage.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {},
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "All of Huskar's abilities cost health instead of mana."
+        }
+      ]
+    }
+  ]
+}

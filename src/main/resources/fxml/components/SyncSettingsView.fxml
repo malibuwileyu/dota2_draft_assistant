@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<VBox fx:id="syncSettingsContainer"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.dota2assistant.ui.controller.SyncSettingsController"
+      styleClass="sync-settings-component"
+      spacing="10">
+    
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15" />
+    </padding>
+
+    <Label styleClass="header-label" text="Data Synchronization" />
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Sync Frequency:" />
+        <ComboBox fx:id="syncFrequencyComboBox" prefWidth="150" />
+    </HBox>
+    
+    <Separator />
+    
+    <VBox styleClass="sync-status-container" spacing="5">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10" />
+        </padding>
+        <Label fx:id="lastSyncLabel" text="Last sync: Never" />
+        <Label fx:id="matchesSyncedLabel" text="Matches synced: 0" />
+        <Label fx:id="nextSyncLabel" text="Next scheduled sync: Not scheduled" />
+    </VBox>
+    
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button fx:id="syncNowButton" text="Sync Now" styleClass="primary-button" onAction="#handleSyncNow" />
+        <Label fx:id="syncStatusLabel" text="Status: Idle" />
+        <ProgressIndicator fx:id="syncProgressIndicator" visible="false" prefHeight="20" prefWidth="20" />
+    </HBox>
+</VBox>

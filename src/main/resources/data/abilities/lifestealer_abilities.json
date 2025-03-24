@@ -1,0 +1,105 @@
+{
+  "heroes": [
+    {
+      "id": 54,
+      "name": "life_stealer",
+      "localized_name": "Lifestealer",
+      "abilities": [
+        {
+          "id": 5401,
+          "name": "Rage",
+          "description": "Lifestealer enters a maddened rage, becoming magically immune and gaining increased attack speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [3, 4, 5, 6],
+            "magic_resistance": [80, 80, 80, 80],
+            "bonus_attack_speed": [20, 30, 40, 50]
+          },
+          "cooldown": [20, 19, 18, 17],
+          "mana_cost": [80, 100, 120, 140],
+          "notes": "Provides spell immunity (dispels all debuffs on cast) and magic resistance."
+        },
+        {
+          "id": 5402,
+          "name": "Open Wounds",
+          "description": "Wounds an enemy unit, slowing its movement speed and allowing all allied units that attack the target to heal themselves for a percentage of the damage they deal.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "movement_slow": [35, 40, 45, 50],
+            "lifesteal": [20, 30, 40, 50],
+            "duration": [7, 7, 7, 7],
+            "cast_range": [300, 400, 500, 600]
+          },
+          "cooldown": [30, 25, 20, 15],
+          "mana_cost": [80, 100, 120, 140],
+          "notes": "Applies a slow and allows allies to lifesteal from the target. Can be removed by dispels."
+        },
+        {
+          "id": 5403,
+          "name": "Ghoul Frenzy",
+          "description": "Lifestealer's attacks slow enemies and grant him bonus movement and attack speed.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "movement_speed_bonus": [2, 4, 6, 8],
+            "attack_speed_bonus": [30, 50, 70, 90],
+            "movement_slow": [20, 25, 30, 35],
+            "attack_slow": [20, 25, 30, 35],
+            "slow_duration": [1.5, 1.75, 2, 2.25]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Lifestealer gains movement and attack speed while slowing enemy movement and attack speed with his attacks."
+        },
+        {
+          "id": 5404,
+          "name": "Infest",
+          "description": "Lifestealer infests an allied unit, hiding inside it to regenerate health. He can exit the infested unit at any time, consuming it for health if it's a creep.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "cast_range": [150, 150, 150],
+            "ally_health_bonus": [400, 800, 1200],
+            "ally_speed_bonus": [15, 20, 25],
+            "health_regen_rate": [3, 4, 5],
+            "burst_radius": [700, 700, 700]
+          },
+          "cooldown": [80, 65, 50],
+          "mana_cost": [100, 125, 150],
+          "notes": "Lifestealer becomes invulnerable while inside an infested unit. Cannot infest ancient creeps or Roshan without specific upgrades."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5405,
+          "name": "Feast",
+          "description": "Lifestealer's attacks deal additional damage and heal him based on the target's current health. Killing units grants permanent max health bonuses.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self", "enemies"],
+          "special_values": {
+            "lifesteal_percent": [1.5, 2, 2.5, 3],
+            "damage_percent": [1.5, 2, 2.5, 3],
+            "hero_kill_health_bonus": [15, 15, 15, 15],
+            "creep_kill_health_bonus": [1, 1, 1, 1]
+          },
+          "notes": "Each attack deals bonus damage and heals Lifestealer based on the target's maximum health. Permanent health bonuses are granted when killing units."
+        }
+      ]
+    }
+  ]
+}

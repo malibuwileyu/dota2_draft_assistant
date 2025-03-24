@@ -1,5 +1,7 @@
 package com.dota2assistant.data.db;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,9 +18,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * PostgreSQL implementation of the DatabaseManager interface.
@@ -38,7 +41,19 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
     @Value("${database.password}")
     private String dbPassword;
     
-    private final AtomicReference<Connection> connectionRef = new AtomicReference<>();
+    @Value("${database.pool.size:10}")
+    private int poolSize;
+    
+    @Value("${database.pool.idle.timeout:600000}")
+    private long idleTimeout;
+    
+    @Value("${database.pool.max.lifetime:1800000}")
+    private long maxLifetime;
+    
+    @Value("${database.pool.connection.timeout:30000}")
+    private long connectionTimeout;
+    
+    private HikariDataSource dataSource;
     
     @PostConstruct
     public void initialize() {
@@ -46,10 +61,14 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
             // Load PostgreSQL JDBC driver
             Class.forName("org.postgresql.Driver");
             
+            // Initialize connection pool
+            initConnectionPool();
+            
             // Initialize database connection
             checkConnection();
-            logger.info("PostgreSQL database connection initialized successfully");
+            logger.info("PostgreSQL database connection pool initialized successfully");
             logger.info("DATABASE TYPE: PostgreSQL - Using connection URL: {}", dbUrl);
+            logger.info("Connection pool configured with size: {}", poolSize);
             
             // Initialize database schema
             try {
@@ -69,14 +88,58 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
         }
     }
     
+    /**
+     * Initialize the HikariCP connection pool
+     */
+    private void initConnectionPool() {
+        logger.info("Initializing HikariCP connection pool");
+        
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(dbUrl);
+        config.setUsername(dbUsername);
+        config.setPassword(dbPassword);
+        
+        // Pool configuration
+        config.setMaximumPoolSize(poolSize);
+        config.setMinimumIdle(2);
+        config.setIdleTimeout(idleTimeout);         // How long a connection can remain idle in pool
+        config.setMaxLifetime(maxLifetime);         // Maximum lifetime of a connection in pool
+        config.setConnectionTimeout(connectionTimeout); // Wait time for connection from pool
+        
+        // Connection testing and validation
+        config.setConnectionTestQuery("SELECT 1");
+        config.setValidationTimeout(5000);          // Timeout for connection validation
+        
+        // Pool maintenance
+        config.setLeakDetectionThreshold(60000);    // Detect connection leaks after 60 seconds
+        
+        // Pool metrics
+        config.setRegisterMbeans(true);             // Register JMX management beans
+        config.setPoolName("Dota2Assistant-DB-Pool");
+        
+        // Create the data source
+        dataSource = new HikariDataSource(config);
+        
+        logger.info("HikariCP connection pool initialized");
+    }
+    
     @Override
     public Connection getConnection() throws SQLException {
-        Connection conn = connectionRef.get();
-        if (conn == null || conn.isClosed()) {
-            conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
-            conn.setAutoCommit(true);
-            connectionRef.set(conn);
+        // First check if we're in a transaction
+        Connection transactionConn = transactionConnection.get();
+        if (transactionConn != null && !transactionConn.isClosed()) {
+            // If we have an active transaction, return that connection
+            return transactionConn;
         }
+        
+        // Otherwise get a new connection from the pool
+        if (dataSource == null || dataSource.isClosed()) {
+            logger.warn("Connection pool is not initialized or closed, attempting to reinitialize");
+            initConnectionPool();
+        }
+        
+        Connection conn = dataSource.getConnection();
+        // Let HikariCP manage the autoCommit state (default is true)
         return conn;
     }
     
@@ -197,8 +260,51 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
         // Apply match player won column fix
         applyMigrationIfNeeded(currentVersion, 8, "sql/008_fix_match_players.sql");
         
+        // Note: We handle the match_players unique constraint below with custom code
+        
+        // Apply match_players unique constraint - run directly here for better error handling
+        if (currentVersion < 9) {
+            logger.info("Applying migration for match_players table unique constraint (version 9)");
+            try {
+                // First remove any duplicates
+                executeScript(
+                    "DELETE FROM match_players " +
+                    "WHERE id IN (" +
+                    "    SELECT id " +
+                    "    FROM (" +
+                    "        SELECT id, " +
+                    "               ROW_NUMBER() OVER (PARTITION BY match_id, account_id ORDER BY id) as rnum " +
+                    "        FROM match_players" +
+                    "    ) t " +
+                    "    WHERE t.rnum > 1" +
+                    ");"
+                );
+                
+                // Then add the constraint
+                executeScript(
+                    "DO $$ " +
+                    "BEGIN " +
+                    "    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'match_players_match_account_unique') THEN " +
+                    "        ALTER TABLE match_players ADD CONSTRAINT match_players_match_account_unique UNIQUE (match_id, account_id); " +
+                    "    END IF; " +
+                    "END $$;"
+                );
+                
+                // Record the migration
+                executeScript(
+                    "INSERT INTO db_version (version, description) VALUES (9, 'Add unique constraint to match_players') " +
+                    "ON CONFLICT (version) DO NOTHING;"
+                );
+                
+                logger.info("Successfully applied match_players constraint migration");
+            } catch (SQLException e) {
+                logger.error("Failed to apply match_players constraint: {}", e.getMessage(), e);
+                // Continue with other migrations - we'll handle the constraint in code
+            }
+        }
+        
         // Apply any other database fixes
-        applyMigrationIfNeeded(currentVersion, 9, "sql/fix_database_schema.sql", 9);
+        applyMigrationIfNeeded(currentVersion, 10, "sql/fix_database_schema.sql", 10);
     }
     
     /**
@@ -267,6 +373,64 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
     }
     
     /**
+     * Get the current connection pool statistics
+     * @return A string containing the current connection pool statistics
+     */
+    public String getConnectionPoolStats() {
+        if (dataSource == null) {
+            return "Connection pool not initialized";
+        }
+        
+        StringBuilder stats = new StringBuilder();
+        stats.append("Connection Pool Statistics:\n");
+        stats.append("  Total Connections: ").append(dataSource.getHikariPoolMXBean().getTotalConnections()).append("\n");
+        stats.append("  Active Connections: ").append(dataSource.getHikariPoolMXBean().getActiveConnections()).append("\n");
+        stats.append("  Idle Connections: ").append(dataSource.getHikariPoolMXBean().getIdleConnections()).append("\n");
+        stats.append("  Threads Awaiting Connection: ").append(dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection()).append("\n");
+        
+        return stats.toString();
+    }
+    
+    @Override
+    public Map<String, Object> getHealthStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("healthy", healthCheck());
+        status.put("timestamp", System.currentTimeMillis());
+        
+        if (dataSource != null) {
+            try {
+                status.put("total_connections", dataSource.getHikariPoolMXBean().getTotalConnections());
+                status.put("active_connections", dataSource.getHikariPoolMXBean().getActiveConnections());
+                status.put("idle_connections", dataSource.getHikariPoolMXBean().getIdleConnections());
+                status.put("waiting_threads", dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection());
+                status.put("pool_name", dataSource.getPoolName());
+            } catch (Exception e) {
+                status.put("pool_stats_error", e.getMessage());
+            }
+        } else {
+            status.put("pool_initialized", false);
+        }
+        
+        return status;
+    }
+    
+    /**
+     * Log the current connection pool statistics
+     */
+    public void logConnectionPoolStats() {
+        if (dataSource == null) {
+            logger.info("Connection pool not initialized");
+            return;
+        }
+        
+        logger.info("Connection pool stats - Total: {}, Active: {}, Idle: {}, Waiting: {}",
+            dataSource.getHikariPoolMXBean().getTotalConnections(),
+            dataSource.getHikariPoolMXBean().getActiveConnections(),
+            dataSource.getHikariPoolMXBean().getIdleConnections(),
+            dataSource.getHikariPoolMXBean().getThreadsAwaitingConnection());
+    }
+    
+    /**
      * Read a resource as a string
      */
     private String readResourceAsString(org.springframework.core.io.Resource resource) {
@@ -282,15 +446,14 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
     @Override
     @PreDestroy
     public void closeConnection() {
-        Connection conn = connectionRef.getAndSet(null);
-        if (conn != null) {
-            try {
-                conn.close();
-                logger.info("PostgreSQL database connection closed");
-            } catch (SQLException e) {
-                logger.error("Failed to close PostgreSQL database connection", e);
-            }
+        // This method now properly shuts down the connection pool
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            logger.info("PostgreSQL connection pool has been shut down");
         }
+        
+        // Log that we're shutting down the database manager
+        logger.info("PostgreSQL database manager shutdown completed");
     }
     
     @Override
@@ -399,27 +562,62 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
         }
     }
     
+    // ThreadLocal to store the connection used for a transaction in the current thread
+    private final ThreadLocal<Connection> transactionConnection = new ThreadLocal<>();
+    
     @Override
     public void beginTransaction() throws SQLException {
+        // Get a connection from the pool and store it in ThreadLocal
         Connection conn = getConnection();
         conn.setAutoCommit(false);
-        logger.debug("Transaction started");
+        transactionConnection.set(conn);
+        logger.debug("Transaction started on thread {}", Thread.currentThread().getId());
     }
     
     @Override
     public void commitTransaction() throws SQLException {
-        Connection conn = getConnection();
-        conn.commit();
-        conn.setAutoCommit(true);
-        logger.debug("Transaction committed");
+        // Get the connection from ThreadLocal
+        Connection conn = transactionConnection.get();
+        if (conn == null) {
+            throw new SQLException("No transaction in progress on this thread");
+        }
+        
+        try {
+            conn.commit();
+            logger.debug("Transaction committed on thread {}", Thread.currentThread().getId());
+        } finally {
+            // Clean up
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) {
+                logger.warn("Error closing connection after commit", e);
+            }
+            transactionConnection.remove();
+        }
     }
     
     @Override
     public void rollbackTransaction() throws SQLException {
-        Connection conn = getConnection();
-        conn.rollback();
-        conn.setAutoCommit(true);
-        logger.debug("Transaction rolled back");
+        // Get the connection from ThreadLocal
+        Connection conn = transactionConnection.get();
+        if (conn == null) {
+            throw new SQLException("No transaction in progress on this thread");
+        }
+        
+        try {
+            conn.rollback();
+            logger.debug("Transaction rolled back on thread {}", Thread.currentThread().getId());
+        } finally {
+            // Clean up
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) {
+                logger.warn("Error closing connection after rollback", e);
+            }
+            transactionConnection.remove();
+        }
     }
     
     @Override
