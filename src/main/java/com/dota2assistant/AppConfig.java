@@ -19,6 +19,8 @@ import com.dota2assistant.ui.controller.MainController;
 import com.dota2assistant.util.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 @PropertySource("classpath:application.properties")
 @PropertySource(value = "file:./application.properties.override", ignoreResourceNotFound = true)
 public class AppConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
 
     @Bean
     public PropertyLoader propertyLoader() {
@@ -69,7 +73,16 @@ public class AppConfig {
     @Bean
     public DotaApiClient dotaApiClient(OkHttpClient client, ObjectMapper mapper, PropertyLoader propertyLoader) {
         String baseUrl = propertyLoader.getProperty("opendota.api.baseUrl", "https://api.opendota.com/api");
-        return new OpenDotaApiClient(client, mapper);
+        // Load API key from properties
+        String apiKey = propertyLoader.getProperty("opendota.api.key", "");
+        
+        if (apiKey != null && !apiKey.isEmpty()) {
+            logger.info("Initializing OpenDota API client with API key");
+        } else {
+            logger.warn("No OpenDota API key found in configuration, API rate limits will apply");
+        }
+        
+        return new OpenDotaApiClient(client, mapper, apiKey);
     }
 
     // Hold static references to the injected services for components that can't use DI
@@ -463,5 +476,13 @@ public class AppConfig {
             DatabaseManager databaseManager
     ) {
         return new com.dota2assistant.data.service.PlayerRecommendationService(userMatchRepository, heroRepository, databaseManager);
+    }
+    
+    /**
+     * Admin monitoring controller for system statistics and diagnostics
+     */
+    @Bean
+    public com.dota2assistant.ui.controller.AdminMonitoringController adminMonitoringController() {
+        return new com.dota2assistant.ui.controller.AdminMonitoringController();
     }
 }
