@@ -69,14 +69,24 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
         private int retryCount;
         private LocalDateTime lastAttempt;
         private LocalDateTime nextAttempt;
+        private String errorType; // Added field for error type
+        private String errorMessage; // Added field for error message
         
         public MatchProcessingRecord(long matchId, String status, int retryCount, 
                                      LocalDateTime lastAttempt, LocalDateTime nextAttempt) {
+            this(matchId, status, retryCount, lastAttempt, nextAttempt, null, null);
+        }
+        
+        public MatchProcessingRecord(long matchId, String status, int retryCount, 
+                                     LocalDateTime lastAttempt, LocalDateTime nextAttempt,
+                                     String errorType, String errorMessage) {
             this.matchId = matchId;
             this.status = status;
             this.retryCount = retryCount;
             this.lastAttempt = lastAttempt;
             this.nextAttempt = nextAttempt;
+            this.errorType = errorType;
+            this.errorMessage = errorMessage;
         }
 
         public long getMatchId() {
@@ -113,6 +123,40 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
 
         public void setNextAttempt(LocalDateTime nextAttempt) {
             this.nextAttempt = nextAttempt;
+        }
+        
+        public String getErrorType() {
+            return errorType;
+        }
+        
+        public void setErrorType(String errorType) {
+            this.errorType = errorType;
+        }
+        
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+        
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+        
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Match ID: ").append(matchId).append("\n");
+            sb.append("Status: ").append(status).append("\n");
+            sb.append("Retry Count: ").append(retryCount);
+            
+            if (errorType != null && !errorType.isEmpty()) {
+                sb.append("\nError Type: ").append(errorType);
+            }
+            
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                sb.append("\nDetails: ").append(errorMessage);
+            }
+            
+            return sb.toString();
         }
     }
     
@@ -166,11 +210,42 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
             nextAttempt = lastAttempt.plusHours(backoffHours);
         }
         
-        // Add to the table
-        addMatchRecord(matchId, status, retryCount, lastAttempt, nextAttempt);
+        // Extract error type from message if available
+        String errorType = null;
+        String errorMessage = message;
         
-        // Show notification for high retry counts or errors
-        if (!success && retryCount >= 3) {
+        if (message != null && message.contains(":")) {
+            String[] parts = message.split(":", 2);
+            if (parts.length == 2) {
+                // Check for common error patterns
+                if (message.contains("Invalid match ID")) {
+                    errorType = "INVALID_ID";
+                    status = "INVALID";
+                } else if (message.contains("404")) {
+                    errorType = "NOT_FOUND";
+                    status = "NOT_FOUND";
+                } else if (message.contains("500")) {
+                    errorType = "SERVER_ERROR";
+                } else if (message.contains("429")) {
+                    errorType = "RATE_LIMITED";
+                } else {
+                    errorType = "OTHER_ERROR";
+                }
+                errorMessage = parts[1].trim();
+            }
+        }
+        
+        // Add to the table with error information
+        addMatchRecord(matchId, status, retryCount, lastAttempt, nextAttempt, errorType, errorMessage);
+        
+        // Show notification for high retry counts or specific error types
+        boolean shouldNotify = !success && (
+            retryCount >= 3 || 
+            "INVALID_ID".equals(errorType) || 
+            "SERVER_ERROR".equals(errorType)
+        );
+        
+        if (shouldNotify) {
             showMatchProcessingNotification(matchId, status, retryCount, message);
         }
     }
@@ -204,7 +279,19 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
         matchIdColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getMatchId()));
         
         // Status column with color coding
-        statusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
+        statusColumn.setCellValueFactory(data -> {
+            MatchProcessingRecord record = data.getValue();
+            String status = record.getStatus();
+            String errorType = record.getErrorType();
+            
+            // If there's an error type, include it in the displayed status
+            if (errorType != null && !errorType.isEmpty()) {
+                return new SimpleStringProperty(status + " (" + errorType + ")");
+            } else {
+                return new SimpleStringProperty(status);
+            }
+        });
+        
         statusColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -214,14 +301,23 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
                     setStyle("");
                 } else {
                     setText(item);
-                    if ("SUCCESS".equals(item)) {
+                    
+                    if (item.contains("SUCCESS")) {
                         setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-                    } else if ("FAILED".equals(item)) {
+                    } else if (item.contains("FAILED")) {
                         setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-                    } else if ("WAITING".equals(item)) {
+                    } else if (item.contains("INVALID")) {
+                        setStyle("-fx-text-fill: darkred; -fx-font-weight: bold;");
+                    } else if (item.contains("NOT_FOUND")) {
+                        setStyle("-fx-text-fill: purple; -fx-font-weight: bold;");
+                    } else if (item.contains("WAITING")) {
                         setStyle("-fx-text-fill: orange;");
-                    } else if ("QUEUED".equals(item)) {
+                    } else if (item.contains("QUEUED")) {
                         setStyle("-fx-text-fill: blue;");
+                    } else if (item.contains("SERVER_ERROR")) {
+                        setStyle("-fx-text-fill: brown; -fx-font-weight: bold;");
+                    } else if (item.contains("RATE_LIMITED")) {
+                        setStyle("-fx-text-fill: darkblue; -fx-font-weight: bold;");
                     }
                 }
             }
@@ -399,6 +495,15 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
      */
     public void addMatchRecord(long matchId, String status, int retryCount,
                               LocalDateTime lastAttempt, LocalDateTime nextAttempt) {
+        addMatchRecord(matchId, status, retryCount, lastAttempt, nextAttempt, null, null);
+    }
+    
+    /**
+     * Adds a new match processing record to the history table with error information
+     */
+    public void addMatchRecord(long matchId, String status, int retryCount,
+                              LocalDateTime lastAttempt, LocalDateTime nextAttempt,
+                              String errorType, String errorMessage) {
         Platform.runLater(() -> {
             // Check if the match ID already exists in the table
             boolean exists = false;
@@ -409,6 +514,8 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
                     record.setRetryCount(retryCount);
                     record.setLastAttempt(lastAttempt);
                     record.setNextAttempt(nextAttempt);
+                    record.setErrorType(errorType);
+                    record.setErrorMessage(errorMessage);
                     exists = true;
                     break;
                 }
@@ -417,11 +524,30 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
             // Add new record if not found
             if (!exists) {
                 matchProcessingRecords.add(new MatchProcessingRecord(
-                    matchId, status, retryCount, lastAttempt, nextAttempt));
+                    matchId, status, retryCount, lastAttempt, nextAttempt, errorType, errorMessage));
             }
             
             // Refresh the table
             matchHistoryTable.refresh();
+            
+            // Sort by status (errors first) then by retry count (descending)
+            matchHistoryTable.getItems().sort((r1, r2) -> {
+                // Special statuses (INVALID, NOT_FOUND, etc.) come first
+                if (!r1.getStatus().equals(r2.getStatus())) {
+                    if ("INVALID".equals(r1.getStatus()) || "NOT_FOUND".equals(r1.getStatus())) {
+                        return -1;
+                    } else if ("INVALID".equals(r2.getStatus()) || "NOT_FOUND".equals(r2.getStatus())) {
+                        return 1;
+                    } else if ("FAILED".equals(r1.getStatus())) {
+                        return -1;
+                    } else if ("FAILED".equals(r2.getStatus())) {
+                        return 1;
+                    }
+                }
+                
+                // Then by retry count (descending)
+                return Integer.compare(r2.getRetryCount(), r1.getRetryCount());
+            });
         });
     }
     

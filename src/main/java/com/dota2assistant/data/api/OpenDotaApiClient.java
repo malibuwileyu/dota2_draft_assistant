@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,17 +34,46 @@ public class OpenDotaApiClient implements DotaApiClient {
     
     private final OkHttpClient client;
     private final ObjectMapper mapper;
+    private final String apiKey;
     
     public OpenDotaApiClient(OkHttpClient client, ObjectMapper mapper) {
+        this(client, mapper, null);
+    }
+    
+    public OpenDotaApiClient(OkHttpClient client, ObjectMapper mapper, String apiKey) {
         this.client = client;
         this.mapper = mapper;
+        this.apiKey = apiKey;
+        
+        if (apiKey != null && !apiKey.isEmpty()) {
+            logger.info("OpenDota API client initialized with API key");
+        } else {
+            logger.warn("OpenDota API client initialized without API key - rate limiting may occur");
+        }
+    }
+    
+    /**
+     * Helper method to add API key to a URL if available
+     * 
+     * @param baseUrl The base URL to add the API key to
+     * @return HttpUrl.Builder with API key added if available
+     */
+    private HttpUrl.Builder createUrlWithApiKey(String baseUrl) {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(baseUrl).newBuilder();
+        
+        // Add API key if available
+        if (apiKey != null && !apiKey.isEmpty()) {
+            urlBuilder.addQueryParameter("api_key", apiKey);
+        }
+        
+        return urlBuilder;
     }
     
     @Override
     public List<Hero> fetchHeroes() throws IOException {
-        String endpoint = BASE_URL + HERO_STATS_ENDPOINT;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + HERO_STATS_ENDPOINT);
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -67,9 +97,9 @@ public class OpenDotaApiClient implements DotaApiClient {
     
     @Override
     public Hero fetchHeroDetails(int heroId) throws IOException {
-        String endpoint = BASE_URL + HEROES_ENDPOINT + "/" + heroId;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + HEROES_ENDPOINT + "/" + heroId);
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -88,28 +118,73 @@ public class OpenDotaApiClient implements DotaApiClient {
         }
     }
     
+    /**
+     * Validates if a match ID is in the correct format
+     * 
+     * @param matchId The match ID to validate
+     * @return true if the match ID appears valid
+     */
+    public boolean isValidMatchId(long matchId) {
+        // Dota 2 match IDs are typically 10 digits
+        String matchIdStr = String.valueOf(matchId);
+        return matchIdStr.length() == 10;
+    }
+
     @Override
     public Map<String, Object> fetchMatch(long matchId) throws IOException {
-        String endpoint = BASE_URL + MATCHES_ENDPOINT + "/" + matchId;
+        // Validate match ID format first
+        if (!isValidMatchId(matchId)) {
+            logger.warn("Invalid match ID format: {} (expected 10 digits)", matchId);
+            throw new DotaApiException("Invalid match ID format", 400, matchId);
+        }
+        
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + MATCHES_ENDPOINT + "/" + matchId);
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Failed to fetch match: " + response.code());
+                int statusCode = response.code();
+                
+                if (statusCode == 404) {
+                    logger.warn("Match {} not found - may be a private match or invalid ID", matchId);
+                } else if (statusCode == 429) {
+                    logger.warn("Rate limit hit when fetching match {}", matchId);
+                } else if (statusCode >= 500) {
+                    logger.error("OpenDota server error when fetching match {}: {}", matchId, statusCode);
+                } else {
+                    logger.error("API error fetching match {}: status code {}", matchId, statusCode);
+                }
+                
+                throw new DotaApiException("Failed to fetch match", statusCode, matchId);
             }
             
             String responseBody = response.body().string();
-            return mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+            
+            // Check if the response is too small or empty, indicating a potential issue
+            if (responseBody == null || responseBody.trim().length() < 10) {
+                logger.warn("Empty or invalid response for match {}: '{}'", matchId, responseBody);
+                throw new DotaApiException("Empty or invalid response for match", 422, matchId);
+            }
+            
+            try {
+                Map<String, Object> result = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+                logger.debug("Successfully fetched match {}", matchId);
+                return result;
+            } catch (Exception e) {
+                logger.error("Error parsing match data JSON for match {}: {}", matchId, e.getMessage());
+                throw new DotaApiException("Failed to parse match data: " + e.getMessage(), 422, matchId);
+            }
         }
     }
     
     @Override
     public List<Map<String, Object>> fetchProMatches(int limit) throws IOException {
-        String endpoint = BASE_URL + PRO_MATCHES_ENDPOINT + "?limit=" + limit;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + PRO_MATCHES_ENDPOINT);
+        urlBuilder.addQueryParameter("limit", String.valueOf(limit));
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -126,9 +201,11 @@ public class OpenDotaApiClient implements DotaApiClient {
     public List<Map<String, Object>> fetchMatchesByRank(String rank, int limit) throws IOException {
         // OpenDota API doesn't directly support filtering by rank
         // This is a simplified implementation
-        String endpoint = BASE_URL + PUBLIC_MATCHES_ENDPOINT + "?mmr_descending=true&limit=" + limit;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + PUBLIC_MATCHES_ENDPOINT);
+        urlBuilder.addQueryParameter("mmr_descending", "true");
+        urlBuilder.addQueryParameter("limit", String.valueOf(limit));
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -143,9 +220,9 @@ public class OpenDotaApiClient implements DotaApiClient {
     
     @Override
     public Map<Integer, Double> fetchHeroWinRates() throws IOException {
-        String endpoint = BASE_URL + HERO_STATS_ENDPOINT;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + HERO_STATS_ENDPOINT);
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -172,9 +249,9 @@ public class OpenDotaApiClient implements DotaApiClient {
     
     @Override
     public Map<Integer, Double> fetchHeroPickRates() throws IOException {
-        String endpoint = BASE_URL + HERO_STATS_ENDPOINT;
+        HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + HERO_STATS_ENDPOINT);
         Request request = new Request.Builder()
-                .url(endpoint)
+                .url(urlBuilder.build())
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
@@ -232,9 +309,9 @@ public class OpenDotaApiClient implements DotaApiClient {
         List<Hero> heroes = fetchHeroes();
         // Fetch counter data for each hero
         for (Hero hero : heroes) {
-            String endpoint = BASE_URL + HERO_MATCHUPS_ENDPOINT.replace("{hero_id}", String.valueOf(hero.getId()));
+            HttpUrl.Builder urlBuilder = createUrlWithApiKey(BASE_URL + HERO_MATCHUPS_ENDPOINT.replace("{hero_id}", String.valueOf(hero.getId())));
             Request request = new Request.Builder()
-                    .url(endpoint)
+                    .url(urlBuilder.build())
                     .build();
             
             try (Response response = client.newCall(request).execute()) {

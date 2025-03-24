@@ -322,22 +322,61 @@ public class MatchEnrichmentService {
                     // Add exponential backoff
                     Thread.sleep(1000 * attempts);
                 }
-            } catch (IOException e) {
-                logger.warn("Error fetching details for match {}: {}", matchId, e.getMessage());
+            } catch (com.dota2assistant.data.api.DotaApiException e) {
+                String errorType = e.getErrorType();
+                String errorMessage = e.getMessage();
                 
-                // If we get a rate limit error (429), back off for longer
-                if (e.getMessage() != null && e.getMessage().contains("429")) {
+                // Handle different error types differently
+                if ("INVALID_REQUEST".equals(errorType)) {
+                    // Invalid match ID format - don't retry
+                    logger.error("Invalid match ID format for match {}, removing from queue: {}", matchId, errorMessage);
+                    notifyListeners(matchId, false, attempts, "Invalid match ID format: " + errorMessage);
+                    return false;
+                } else if ("NOT_FOUND".equals(errorType)) {
+                    // 404 - Match doesn't exist - don't retry after MAX_RETRIES
+                    if (attempts >= MAX_RETRIES - 1) {
+                        logger.warn("Match {} not found after {} attempts, removing from queue", matchId, attempts + 1);
+                        notifyListeners(matchId, false, attempts + 1, "Match not found (404): " + errorMessage);
+                        return false;
+                    }
+                } else if ("RATE_LIMITED".equals(errorType)) {
+                    // Rate limited - back off for longer
                     attempts++;
                     try {
-                        int backoffSeconds = 5 * attempts;
+                        int backoffSeconds = 10 * attempts;
                         logger.info("Rate limited, backing off for {} seconds before retry", backoffSeconds);
                         Thread.sleep(backoffSeconds * 1000);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         return false;
                     }
+                    continue;
+                } else if ("SERVER_ERROR".equals(errorType)) {
+                    // Server error - retry with backoff
+                    logger.warn("OpenDota server error for match {}, will retry: {}", matchId, errorMessage);
                 } else {
-                    // For other IO errors, don't retry
+                    // Other errors - retry with standard backoff
+                    logger.warn("Error fetching details for match {}: {}", matchId, errorMessage);
+                }
+                
+                attempts++;
+                try {
+                    int backoffSeconds = 2 * attempts;
+                    Thread.sleep(backoffSeconds * 1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return false;
+                }
+            } catch (IOException e) {
+                logger.warn("General IO error fetching details for match {}: {}", matchId, e.getMessage());
+                
+                // For general IO errors, retry with backoff
+                attempts++;
+                try {
+                    int backoffSeconds = 2 * attempts;
+                    Thread.sleep(backoffSeconds * 1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                     return false;
                 }
             } catch (InterruptedException e) {
