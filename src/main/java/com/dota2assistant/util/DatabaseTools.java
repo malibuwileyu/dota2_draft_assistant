@@ -194,6 +194,9 @@ public class DatabaseTools {
         // Add region column
         addColumnIfNotExists("matches", "region", "INTEGER DEFAULT NULL");
         
+        // Add won column to match_players table
+        addColumnIfNotExists("match_players", "won", "BOOLEAN DEFAULT FALSE");
+        
         // Make sure match_details table exists
         if (!tableExists("match_details")) {
             createTableIfNotExists("match_details", "(match_id BIGINT PRIMARY KEY, raw_data TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT NOW(), FOREIGN KEY (match_id) REFERENCES matches(id))");

@@ -192,10 +192,13 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
         applyMigrationIfNeeded(currentVersion, 6, "sql/006_team_data.sql");
         
         // Apply match enrichment schema updates
-        applyMigrationIfNeeded(currentVersion, 7, "sql/006_match_enrichment.sql", 7); // Apply as version 7
+        applyMigrationIfNeeded(currentVersion, 7, "sql/007_match_enrichment.sql");
+        
+        // Apply match player won column fix
+        applyMigrationIfNeeded(currentVersion, 8, "sql/008_fix_match_players.sql");
         
         // Apply any other database fixes
-        applyMigrationIfNeeded(currentVersion, 8, "sql/fix_database_schema.sql", 8);
+        applyMigrationIfNeeded(currentVersion, 9, "sql/fix_database_schema.sql", 9);
     }
     
     /**

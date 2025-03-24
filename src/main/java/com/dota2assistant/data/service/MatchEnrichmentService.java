@@ -314,8 +314,7 @@ public class MatchEnrichmentService {
                                            "is_radiant = ?, " +
                                            "kills = ?, " +
                                            "deaths = ?, " +
-                                           "assists = ?, " +
-                                           "won = ? " +
+                                           "assists = ? " +
                                            "WHERE match_id = ? AND account_id = ?";
                     
                     try (PreparedStatement playerStmt = conn.prepareStatement(updatePlayerSql)) {
@@ -345,9 +344,8 @@ public class MatchEnrichmentService {
                             playerStmt.setInt(3, kills);
                             playerStmt.setInt(4, deaths);
                             playerStmt.setInt(5, assists);
-                            playerStmt.setBoolean(6, won);
-                            playerStmt.setLong(7, matchId);
-                            playerStmt.setInt(8, accountId);
+                            playerStmt.setLong(6, matchId);
+                            playerStmt.setInt(7, accountId);
                             
                             int playerUpdated = playerStmt.executeUpdate();
                             if (playerUpdated > 0) {
