@@ -336,7 +336,9 @@ public class MatchEnrichmentService {
                             int kills = player.has("kills") ? player.getInt("kills") : 0;
                             int deaths = player.has("deaths") ? player.getInt("deaths") : 0;
                             int assists = player.has("assists") ? player.getInt("assists") : 0;
-                            boolean won = (isRadiant && radiantWin) || (!isRadiant && !radiantWin);
+                            // Get radiant_win from the match details object, not the local variable
+                            boolean matchRadiantWin = matchDetails.has("radiant_win") ? matchDetails.getBoolean("radiant_win") : false;
+                            boolean won = (isRadiant && matchRadiantWin) || (!isRadiant && !matchRadiantWin);
                             
                             playerStmt.setInt(1, heroId);
                             playerStmt.setBoolean(2, isRadiant);
