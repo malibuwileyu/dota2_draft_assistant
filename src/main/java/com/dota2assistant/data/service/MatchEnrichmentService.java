@@ -156,7 +156,7 @@ public class MatchEnrichmentService {
                             
                             // Process each match in the batch
                             for (Long id : batch) {
-                                if (processedMatches.contains(id) || currentlyProcessing.contains(id)) {
+                                if (processedMatches.containsKey(id) || currentlyProcessing.contains(id)) {
                                     continue;
                                 }
                                 
@@ -266,7 +266,7 @@ public class MatchEnrichmentService {
                     int added = 0;
                     for (Long matchId : matchesToEnrich) {
                         // Skip already processed or currently processing
-                        if (processedMatches.contains(matchId) || currentlyProcessing.contains(matchId)) {
+                        if (processedMatches.containsKey(matchId) || currentlyProcessing.contains(matchId)) {
                             continue;
                         }
                         
