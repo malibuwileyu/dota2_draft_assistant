@@ -5,6 +5,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.text.TextFlow?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -256,6 +257,23 @@
                                 </HBox>
                                 
                                 <Separator/>
+                                
+                                <!-- Notification area for match processing errors -->
+                                <VBox fx:id="matchNotificationArea" spacing="5" visible="false" managed="false">
+                                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="notification-header">
+                                        <padding>
+                                            <Insets top="5" right="10" bottom="5" left="10"/>
+                                        </padding>
+                                        <Label fx:id="matchNotificationLabel" text="Match Processing Issues" style="-fx-font-weight: bold;"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="dismissNotificationButton" text="Dismiss" onAction="#onDismissNotification" />
+                                    </HBox>
+                                    <TextFlow fx:id="matchErrorsTextFlow" styleClass="notification-content" maxHeight="80">
+                                        <padding>
+                                            <Insets top="5" right="10" bottom="5" left="10"/>
+                                        </padding>
+                                    </TextFlow>
+                                </VBox>
                                 
                                 <!-- Sync Settings Component -->
                                 <fx:include source="components/SyncSettingsView.fxml" fx:id="syncSettingsContainer" />

@@ -99,6 +99,11 @@ public class PlayerRecommendationService {
                 globalWeight, 
                 personalWeight
             );
+            
+            // Save the performance data to the database
+            if (!matches.isEmpty()) {
+                savePerformanceToDatabase(accountId, performance);
+            }
         }
         
         // Cache the results
@@ -423,6 +428,205 @@ public class PlayerRecommendationService {
     public void clearCache(long accountId) {
         playerPerformanceCache.remove(accountId);
         cacheTimestamps.remove(accountId);
+    }
+    
+    /**
+     * Saves hero performance data to the database.
+     * 
+     * @param accountId The player account ID
+     * @param performance Map of hero ID to performance metrics
+     * @return Number of records saved
+     */
+    public int savePerformanceToDatabase(long accountId, Map<Integer, PlayerHeroPerformance> performance) {
+        if (performance == null || performance.isEmpty()) {
+            return 0;
+        }
+        
+        String sql = "INSERT INTO player_hero_performance "
+                + "(account_id, hero_id, matches_count, wins_count, total_kills, total_deaths, "
+                + "total_assists, last_played, performance_score, comfort_score, pick_rate, is_comfort_pick, calculated_date) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) "
+                + "ON CONFLICT (account_id, hero_id) DO UPDATE SET "
+                + "matches_count = EXCLUDED.matches_count, "
+                + "wins_count = EXCLUDED.wins_count, "
+                + "total_kills = EXCLUDED.total_kills, "
+                + "total_deaths = EXCLUDED.total_deaths, "
+                + "total_assists = EXCLUDED.total_assists, "
+                + "last_played = EXCLUDED.last_played, "
+                + "performance_score = EXCLUDED.performance_score, "
+                + "comfort_score = EXCLUDED.comfort_score, "
+                + "pick_rate = EXCLUDED.pick_rate, "
+                + "is_comfort_pick = EXCLUDED.is_comfort_pick, "
+                + "calculated_date = CURRENT_TIMESTAMP";
+                
+        int savedCount = 0;
+        
+        try (Connection conn = databaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                for (PlayerHeroPerformance heroPerf : performance.values()) {
+                    // Skip heroes with no matches
+                    if (heroPerf.getMatches() == 0) {
+                        continue;
+                    }
+                    
+                    stmt.setLong(1, accountId);
+                    stmt.setInt(2, heroPerf.getHero().getId());
+                    stmt.setInt(3, heroPerf.getMatches());
+                    // Calculate wins from win rate
+                    int wins = (int)Math.round(heroPerf.getWinRate() * heroPerf.getMatches());
+                    stmt.setInt(4, wins);
+                    
+                    // Estimate kills, deaths, assists based on KDA ratio and match count
+                    // For simplicity, we're using rough estimates here
+                    double kdaRatio = heroPerf.getKdaRatio();
+                    int avgKills = (int)(kdaRatio * 0.4 * heroPerf.getMatches());
+                    int avgDeaths = heroPerf.getMatches();  // Assume 1 death per match as base
+                    int avgAssists = (int)(kdaRatio * 0.6 * heroPerf.getMatches());
+                    
+                    stmt.setInt(5, avgKills);
+                    stmt.setInt(6, avgDeaths);
+                    stmt.setInt(7, avgAssists);
+                    
+                    // Last played timestamp
+                    if (heroPerf.getLastPlayed() != null) {
+                        stmt.setTimestamp(8, java.sql.Timestamp.valueOf(heroPerf.getLastPlayed()));
+                    } else {
+                        stmt.setNull(8, java.sql.Types.TIMESTAMP);
+                    }
+                    
+                    // Performance calculation
+                    double performanceScore = heroPerf.calculatePerformanceScore();
+                    stmt.setDouble(9, performanceScore);
+                    
+                    // Comfort score (confidence * win rate)
+                    double comfortScore = heroPerf.getConfidenceScore() * heroPerf.getWinRate();
+                    stmt.setDouble(10, comfortScore);
+                    
+                    stmt.setDouble(11, heroPerf.getPickRate());
+                    stmt.setBoolean(12, heroPerf.isComfortPick());
+                    
+                    stmt.addBatch();
+                    savedCount++;
+                }
+                
+                if (savedCount > 0) {
+                    stmt.executeBatch();
+                }
+                
+                // Also update player_calculations table to track when we last calculated stats
+                updatePlayerCalculations(conn, accountId, savedCount);
+                
+                conn.commit();
+                LOGGER.info("Saved " + savedCount + " hero performance records for player " + accountId);
+                
+            } catch (SQLException e) {
+                conn.rollback();
+                LOGGER.log(Level.SEVERE, "Error saving player hero performance data", e);
+                return 0;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting database connection", e);
+            return 0;
+        }
+        
+        return savedCount;
+    }
+    
+    /**
+     * Updates player calculations tracking table.
+     * 
+     * @param conn Database connection
+     * @param accountId Player account ID
+     * @param recordCount Number of records processed
+     * @throws SQLException If database error occurs
+     */
+    private void updatePlayerCalculations(Connection conn, long accountId, int recordCount) throws SQLException {
+        String sql = "INSERT INTO player_calculations "
+                + "(account_id, last_calculation_date, matches_processed, is_complete) "
+                + "VALUES (?, CURRENT_TIMESTAMP, ?, TRUE) "
+                + "ON CONFLICT (account_id) DO UPDATE SET "
+                + "last_calculation_date = CURRENT_TIMESTAMP, "
+                + "matches_processed = EXCLUDED.matches_processed, "
+                + "is_complete = TRUE";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, accountId);
+            stmt.setInt(2, recordCount);
+            stmt.executeUpdate();
+        }
+    }
+    
+    /**
+     * Synchronizes player hero performance data for all active players.
+     * This method should be called periodically to keep recommendations up-to-date.
+     * 
+     * @param maxPlayers Maximum number of players to process
+     * @return Number of players processed
+     */
+    public int synchronizePlayerPerformanceData(int maxPlayers) {
+        String sql = "SELECT account_id FROM players "
+                + "LEFT JOIN player_calculations pc ON players.account_id = pc.account_id "
+                + "WHERE pc.last_calculation_date IS NULL OR "
+                + "pc.last_calculation_date < CURRENT_TIMESTAMP - INTERVAL '1 day' "
+                + "ORDER BY pc.last_calculation_date ASC NULLS FIRST "
+                + "LIMIT ?";
+        
+        int processedCount = 0;
+        
+        try (Connection conn = databaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, maxPlayers);
+            
+            List<Long> playerIds = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    playerIds.add(rs.getLong("account_id"));
+                }
+            }
+            
+            // Process each player
+            for (Long accountId : playerIds) {
+                try {
+                    // Clear any existing cache for this player
+                    clearCache(accountId);
+                    
+                    // This will recompute and save performance data
+                    getPlayerHeroPerformance(accountId);
+                    
+                    processedCount++;
+                    LOGGER.info("Synchronized performance data for player " + accountId);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Error synchronizing player " + accountId, e);
+                    
+                    // Record the error in player_calculations
+                    String errorSql = "INSERT INTO player_calculations "
+                            + "(account_id, last_calculation_date, is_complete, error_message) "
+                            + "VALUES (?, CURRENT_TIMESTAMP, FALSE, ?) "
+                            + "ON CONFLICT (account_id) DO UPDATE SET "
+                            + "last_calculation_date = CURRENT_TIMESTAMP, "
+                            + "is_complete = FALSE, "
+                            + "error_message = EXCLUDED.error_message";
+                    
+                    try (PreparedStatement errorStmt = conn.prepareStatement(errorSql)) {
+                        errorStmt.setLong(1, accountId);
+                        errorStmt.setString(2, e.getMessage());
+                        errorStmt.executeUpdate();
+                    } catch (SQLException se) {
+                        LOGGER.log(Level.SEVERE, "Error recording calculation failure", se);
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving players for synchronization", e);
+        }
+        
+        return processedCount;
     }
     
     /**

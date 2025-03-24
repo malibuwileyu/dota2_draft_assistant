@@ -252,19 +252,23 @@ public class AdminMonitoringController implements Initializable, MatchEnrichment
     
     /**
      * Shows a notification about match processing issues
+     * Uses the central notification area instead of showing popup alerts
      */
     private void showMatchProcessingNotification(long matchId, String status, int retryCount, String message) {
         Platform.runLater(() -> {
             try {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Match Processing Issue");
-                alert.setHeaderText("Match " + matchId + " Failed Processing");
-                alert.setContentText("Status: " + status + "\n" +
-                                   "Retry Count: " + retryCount + "\n" +
-                                   "Message: " + (message != null ? message : "Unknown error"));
+                // Create a simplified error message for the notification area
+                String errorMsg = "Match " + matchId + " failed processing: " + status;
                 
-                // Don't block, just show the notification
-                alert.show();
+                // Get the main controller to use its notification area
+                MainController mainController = AppConfig.getMainController();
+                if (mainController != null) {
+                    // Use the main controller's notification system (which is properly batched)
+                    mainController.addMatchProcessingError(errorMsg);
+                } else {
+                    // If we can't access the main controller, just log the error
+                    logger.warn("Can't display notification for match {}: {}", matchId, errorMsg);
+                }
             } catch (Exception e) {
                 logger.error("Error showing notification", e);
             }

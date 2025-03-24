@@ -15,8 +15,11 @@ import com.dota2assistant.data.model.PlayerHeroPerformance;
 import com.dota2assistant.data.model.PlayerHeroStat;
 import com.dota2assistant.data.model.PlayerMatch;
 import com.dota2assistant.data.service.PlayerRecommendationService;
+import com.dota2assistant.gsi.GsiConfig;
+import com.dota2assistant.gsi.GsiServer;
 import com.dota2assistant.ui.component.HeroCell;
 import com.dota2assistant.ui.component.HeroGridView;
+import com.dota2assistant.ui.component.LiveDraftPanel;
 import com.dota2assistant.ui.controller.UserStatusController;
 import com.dota2assistant.util.PropertyLoader;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +31,7 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import javafx.scene.layout.BorderPane;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -61,9 +65,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 import java.time.LocalDateTime;
 import org.slf4j.Logger;
@@ -194,6 +201,16 @@ public class MainController implements Initializable {
     @FXML
     private Button updateMatchesButton;
     
+    // Match notification area for displaying processing errors
+    @FXML
+    private VBox matchNotificationArea;
+    
+    @FXML
+    private Label matchNotificationLabel;
+    
+    @FXML
+    private TextFlow matchErrorsTextFlow;
+    
     @FXML
     private TabPane profileTabPane;
     
@@ -236,18 +253,23 @@ public class MainController implements Initializable {
     
     private final PropertyLoader propertyLoader;
     
+    // GSI integration
+    private LiveDraftPanel liveDraftPanel;
+    
     public MainController(DraftEngine draftEngine, 
                           AiDecisionEngine aiEngine, 
                           AnalysisEngine analysisEngine,
                           ExecutorService executorService,
                           ScheduledExecutorService timerService,
-                          PropertyLoader propertyLoader) {
+                          PropertyLoader propertyLoader,
+                          LiveDraftPanel liveDraftPanel) {
         this.draftEngine = draftEngine;
         this.aiEngine = aiEngine;
         this.analysisEngine = analysisEngine;
         this.executorService = executorService;
         this.timerService = timerService;
         this.propertyLoader = propertyLoader;
+        this.liveDraftPanel = liveDraftPanel;
         
         // PlayerRecommendationService will be set later when database connections are available
         // This typically happens after login
@@ -279,11 +301,25 @@ public class MainController implements Initializable {
         setupListeners();
         setupUserStatusHandler();
         setupSyncSettingsHandler(); // Setup sync settings handler
+        setupGsiIntegration(); // Setup GSI integration
         setupTabListeners();
         applyCssClasses();
         setupWinProbabilityBar();
+        setupNotificationArea();
         resetUI();
         loadHeroes();
+    }
+    
+    /**
+     * Sets up the notification area for match processing errors
+     */
+    private void setupNotificationArea() {
+        // Hide by default
+        matchNotificationArea.setVisible(false);
+        matchNotificationArea.setManaged(false);
+        
+        // Ensure scroll behavior works correctly for the text flow
+        matchErrorsTextFlow.setMaxHeight(80);
     }
     
     /**
@@ -2233,15 +2269,13 @@ public class MainController implements Initializable {
                 List<Hero> radiantTeam = draftEngine.getTeamPicks(Team.RADIANT);
                 List<Hero> direTeam = draftEngine.getTeamPicks(Team.DIRE);
                 List<Hero> banned = draftEngine.getBannedHeroes();
-                
-                // Get hero suggestions
-                List<Hero> pickHeroes = aiEngine.suggestPicks(radiantTeam, direTeam, banned, 5);
-                List<Hero> banHeroes = aiEngine.suggestBans(radiantTeam, direTeam, banned, 5);
+                Team currentTeam = draftEngine.getCurrentTeam();
                 
                 // Check if we have player-specific recommendations to include
-                boolean includePlayerData = false;
+                Map<Integer, PlayerHeroPerformance> playerPerformanceData = null;
                 long playerAccountId = 0;
                 
+                // Get the player's hero performance data if available
                 if (playerRecommendationService != null && 
                     userStatusContainerController != null && 
                     userStatusContainerController.getUserService().isLoggedIn()) {
@@ -2252,157 +2286,309 @@ public class MainController implements Initializable {
                             .getCurrentUser().orElseThrow().getSteamId();
                         long steam64Id = Long.parseLong(steamId);
                         playerAccountId = (int)(steam64Id & 0xFFFFFFFFL);
-                        includePlayerData = true;
                         
-                        logger.info("Including player-specific recommendations for account ID: {}", 
-                                   playerAccountId);
+                        logger.info("Loading player performance data for account ID: {}", playerAccountId);
                         
-                        // Get the player's comfort heroes and add them to the picks list if they're not already there
-                        if (includePlayerData) {
-                            List<PlayerHeroPerformance> comfortHeroes = 
-                                playerRecommendationService.getComfortHeroes(playerAccountId, 3);
+                        // Use hero performance map if we already have it
+                        if (!heroPerformanceMap.isEmpty()) {
+                            playerPerformanceData = heroPerformanceMap;
+                        } else {
+                            // Otherwise load from service
+                            playerPerformanceData = playerRecommendationService.getPlayerHeroPerformance(playerAccountId);
                             
-                            for (PlayerHeroPerformance perf : comfortHeroes) {
-                                Hero comfortHero = perf.getHero();
-                                // Only add if not banned and not already in picks list
-                                if (comfortHero != null && 
-                                    !banned.contains(comfortHero) && 
-                                    !pickHeroes.contains(comfortHero)) {
-                                    
-                                    // Add to beginning of list for higher priority
-                                    pickHeroes.add(0, comfortHero);
-                                    
-                                    // Ensure we don't exceed the limit
-                                    if (pickHeroes.size() > 5) {
-                                        pickHeroes.remove(pickHeroes.size() - 1);
-                                    }
-                                }
-                            }
+                            // Cache for future use
+                            heroPerformanceMap.putAll(playerPerformanceData);
                         }
+                        
+                        logger.info("Loaded performance data for {} heroes", playerPerformanceData.size());
+                        
                     } catch (Exception e) {
-                        logger.warn("Failed to include player recommendations", e);
-                        includePlayerData = false;
+                        logger.warn("Failed to load player performance data", e);
                     }
                 }
                 
-                // Convert to detailed recommendations
-                List<HeroRecommendation> pickRecommendations = new ArrayList<>();
-                List<HeroRecommendation> banRecommendations = new ArrayList<>();
-                
-                // Process pick recommendations
-                for (Hero hero : pickHeroes) {
-                    // Get synergy and counter metrics for the recommendation
-                    double synergyScore = analysisEngine.calculateSynergy(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
-                    double counterScore = analysisEngine.calculateCounter(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
-                    double winRate = analysisEngine.getHeroWinRate(hero);
-                    int pickCount = analysisEngine.getHeroPickCount(hero);
+                // Check if DraftRecommendationService is available
+                if (draftEngine instanceof CaptainsModeDraftEngine && 
+                    ((CaptainsModeDraftEngine)draftEngine).getDraftRecommendationService() != null) {
                     
-                    // Generate synergy and counter reasons
-                    List<String> synergyReasons = generateSynergyReasons(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
-                    List<String> counterReasons = generateCounterReasons(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+                    // Use the enhanced recommendation service
+                    var recommendationService = ((CaptainsModeDraftEngine)draftEngine).getDraftRecommendationService();
                     
-                    // Base score calculation
-                    double score = 0.4 * synergyScore + 0.4 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
+                    // Get current team for recommendations
+                    Team playerTeam = mapSideComboBox.getValue().equals("Radiant") ? Team.RADIANT : Team.DIRE;
                     
-                    // Add player-specific performance data if available
-                    if (includePlayerData && heroPerformanceMap.containsKey(hero.getId())) {
-                        PlayerHeroPerformance heroPerf = heroPerformanceMap.get(hero.getId());
-                        
-                        if (heroPerf != null) {
-                            // Boost score for comfort heroes
-                            if (heroPerf.isComfortPick()) {
-                                score *= 1.2; // 20% boost for comfort heroes
-                                synergyReasons.add(0, "Your comfort hero ★");
-                            }
-                            
-                            // Adjust by personal win rate if significant matches played
-                            if (heroPerf.getMatches() >= 5) {
-                                double personalBoost = (heroPerf.getWinRate() - 0.5) * 0.3; // +/- 15% max
-                                score += personalBoost;
-                                
-                                // Add reason for personal performance
-                                if (heroPerf.getWinRate() > 0.55) {
-                                    synergyReasons.add("Strong personal win rate: " + 
-                                                    heroPerf.getWinRateFormatted());
-                                }
-                            }
-                        }
-                    }
+                    // Get personalized recommendations
+                    List<com.dota2assistant.data.model.PlayerHeroRecommendation> pickRecs = 
+                        recommendationService.getRecommendedPicks(
+                            radiantTeam, direTeam, banned, playerTeam, playerPerformanceData, 10);
                     
-                    // Create recommendation with detailed metrics and reasons
-                    HeroRecommendation recommendation = 
-                        new HeroRecommendation(
-                            hero, score, winRate, synergyScore, counterScore, pickCount, 
-                            synergyReasons, counterReasons
-                        );
+                    List<com.dota2assistant.data.model.PlayerHeroRecommendation> banRecs = 
+                        recommendationService.getRecommendedBans(
+                            radiantTeam, direTeam, banned, playerTeam, playerPerformanceData, 10);
                     
-                    pickRecommendations.add(recommendation);
-                }
-                
-                // Sort the pick recommendations by the final score
-                pickRecommendations.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
-                
-                // Process ban recommendations - similar approach as picks but with a focus on counters
-                for (Hero hero : banHeroes) {
-                    double synergyScore = analysisEngine.calculateSynergy(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
-                    double counterScore = analysisEngine.calculateCounter(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
-                    double winRate = analysisEngine.getHeroWinRate(hero);
-                    int pickCount = analysisEngine.getHeroPickCount(hero);
-                    
-                    List<String> synergyReasons = generateSynergyReasons(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
-                    List<String> counterReasons = generateCounterReasons(hero, 
-                            draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
-                    
-                    double score = 0.3 * synergyScore + 0.5 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
-                    
-                    // For ban recommendations, consider heroes that counter your comfort picks
-                    if (includePlayerData) {
-                        // Try to get the player's comfort heroes
-                        try {
-                            List<PlayerHeroPerformance> comfortHeroes = 
-                                playerRecommendationService.getComfortHeroes(playerAccountId, 5);
-                            
-                            // Check if this hero is a strong counter to any of the player's comfort heroes
-                            for (PlayerHeroPerformance comfortHero : comfortHeroes) {
-                                double counterStrength = analysisEngine.calculateHeroCounter(
-                                    hero, comfortHero.getHero());
-                                
-                                // If this is a strong counter to a comfort hero, prioritize the ban
-                                if (counterStrength > 0.65) {
-                                    score *= 1.15; // 15% boost to ban priority
-                                    counterReasons.add(0, "Counters your comfort hero " + 
-                                                      comfortHero.getHero().getLocalizedName());
-                                    break; // Only add this reason once
-                                }
-                            }
-                        } catch (Exception e) {
-                            logger.warn("Error calculating player-specific ban priorities", e);
-                        }
-                    }
-                    
-                    banRecommendations.add(new HeroRecommendation(
-                        hero, score, winRate, synergyScore, counterScore, pickCount,
-                        synergyReasons, counterReasons
-                    ));
-                }
-                
-                // Sort the ban recommendations by the final score
-                banRecommendations.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
+                    // Convert to UI recommendations
+                    List<HeroRecommendation> pickRecommendations = convertPlayerRecommendations(pickRecs);
+                    List<HeroRecommendation> banRecommendations = convertPlayerRecommendations(banRecs);
                 
                 Platform.runLater(() -> {
-                    recommendedPicks.setAll(pickRecommendations);
-                    recommendedBans.setAll(banRecommendations);
+                        recommendedPicks.setAll(pickRecommendations);
+                        recommendedBans.setAll(banRecommendations);
                 });
+                    
+                } else {
+                    // Fall back to basic recommendations when service is not available
+                    fallbackRecommendations(radiantTeam, direTeam, banned, currentTeam, playerPerformanceData);
+                }
             } catch (Exception e) {
                 logger.error("Failed to update recommendations", e);
+                
+                // Fall back to empty recommendations in case of error
+                Platform.runLater(() -> {
+                    recommendedPicks.clear();
+                    recommendedBans.clear();
+                });
             }
+        });
+    }
+    
+    /**
+     * Convert PlayerHeroRecommendation objects to UI HeroRecommendation objects.
+     */
+    private List<HeroRecommendation> convertPlayerRecommendations(
+            List<com.dota2assistant.data.model.PlayerHeroRecommendation> playerRecs) {
+        
+        List<HeroRecommendation> recommendations = new ArrayList<>();
+        
+        for (com.dota2assistant.data.model.PlayerHeroRecommendation playerRec : playerRecs) {
+            Hero hero = playerRec.getHero();
+            double score = playerRec.getRecommendationScore() / 10.0; // Scale to 0-1
+            double winRate = playerRec.getWinRate();
+            int matchCount = playerRec.getMatchesPlayed();
+            
+            // Get synergy and counter scores from analysis engine
+            double synergyScore = analysisEngine.calculateSynergy(
+                hero, 
+                draftEngine.getCurrentTeam() == Team.RADIANT ? 
+                    draftEngine.getTeamPicks(Team.RADIANT) : draftEngine.getTeamPicks(Team.DIRE)
+            );
+            
+            double counterScore = analysisEngine.calculateCounter(
+                hero, 
+                draftEngine.getCurrentTeam() == Team.RADIANT ? 
+                    draftEngine.getTeamPicks(Team.DIRE) : draftEngine.getTeamPicks(Team.RADIANT)
+            );
+            
+            // Parse the reason into synergy and counter reasons
+            List<String> synergyReasons = new ArrayList<>();
+            List<String> counterReasons = new ArrayList<>();
+            
+            String reason = playerRec.getRecommendationReason();
+            
+            // Add main reason to appropriate list based on recommendation type
+            switch (playerRec.getRecommendationType()) {
+                case COMFORT:
+                case SYNERGY:
+                    synergyReasons.add(reason);
+                    break;
+                case COUNTER:
+                    counterReasons.add(reason);
+                    break;
+                case META:
+                    synergyReasons.add(reason);
+                    break;
+                default:
+                    synergyReasons.add(reason);
+            }
+            
+            // Mark comfort picks
+            if (playerRec.isComfortPick()) {
+                if (!synergyReasons.get(0).contains("comfort")) {
+                    synergyReasons.add(0, "Your comfort hero ★");
+                }
+            }
+            
+            HeroRecommendation recommendation = new HeroRecommendation(
+                hero, score, winRate, synergyScore, counterScore, matchCount, 
+                synergyReasons, counterReasons
+            );
+            
+            recommendations.add(recommendation);
+        }
+        
+        return recommendations;
+    }
+    
+    /**
+     * Fallback recommendation generator when the enhanced service is not available.
+     */
+    private void fallbackRecommendations(
+            List<Hero> radiantTeam, 
+            List<Hero> direTeam, 
+            List<Hero> banned, 
+            Team currentTeam,
+            Map<Integer, PlayerHeroPerformance> playerPerformanceData) {
+        
+        // Get hero suggestions
+        List<Hero> pickHeroes = aiEngine.suggestPicks(radiantTeam, direTeam, banned, 5);
+        List<Hero> banHeroes = aiEngine.suggestBans(radiantTeam, direTeam, banned, 5);
+        
+        // Process player data to get comfort heroes
+        boolean includePlayerData = playerPerformanceData != null && !playerPerformanceData.isEmpty();
+        long playerAccountId = 0;
+        
+        if (includePlayerData && playerRecommendationService != null && 
+            userStatusContainerController != null && 
+            userStatusContainerController.getUserService().isLoggedIn()) {
+            
+            try {
+                // Get current user's account ID
+                String steamId = userStatusContainerController.getUserService()
+                    .getCurrentUser().orElseThrow().getSteamId();
+                long steam64Id = Long.parseLong(steamId);
+                playerAccountId = (int)(steam64Id & 0xFFFFFFFFL);
+                
+                logger.info("Including player-specific recommendations for account ID: {}", playerAccountId);
+                
+                // Get the player's comfort heroes and add them to the picks list if they're not already there
+                List<PlayerHeroPerformance> comfortHeroes = 
+                    playerRecommendationService.getComfortHeroes(playerAccountId, 3);
+                
+                for (PlayerHeroPerformance perf : comfortHeroes) {
+                    Hero comfortHero = perf.getHero();
+                    // Only add if not banned and not already in picks list
+                    if (comfortHero != null && 
+                        !banned.contains(comfortHero) && 
+                        !pickHeroes.contains(comfortHero)) {
+                        
+                        // Add to beginning of list for higher priority
+                        pickHeroes.add(0, comfortHero);
+                        
+                        // Ensure we don't exceed the limit
+                        if (pickHeroes.size() > 5) {
+                            pickHeroes.remove(pickHeroes.size() - 1);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to include player recommendations", e);
+                includePlayerData = false;
+            }
+        }
+        
+        // Convert to detailed recommendations
+        List<HeroRecommendation> pickRecommendations = new ArrayList<>();
+        List<HeroRecommendation> banRecommendations = new ArrayList<>();
+        
+        // Process pick recommendations
+        for (Hero hero : pickHeroes) {
+            // Get synergy and counter metrics for the recommendation
+            double synergyScore = analysisEngine.calculateSynergy(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+            double counterScore = analysisEngine.calculateCounter(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+            double winRate = analysisEngine.getHeroWinRate(hero);
+            int pickCount = analysisEngine.getHeroPickCount(hero);
+            
+            // Generate synergy and counter reasons
+            List<String> synergyReasons = generateSynergyReasons(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+            List<String> counterReasons = generateCounterReasons(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+            
+            // Base score calculation
+            double score = 0.4 * synergyScore + 0.4 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
+            
+            // Add player-specific performance data if available
+            if (includePlayerData && playerPerformanceData.containsKey(hero.getId())) {
+                PlayerHeroPerformance heroPerf = playerPerformanceData.get(hero.getId());
+                
+                if (heroPerf != null) {
+                    // Boost score for comfort heroes
+                    if (heroPerf.isComfortPick()) {
+                        score *= 1.2; // 20% boost for comfort heroes
+                        synergyReasons.add(0, "Your comfort hero ★");
+                    }
+                    
+                    // Adjust by personal win rate if significant matches played
+                    if (heroPerf.getMatches() >= 5) {
+                        double personalBoost = (heroPerf.getWinRate() - 0.5) * 0.3; // +/- 15% max
+                        score += personalBoost;
+                        
+                        // Add reason for personal performance
+                        if (heroPerf.getWinRate() > 0.55) {
+                            synergyReasons.add("Strong personal win rate: " + 
+                                            heroPerf.getWinRateFormatted());
+                        }
+                    }
+                }
+            }
+            
+            // Create recommendation with detailed metrics and reasons
+            HeroRecommendation recommendation = 
+                new HeroRecommendation(
+                    hero, score, winRate, synergyScore, counterScore, pickCount, 
+                    synergyReasons, counterReasons
+                );
+            
+            pickRecommendations.add(recommendation);
+        }
+        
+        // Sort the pick recommendations by the final score
+        pickRecommendations.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
+        
+        // Process ban recommendations - similar approach as picks but with a focus on counters
+        for (Hero hero : banHeroes) {
+            double synergyScore = analysisEngine.calculateSynergy(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+            double counterScore = analysisEngine.calculateCounter(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+            double winRate = analysisEngine.getHeroWinRate(hero);
+            int pickCount = analysisEngine.getHeroPickCount(hero);
+            
+            List<String> synergyReasons = generateSynergyReasons(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? direTeam : radiantTeam);
+            List<String> counterReasons = generateCounterReasons(hero, 
+                    draftEngine.getCurrentTeam() == Team.RADIANT ? radiantTeam : direTeam);
+            
+            double score = 0.3 * synergyScore + 0.5 * counterScore + 0.2 * (winRate > 0 ? winRate : 0.5);
+            
+            // For ban recommendations, consider heroes that counter your comfort picks
+            if (includePlayerData) {
+                // Try to get the player's comfort heroes
+                try {
+                    List<PlayerHeroPerformance> comfortHeroes = 
+                        playerRecommendationService.getComfortHeroes(playerAccountId, 5);
+                    
+                    // Check if this hero is a strong counter to any of the player's comfort heroes
+                    for (PlayerHeroPerformance comfortHero : comfortHeroes) {
+                        double counterStrength = analysisEngine.calculateHeroCounter(
+                            hero, comfortHero.getHero());
+                        
+                        // If this is a strong counter to a comfort hero, prioritize the ban
+                        if (counterStrength > 0.65) {
+                            score *= 1.15; // 15% boost to ban priority
+                            counterReasons.add(0, "Counters your comfort hero " + 
+                                              comfortHero.getHero().getLocalizedName());
+                            break; // Only add this reason once
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error calculating player-specific ban priorities", e);
+                }
+            }
+            
+            banRecommendations.add(new HeroRecommendation(
+                hero, score, winRate, synergyScore, counterScore, pickCount,
+                synergyReasons, counterReasons
+            ));
+        }
+        
+        // Sort the ban recommendations by the final score
+        banRecommendations.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
+        
+        Platform.runLater(() -> {
+            recommendedPicks.setAll(pickRecommendations);
+            recommendedBans.setAll(banRecommendations);
         });
     }
     
@@ -2767,10 +2953,128 @@ public class MainController implements Initializable {
     }
     
     private void showAlert(Alert.AlertType type, String title, String message) {
+        // For match processing errors, use the notification area instead of alerts
+        // Expanded pattern matching for any match-related errors
+        if ((type == Alert.AlertType.ERROR || type == Alert.AlertType.WARNING) && 
+            (message.toLowerCase().contains("match") || 
+             message.toLowerCase().contains("api") || 
+             message.toLowerCase().contains("rate limit"))) {
+            addMatchProcessingError(message);
+            return;
+        }
+        
+        // For other alerts, show the standard dialog
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    /**
+     * Adds a match processing error to the notification area
+     * This method is public so other controllers can use it
+     * 
+     * @param errorMessage The error message to display
+     */
+    public void addMatchProcessingError(String errorMessage) {
+        // Log the error but don't add every single failure to the UI
+        // This prevents flooding the notification area with hundreds of errors
+        logger.debug("Match processing error: {}", errorMessage);
+        
+        Platform.runLater(() -> {
+            // Make the notification area visible
+            matchNotificationArea.setVisible(true);
+            matchNotificationArea.setManaged(true);
+            
+            // Get the match ID if present in the error message
+            String matchId = "unknown";
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("match\\s+(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE);
+            java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
+            if (matcher.find()) {
+                matchId = matcher.group(1);
+            }
+            
+            // Check if we already have an error for this match ID
+            boolean isDuplicate = false;
+            for (javafx.scene.Node node : matchErrorsTextFlow.getChildren()) {
+                if (node instanceof Text) {
+                    Text text = (Text) node;
+                    if (text.getText().contains(matchId)) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Don't add duplicate errors for the same match ID
+            if (!isDuplicate) {
+                // Create a new error text node with a simplified message
+                String simplifiedMessage = "Failed to load match " + matchId;
+                if (errorMessage.contains("HTTP 429")) {
+                    simplifiedMessage += " - Rate limited by API";
+                } else if (errorMessage.contains("not found")) {
+                    simplifiedMessage += " - Match not found";
+                }
+                
+                // If we have too many errors already, combine them
+                if (matchErrorsTextFlow.getChildren().size() > 10) { // Limit to 5 specific errors
+                    addBatchMatchProcessingError();
+                    return;
+                }
+                
+                Text errorText = new Text(simplifiedMessage);
+                errorText.getStyleClass().add("error-text");
+                
+                // Add a new line if this isn't the first error
+                if (!matchErrorsTextFlow.getChildren().isEmpty()) {
+                    matchErrorsTextFlow.getChildren().add(new Text(System.lineSeparator()));
+                }
+                
+                // Add the error text
+                matchErrorsTextFlow.getChildren().add(errorText);
+                
+                // If we have multiple errors, update the label to reflect that
+                updateMatchErrorCount();
+                
+                // Scroll to the bottom of the text flow
+                matchErrorsTextFlow.layout();
+            }
+        });
+    }
+    
+    /**
+     * Updates the match error count in the notification label
+     */
+    private void updateMatchErrorCount() {
+        int errorCount = matchErrorsTextFlow.getChildren().size() / 2 + 1;
+        if (errorCount > 1) {
+            matchNotificationLabel.setText("Match Processing Issues (" + errorCount + ")");
+        } else {
+            matchNotificationLabel.setText("Match Processing Issue");
+        }
+    }
+    
+    /**
+     * Adds a batch error message when there are too many individual match errors
+     * This prevents the notification area from becoming too cluttered
+     */
+    private void addBatchMatchProcessingError() {
+        // Clear existing errors
+        matchErrorsTextFlow.getChildren().clear();
+        
+        // Add a summary message
+        Text summaryText = new Text("Multiple match loading failures occurred");
+        summaryText.getStyleClass().add("error-text");
+        matchErrorsTextFlow.getChildren().add(summaryText);
+        
+        matchErrorsTextFlow.getChildren().add(new Text(System.lineSeparator()));
+        
+        Text detailText = new Text("Some matches could not be loaded due to API rate limits or unavailability. " +
+                                   "This is normal and won't affect your draft assistant functionality.");
+        matchErrorsTextFlow.getChildren().add(detailText);
+        
+        // Update the label
+        matchNotificationLabel.setText("Match Processing Issues");
     }
     
     @FXML
@@ -3359,6 +3663,13 @@ public class MainController implements Initializable {
                         statusLabel.setText(String.format("Loaded %d matches (%d from cache, %d from API, %d failed)", 
                                            matches.size(), cacheHits, apiHits, failed));
                         
+                        // If there were multiple failures, add a summary message
+                        if (failed > 1) {
+                            addMatchProcessingError(String.format(
+                                "Summary: %d of %d match requests failed to process", 
+                                failed, processedCount.get() + failed));
+                        }
+                        
                         logger.info("Match loading complete: {} matches loaded ({} from cache, {} from API, {} failed)",
                                    matches.size(), cacheHits, apiHits, failed);
                     });
@@ -3366,6 +3677,11 @@ public class MainController implements Initializable {
             } catch (Exception e) {
                 logger.error("Error in match processing thread", e);
                 Platform.runLater(() -> {
+                    // Show error in notification area instead of just status label
+                    String errorMsg = "Error processing match data: " + e.getMessage();
+                    addMatchProcessingError(errorMsg);
+                    
+                    // Update status and placeholder as before
                     statusLabel.setText("Error loading match data");
                     recentMatchesTable.setPlaceholder(new Label("Error loading match data"));
                 });
@@ -3487,11 +3803,17 @@ public class MainController implements Initializable {
                         // Process the match details into a PlayerMatch object
                         return processMatchDetails(matchDetails, playerAccountId, heroesById);
                     } else {
+                        int statusCode = response.code();
                         logger.error("Failed to get match details for {}: HTTP {}", 
-                                  matchId, response.code());
+                                  matchId, statusCode);
+                        
+                        // Add to the notification area with HTTP status code
+                        String errorMsg = String.format("Match %d failed with HTTP %d: %s", 
+                                                     matchId, statusCode, response.message());
+                        addMatchProcessingError(errorMsg);
                         
                         // If rate limited, add an additional delay to recover
-                        if (response.code() == 429) {
+                        if (statusCode == 429) {
                             logger.info("Rate limited by API - adding additional delay");
                             Thread.sleep(5000); // Wait an additional 5 seconds
                         }
@@ -3509,6 +3831,8 @@ public class MainController implements Initializable {
             }
         } catch (Exception e) {
             logger.error("Error fetching match details for match ID: {}", matchId, e);
+            // Add to the notification area instead of showing an alert
+            addMatchProcessingError("Failed to process match " + matchId + ": " + e.getMessage());
             return null;
         }
     }
@@ -3670,6 +3994,18 @@ public class MainController implements Initializable {
             return null;
         } catch (Exception e) {
             logger.error("Error processing match details: {}", e.getMessage());
+            // Add to the notification area when match data processing fails
+            long matchId = 0;
+            try {
+                matchId = matchDetails.path("match_id").asLong(0);
+            } catch (Exception ex) {
+                // Ignore this exception and use 0 if matchId can't be extracted
+            }
+            
+            String errorMsg = "Error parsing match " + 
+                (matchId > 0 ? matchId : "data") + ": " + e.getMessage();
+            addMatchProcessingError(errorMsg);
+            
             return null;
         }
     }
@@ -3964,6 +4300,19 @@ public class MainController implements Initializable {
     }
     
     /**
+     * Handler for dismissing the notification area
+     */
+    @FXML
+    private void onDismissNotification() {
+        // Hide the notification area
+        matchNotificationArea.setVisible(false);
+        matchNotificationArea.setManaged(false);
+        
+        // Clear the notification content
+        matchErrorsTextFlow.getChildren().clear();
+    }
+    
+    /**
      * Loads player hero performance data from the recommendation service.
      * This updates the hero cells in the grid with performance indicators.
      */
@@ -4163,35 +4512,720 @@ public class MainController implements Initializable {
     }
     
     /**
+     * Sets up the GSI integration components for the Live Assistant tab.
+     */
+    private void setupGsiIntegration() {
+        if (liveDraftPanel == null) {
+            logger.error("LiveDraftPanel was not injected - GSI functionality will not be available");
+            return;
+        }
+        
+        // Replace the placeholder content in the Live Assistant tab with the LiveDraftPanel
+        if (liveAssistantTab != null) {
+            // Get the content of the Live Assistant tab
+            BorderPane liveAssistantPane = (BorderPane) liveAssistantTab.getContent();
+            
+            // Replace the center content with our LiveDraftPanel
+            liveAssistantPane.setCenter(liveDraftPanel);
+            
+            // If user is already logged in, update the LiveDraftPanel immediately
+            if (userStatusContainerController != null && 
+                userStatusContainerController.getUserService().isLoggedIn()) {
+                userStatusContainerController.getUserService().getCurrentUser().ifPresent(user -> {
+                    try {
+                        // Convert 64-bit Steam ID to 32-bit account ID
+                        long steamId = Long.parseLong(user.getSteamId());
+                        
+                        // Update the LiveDraftPanel with the current user's Steam ID
+                        liveDraftPanel.updateCurrentPlayer(steamId);
+                        
+                        logger.info("Updated LiveDraftPanel with Steam ID: {}", steamId);
+                    } catch (Exception e) {
+                        logger.error("Error updating LiveDraftPanel with Steam ID", e);
+                    }
+                });
+            }
+            
+            // Update the LiveDraftPanel with the current user's Steam ID when login state changes
+            userStatusContainerController.getUserService().addLoginStateListener(evt -> {
+                boolean isLoggedIn = (boolean) evt.getNewValue();
+                if (isLoggedIn) {
+                    userStatusContainerController.getUserService().getCurrentUser().ifPresent(user -> {
+                        try {
+                            // Convert 64-bit Steam ID to 32-bit account ID
+                            long steamId = Long.parseLong(user.getSteamId());
+                            
+                            // Update the LiveDraftPanel with the current user's Steam ID
+                            liveDraftPanel.updateCurrentPlayer(steamId);
+                            
+                            logger.info("Updated LiveDraftPanel with Steam ID: {}", steamId);
+                        } catch (Exception e) {
+                            logger.error("Error updating LiveDraftPanel with Steam ID", e);
+                        }
+                    });
+                }
+            });
+            
+            logger.info("GSI integration setup complete");
+        } else {
+            logger.warn("Live Assistant tab not found - GSI integration not added");
+        }
+    }
+
+    /**
      * Handler for the Connect to Game button in the Live Assistant tab.
+     * This method checks if Dota 2 is running and if GSI config is installed
+     * before initializing the connection.
      */
     @FXML
     private void onConnectToGame() {
-        statusLabel.setText("Attempting to connect to Dota 2...");
+        // Switch to the Live Assistant tab
+        switchToLiveAssistant();
         
-        // Simulate connection attempt
-        executorService.submit(() -> {
-            // Simulate network delay
-            try {
-                Thread.sleep(2000);
-                
-                // Simulate failed connection (would be real in production)
-                Platform.runLater(() -> {
-                    gameConnectionStatus.setText("Connection Failed");
-                    gameConnectionStatus.setStyle("-fx-font-weight: bold; -fx-text-fill: #ff4d4d;");
-                    
-                    showAlert(Alert.AlertType.INFORMATION, "Connection Status", 
-                            "This feature is not yet implemented.\n\n" +
-                            "In the future, this will connect to the Dota 2 Game Coordinator " +
-                            "and provide real-time assistance during drafts.");
-                    
-                    statusLabel.setText("Failed to connect to Dota 2");
-                });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.error("Connection attempt interrupted", e);
+        // Initial connection attempt status
+        updateConnectionStatus("Starting GSI connection process...", "progress");
+        
+        // Check if LiveDraftPanel is available
+        if (liveDraftPanel == null) {
+            updateConnectionStatus("Error: Live Draft Panel component not available", "error");
+            logger.error("LiveDraftPanel not available for GSI connection");
+            return;
+        }
+        
+        // First check if Dota 2 is running
+        updateConnectionStatus("Checking if Dota 2 is running...", "progress");
+        if (!com.dota2assistant.util.ProcessDetector.isDota2Running()) {
+            updateConnectionStatus("Dota 2 is not running - please start the game", "error");
+            
+            // Show alert dialog with more detailed instructions
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.INFORMATION,
+                "Dota 2 is not currently running. Please start the game before connecting.\n\n" +
+                "The GSI connection requires Dota 2 to be running in order to function properly.",
+                javafx.scene.control.ButtonType.OK
+            );
+            alert.setTitle("Dota 2 Not Running");
+            alert.setHeaderText("Game Not Detected");
+            alert.showAndWait();
+            return;
+        }
+        
+        updateConnectionStatus("Dota 2 process detected", "success");
+        
+        // Check if the GSI config is available
+        updateConnectionStatus("Checking GSI configuration...", "progress");
+        GsiConfig gsiConfig = liveDraftPanel.getGsiConfig();
+        if (gsiConfig == null) {
+            updateConnectionStatus("Error: GSI configuration component not available", "error");
+            logger.error("GSI Config component not available");
+            return;
+        }
+        
+        // Get current GSI status
+        GsiConfig.GsiStatus gsiStatus = gsiConfig.getGsiStatus();
+        
+        // If config is only in fallback location but not properly installed in Dota 2 folder,
+        // try to copy it from fallback to the actual location
+        if (!gsiStatus.isConfigInstalled()) {
+            updateConnectionStatus("GSI config not properly installed - attempting automatic repair", "warning");
+            
+            boolean configFixed = fixGsiConfigInstallation(gsiConfig);
+            if (configFixed) {
+                // Recheck config status after fixing
+                gsiStatus = gsiConfig.getGsiStatus();
+                updateConnectionStatus("GSI config installation repaired successfully", "success");
+            } else {
+                updateConnectionStatus("Could not repair GSI config installation", "error");
             }
+        } else {
+            updateConnectionStatus("GSI configuration found and validated", "success");
+        }
+        
+        if (!gsiStatus.isConfigInstalled()) {
+            // Config is still not installed, show install message
+            updateConnectionStatus("GSI config not installed - manual setup required", "error");
+            
+            // Show installation instructions
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.INFORMATION,
+                "GSI configuration needs to be installed before connecting to Dota 2.\n\n" +
+                "Click the 'Retry Installation' button in the Live Assistant's GSI Setup tab to install it.",
+                javafx.scene.control.ButtonType.OK
+            );
+            alert.setTitle("GSI Setup Required");
+            alert.setHeaderText("Game State Integration Setup");
+            alert.showAndWait();
+            return;
+        }
+        
+        // Config is installed, try to restart the GSI server
+        try {
+            // Update status
+            updateConnectionStatus("Initializing GSI server connection...", "progress");
+            
+            // Use a background thread to avoid freezing the UI
+            executorService.submit(() -> {
+                try {
+                    // Get access to the GSI server using the enhanced getGsiServerWithFallbacks method
+                    updateConnectionStatus("Accessing GSI server...", "progress");
+                    GsiServer gsiServer = getGsiServerWithFallbacks(gsiConfig);
+                    
+                    if (gsiServer != null) {
+                        // Stop and restart the server to ensure a fresh connection
+                        updateConnectionStatus("Restarting GSI server for clean connection", "progress");
+                        gsiServer.stop();
+                        Thread.sleep(500); // Brief pause
+                        gsiServer.start();
+                        
+                        // Update UI to reflect successful connection
+                        updateConnectionStatus("Connected to Dota 2 GSI", "success");
+                        
+                        // Update the connect button to show it's connected
+                        Platform.runLater(() -> {
+                            if (connectToGameButton != null) {
+                                connectToGameButton.setText("Reconnect to Game");
+                                connectToGameButton.setStyle("-fx-base: #8FBC8F;");
+                            }
+                        });
+                        
+                        logger.info("GSI server restarted successfully");
+                    } else {
+                        // Could not access GSI server, try to create a new one directly
+                        updateConnectionStatus("No existing GSI server found - creating new instance", "warning");
+                        
+                        // Create GSI state manager
+                        com.dota2assistant.gsi.GsiStateManager stateManager = new com.dota2assistant.gsi.GsiStateManager();
+                        
+                        // Create server with direct constructor
+                        GsiServer newServer = new GsiServer(gsiConfig, stateManager);
+                        newServer.start();
+                        
+                        // Update UI to reflect successful connection
+                        updateConnectionStatus("Connected with new GSI server instance", "success");
+                        
+                        // Update the connect button to show it's connected
+                        Platform.runLater(() -> {
+                            if (connectToGameButton != null) {
+                                connectToGameButton.setText("Reconnect to Game");
+                                connectToGameButton.setStyle("-fx-base: #8FBC8F;");
+                            }
+                        });
+                        
+                        logger.info("New GSI server started successfully");
+                    }
+                    
+                    // Final confirmation message after successful connection
+                    Thread.sleep(500);  // Brief pause to separate status messages
+                    updateConnectionStatus("GSI connection active - waiting for game data", "success");
+                    
+                } catch (Exception e) {
+                    // Handle any errors during server restart
+                    updateConnectionStatus("Connection error: " + e.getMessage(), "error");
+                    logger.error("Error restarting GSI server", e);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Error in connect to game action", e);
+            updateConnectionStatus("Error starting connection process: " + e.getMessage(), "error");
+        }
+    }
+    
+    /**
+     * Attempts to fix GSI configuration issues by copying the config from the fallback location
+     * to the actual Dota 2 directory.
+     * 
+     * @param gsiConfig The GSI config object
+     * @return true if the fix was successful, false otherwise
+     */
+    private boolean fixGsiConfigInstallation(GsiConfig gsiConfig) {
+        try {
+            // Get the fallback path
+            String fallbackPath = gsiConfig.getFallbackConfigPath();
+            if (fallbackPath == null || fallbackPath.isEmpty()) {
+                logger.warn("No fallback config path available - cannot fix installation");
+                updateConnectionStatus("No fallback config found - manual installation required", "error");
+                return false;
+            }
+            
+            // Check if the fallback file exists
+            updateConnectionStatus("Looking for backup GSI config file...", "progress");
+            java.io.File fallbackFile = new java.io.File(fallbackPath);
+            if (!fallbackFile.exists() || !fallbackFile.isFile()) {
+                logger.warn("Fallback config file doesn't exist: {}", fallbackPath);
+                updateConnectionStatus("Backup GSI config file not found", "error");
+                return false;
+            }
+            
+            logger.info("Found fallback config at: {}", fallbackPath);
+            updateConnectionStatus("Found backup GSI config file", "success");
+            
+            // Determine target directory based on OS
+            updateConnectionStatus("Identifying Dota 2 installation location...", "progress");
+            String userHome = System.getProperty("user.home");
+            String targetDirectory;
+            String osName = System.getProperty("os.name").toLowerCase();
+            
+            if (osName.contains("win")) {
+                // Try both user Steam directory and Program Files path
+                String userSteamPath = userHome + "\\Steam\\steamapps\\common\\dota 2 beta\\game\\dota\\cfg\\gamestate_integration\\";
+                java.io.File userSteamDir = new java.io.File(userSteamPath);
+                
+                if (userSteamDir.exists() || new java.io.File(userHome + "\\Steam").exists()) {
+                    targetDirectory = userSteamPath;
+                    updateConnectionStatus("Found Steam installation in user directory", "progress");
+                } else {
+                    targetDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\dota 2 beta\\game\\dota\\cfg\\gamestate_integration\\";
+                    updateConnectionStatus("Using default Steam Program Files location", "progress");
+                }
+            } else if (osName.contains("mac")) {
+                targetDirectory = userHome + "/Library/Application Support/Steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/";
+                updateConnectionStatus("Using standard macOS Steam location", "progress");
+            } else {
+                targetDirectory = userHome + "/.steam/steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/";
+                updateConnectionStatus("Using standard Linux Steam location", "progress");
+            }
+            
+            // Ensure the target directory exists
+            java.io.File targetDir = new java.io.File(targetDirectory);
+            if (!targetDir.exists()) {
+                updateConnectionStatus("GSI directory not found - attempting to create it", "warning");
+                boolean dirCreated = targetDir.mkdirs();
+                if (!dirCreated) {
+                    logger.warn("Failed to create target directory: {}", targetDirectory);
+                    updateConnectionStatus("Failed to create directory - insufficient permissions", "warning");
+                    
+                    // Try with admin privileges if directory creation fails
+                    updateConnectionStatus("Trying with elevated privileges...", "warning");
+                    return tryElevatedCopy(fallbackFile, targetDirectory);
+                }
+                updateConnectionStatus("Successfully created GSI directory", "success");
+            }
+            
+            // Copy the file
+            String configName = fallbackFile.getName();
+            java.io.File targetFile = new java.io.File(targetDir, configName);
+            
+            updateConnectionStatus("Installing GSI config to Dota 2 directory...", "progress");
+            // Use Java NIO for more reliable file copying
+            java.nio.file.Files.copy(
+                fallbackFile.toPath(),
+                targetFile.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+            
+            logger.info("Successfully copied GSI config to: {}", targetFile.getAbsolutePath());
+            updateConnectionStatus("GSI config successfully installed", "success");
+            return true;
+            
+        } catch (Exception e) {
+            logger.error("Error fixing GSI config installation", e);
+            updateConnectionStatus("Installation error: " + e.getMessage(), "error");
+            
+            // If normal copy fails, try with admin privileges as a fallback
+            try {
+                String fallbackPath = gsiConfig.getFallbackConfigPath();
+                if (fallbackPath != null && !fallbackPath.isEmpty()) {
+                    updateConnectionStatus("Attempting installation with administrator rights", "warning");
+                    return tryElevatedCopy(new java.io.File(fallbackPath), null);
+                }
+            } catch (Exception ex) {
+                logger.error("Error during elevated copy attempt", ex);
+                updateConnectionStatus("Elevated installation failed: " + ex.getMessage(), "error");
+            }
+            
+            return false;
+        }
+    }
+    
+    /**
+     * Updates the UI with connection status information
+     * 
+     * @param message The status message
+     * @param type The type of status: "progress", "success", "warning", or "error"
+     */
+    private void updateConnectionStatus(String message, String type) {
+        Platform.runLater(() -> {
+            // Update the game connection status label
+            if (gameConnectionStatus != null) {
+                gameConnectionStatus.setText(message);
+                
+                // Set style based on status type
+                switch (type) {
+                    case "success":
+                        gameConnectionStatus.setStyle("-fx-text-fill: #00AA00; -fx-font-weight: bold;");
+                        break;
+                    case "error":
+                        gameConnectionStatus.setStyle("-fx-text-fill: #ff4d4d; -fx-font-weight: bold;");
+                        break;
+                    case "warning":
+                        gameConnectionStatus.setStyle("-fx-text-fill: #FFA500; -fx-font-weight: bold;");
+                        break;
+                    case "progress":
+                    default:
+                        gameConnectionStatus.setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
+                        break;
+                }
+            }
+            
+            // Also update the general status label
+            if (statusLabel != null) {
+                statusLabel.setText(message);
+            }
+            
+            // Log the status update
+            logger.info("GSI Connection Status: [{}] {}", type, message);
         });
+    }
+    
+    /**
+     * Attempts to copy the GSI config file with elevated privileges
+     * 
+     * @param sourceFile The source file to copy
+     * @param targetDirectory The target directory (null for default)
+     * @return true if the operation was successful
+     */
+    private boolean tryElevatedCopy(java.io.File sourceFile, String targetDirectory) {
+        String osName = System.getProperty("os.name").toLowerCase();
+        
+        try {
+            if (osName.contains("win")) {
+                // On Windows, use PowerShell with RunAs to copy with admin privileges
+                updateConnectionStatus("Preparing administrator installation on Windows", "progress");
+                
+                // Define the target directory if not provided
+                if (targetDirectory == null || targetDirectory.isEmpty()) {
+                    targetDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\dota 2 beta\\game\\dota\\cfg\\gamestate_integration\\";
+                }
+                
+                // Create a temporary PowerShell script to copy the file with elevation
+                updateConnectionStatus("Creating installation script...", "progress");
+                java.io.File psScript = new java.io.File(sourceFile.getParent(), "copy_gsi_config.ps1");
+                try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(psScript))) {
+                    writer.write("# Create the destination directory if it doesn't exist\n");
+                    writer.write("$destinationDir = \"" + targetDirectory.replace("\\", "\\\\") + "\"\n");
+                    writer.write("if (-not (Test-Path $destinationDir)) {\n");
+                    writer.write("    New-Item -ItemType Directory -Force -Path $destinationDir | Out-Null\n");
+                    writer.write("}\n\n");
+                    
+                    writer.write("# Copy the file\n");
+                    writer.write("Copy-Item -Path \"" + sourceFile.getAbsolutePath().replace("\\", "\\\\") + 
+                               "\" -Destination \"$destinationDir" + sourceFile.getName() + "\" -Force\n\n");
+                    
+                    writer.write("# Check if successful\n");
+                    writer.write("if (Test-Path \"$destinationDir" + sourceFile.getName() + "\") {\n");
+                    writer.write("    Write-Host \"GSI config installed successfully!\"\n");
+                    writer.write("    exit 0\n");
+                    writer.write("} else {\n");
+                    writer.write("    Write-Host \"Failed to install GSI config.\"\n");
+                    writer.write("    exit 1\n");
+                    writer.write("}\n");
+                }
+                
+                // Create and execute a batch file to run the PowerShell script with elevated privileges
+                java.io.File batchFile = new java.io.File(sourceFile.getParent(), "install_gsi_config_elevated.bat");
+                try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(batchFile))) {
+                    writer.write("@echo off\n");
+                    writer.write("echo Requesting administrator privileges to install GSI config...\n");
+                    writer.write("powershell -Command \"Start-Process -Verb RunAs 'powershell' -ArgumentList '-ExecutionPolicy Bypass -File \"\"" + 
+                               psScript.getAbsolutePath().replace("\\", "\\\\") + "\"\"' -Wait\"\n");
+                    writer.write("if %errorlevel% equ 0 (\n");
+                    writer.write("    echo GSI config installed successfully!\n");
+                    writer.write(") else (\n");
+                    writer.write("    echo Failed to install GSI config or user cancelled the UAC prompt.\n");
+                    writer.write(")\n");
+                    writer.write("exit\n");
+                }
+                
+                // Make the batch file executable
+                batchFile.setExecutable(true);
+                
+                // Run the batch file
+                updateConnectionStatus("Windows UAC prompt will appear - please approve it", "warning");
+                Process process = new ProcessBuilder(batchFile.getAbsolutePath())
+                    .redirectErrorStream(true)
+                    .start();
+                
+                // Wait for completion
+                updateConnectionStatus("Waiting for administrator approval...", "warning");
+                process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
+                
+                // Read output
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    StringBuilder output = new StringBuilder();
+                    while ((line = reader.readLine()) != null) {
+                        output.append(line).append("\n");
+                    }
+                    logger.info("Elevated copy process output: {}", output.toString());
+                }
+                
+                // Check if successful by waiting a moment and then checking if the file exists
+                updateConnectionStatus("Verifying GSI config installation...", "progress");
+                Thread.sleep(3000);
+                String targetPath = targetDirectory + sourceFile.getName();
+                
+                // Use PowerShell to check if the file exists (to handle permission issues with direct access)
+                Process checkProcess = new ProcessBuilder(
+                    "powershell", 
+                    "-Command",
+                    "Test-Path \"" + targetPath + "\""
+                ).start();
+                
+                // Read the result
+                try (java.util.Scanner scanner = new java.util.Scanner(checkProcess.getInputStream())) {
+                    if (scanner.hasNextLine() && scanner.nextLine().trim().equalsIgnoreCase("True")) {
+                        logger.info("Verified that GSI config was successfully installed to: {}", targetPath);
+                        updateConnectionStatus("GSI config installed successfully with administrator rights", "success");
+                        return true;
+                    }
+                }
+                
+                logger.warn("Could not verify successful GSI config installation after elevated copy");
+                updateConnectionStatus("Could not verify installation - please check Steam directory manually", "warning");
+                return false;
+                
+            } else if (osName.contains("mac") || osName.contains("linux")) {
+                // Use sudo or similar on Mac/Linux
+                // This approach requires a terminal window and user interaction
+                
+                // Define the target directory if not provided
+                if (targetDirectory == null || targetDirectory.isEmpty()) {
+                    if (osName.contains("mac")) {
+                        targetDirectory = System.getProperty("user.home") + 
+                            "/Library/Application Support/Steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/";
+                    } else {
+                        targetDirectory = System.getProperty("user.home") + 
+                            "/.steam/steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/";
+                    }
+                }
+                
+                String systemType = osName.contains("mac") ? "macOS" : "Linux";
+                updateConnectionStatus("Preparing elevated installation on " + systemType, "progress");
+                
+                // Create a shell script
+                updateConnectionStatus("Creating sudo installation script...", "progress");
+                java.io.File shellScript = new java.io.File(sourceFile.getParent(), "install_gsi_config.sh");
+                try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(shellScript))) {
+                    writer.write("#!/bin/bash\n\n");
+                    writer.write("TARGET_DIR=\"" + targetDirectory + "\"\n\n");
+                    writer.write("echo \"Creating target directory if needed...\"\n");
+                    writer.write("sudo mkdir -p \"$TARGET_DIR\"\n\n");
+                    writer.write("echo \"Copying config file...\"\n");
+                    writer.write("sudo cp \"" + sourceFile.getAbsolutePath() + "\" \"$TARGET_DIR" + sourceFile.getName() + "\"\n\n");
+                    writer.write("if [ $? -eq 0 ]; then\n");
+                    writer.write("    echo \"GSI config installed successfully!\"\n");
+                    writer.write("    exit 0\n");
+                    writer.write("else\n");
+                    writer.write("    echo \"Failed to install GSI config.\"\n");
+                    writer.write("    exit 1\n");
+                    writer.write("fi\n");
+                }
+                
+                // Make the script executable
+                shellScript.setExecutable(true);
+                
+                // Open a terminal window
+                updateConnectionStatus("Opening terminal window - please enter your password when prompted", "warning");
+                String[] command;
+                if (osName.contains("mac")) {
+                    command = new String[] {
+                        "osascript", 
+                        "-e", 
+                        "tell app \"Terminal\" to do script \"" + 
+                        shellScript.getAbsolutePath() + " && echo 'Press Enter to close this window' && read\""
+                    };
+                } else {
+                    // Try common Linux terminals
+                    command = new String[] {
+                        "xterm", "-e", shellScript.getAbsolutePath() + " && echo 'Press Enter to close this window' && read"
+                    };
+                }
+                
+                // Run the terminal command
+                Process process = new ProcessBuilder(command).start();
+                
+                // Wait a moment for the user to complete the process
+                updateConnectionStatus("Waiting for sudo authorization and installation to complete...", "warning");
+                Thread.sleep(5000);
+                
+                // Check if the file exists now
+                updateConnectionStatus("Verifying GSI config installation...", "progress");
+                java.io.File targetFile = new java.io.File(targetDirectory + sourceFile.getName());
+                if (targetFile.exists()) {
+                    logger.info("Verified that GSI config was successfully installed to: {}", targetFile.getAbsolutePath());
+                    updateConnectionStatus("GSI config installed successfully with sudo privileges", "success");
+                    return true;
+                }
+                
+                logger.warn("Could not verify successful GSI config installation after sudo copy");
+                updateConnectionStatus("Cannot verify installation - please check terminal window", "warning");
+                
+                // Return false because we can't verify success
+                return false;
+            }
+            
+            updateConnectionStatus("Unsupported operating system for elevated installation", "error");
+            return false;
+        } catch (Exception e) {
+            logger.error("Error in elevated copy process", e);
+            updateConnectionStatus("Error during elevated installation: " + e.getMessage(), "error");
+            return false;
+        }
+    }
+    
+    /**
+     * Gets the GSI server instance using multiple fallback approaches.
+     * This method implements a chain of attempts to get the GSI server:
+     * 1. First tries to get it from LiveDraftPanel
+     * 2. Then tries to get it through GsiConfig
+     * 3. Then tries to get it from AppConfig through reflection
+     * 4. Then tries to get it from Spring ApplicationContext
+     * 5. Finally tries to create a new instance if all else fails
+     * 
+     * @param gsiConfig The GsiConfig instance to use for fallback creation
+     * @return The GsiServer instance if found or created, null otherwise
+     */
+    private GsiServer getGsiServerWithFallbacks(GsiConfig gsiConfig) {
+        GsiServer gsiServer = null;
+        
+        // Attempt 1: Get from LiveDraftPanel
+        try {
+            logger.info("Attempting to get GSI server from LiveDraftPanel");
+            gsiServer = liveDraftPanel.getGsiServer();
+            if (gsiServer != null) {
+                logger.info("Successfully retrieved GSI server from LiveDraftPanel");
+                return gsiServer;
+            }
+        } catch (Exception e) {
+            logger.warn("Error getting GSI server from LiveDraftPanel: {}", e.getMessage());
+        }
+        
+        // Attempt 2: Get from GsiConfig directly
+        try {
+            logger.info("Attempting to get GSI server from GsiConfig");
+            gsiServer = gsiConfig.getGsiServer();
+            if (gsiServer != null) {
+                logger.info("Successfully retrieved GSI server from GsiConfig");
+                return gsiServer;
+            }
+        } catch (Exception e) {
+            logger.warn("Error getting GSI server from GsiConfig: {}", e.getMessage());
+        }
+        
+        // Attempt 3: Try to get GsiServer bean from AppConfig using reflection
+        try {
+            logger.info("Attempting to get GSI server from AppConfig via reflection");
+            java.lang.reflect.Field appConfigField = null;
+            
+            // Try to find AppConfig field in this class
+            for (java.lang.reflect.Field field : getClass().getDeclaredFields()) {
+                if (field.getName().equals("appConfig") || 
+                    (field.getType().getName().contains("AppConfig") || 
+                     field.getType().getSimpleName().equals("AppConfig"))) {
+                    appConfigField = field;
+                    break;
+                }
+            }
+            
+            if (appConfigField != null) {
+                appConfigField.setAccessible(true);
+                Object appConfig = appConfigField.get(this);
+                if (appConfig != null) {
+                    // Look for a getGsiServer method
+                    for (java.lang.reflect.Method method : appConfig.getClass().getDeclaredMethods()) {
+                        if (method.getName().equals("getGsiServer") || 
+                            (method.getReturnType() == GsiServer.class && method.getParameterCount() == 0)) {
+                            method.setAccessible(true);
+                            Object result = method.invoke(appConfig);
+                            if (result instanceof GsiServer) {
+                                gsiServer = (GsiServer) result;
+                                logger.info("Successfully retrieved GSI server from AppConfig via reflection");
+                                return gsiServer;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error getting GSI server from AppConfig via reflection: {}", e.getMessage());
+        }
+        
+        // Attempt 4: Try to get from Spring ApplicationContext
+        try {
+            logger.info("Attempting to get GSI server from Spring ApplicationContext");
+            
+            // Try to get the ApplicationContext safely
+            org.springframework.context.ApplicationContext context = null;
+            try {
+                // Method 1: Try ContextLoader
+                context = org.springframework.web.context.ContextLoader.getCurrentWebApplicationContext();
+            } catch (Exception e) {
+                logger.debug("Could not get ApplicationContext via ContextLoader: {}", e.getMessage());
+            }
+            
+            // If context is still null, try getting it through the AppConfig's beans
+            if (context == null) {
+                try {
+                    for (Class<?> clazz : getClass().getClassLoader().loadClass("com.dota2assistant.AppConfig").getDeclaredClasses()) {
+                        if (clazz.isAnnotationPresent(
+                            Class.forName("org.springframework.context.annotation.Configuration"))) {
+                            // This might be a Spring configuration class that has access to ApplicationContext
+                            // Look for a method that returns ApplicationContext
+                            for (java.lang.reflect.Method method : clazz.getDeclaredMethods()) {
+                                if (method.getReturnType().getName().endsWith("ApplicationContext")) {
+                                    method.setAccessible(true);
+                                    Object result = method.invoke(null);
+                                    if (result instanceof org.springframework.context.ApplicationContext) {
+                                        context = (org.springframework.context.ApplicationContext) result;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.debug("Could not get ApplicationContext via AppConfig: {}", e.getMessage());
+                }
+            }
+            
+            // If we have a context, try to get the GsiServer bean
+            if (context != null) {
+                try {
+                    gsiServer = context.getBean(GsiServer.class);
+                    if (gsiServer != null) {
+                        logger.info("Successfully retrieved GSI server from ApplicationContext");
+                        return gsiServer;
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error getting GsiServer bean from ApplicationContext: {}", e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error trying to access Spring ApplicationContext: {}", e.getMessage());
+        }
+        
+        // Attempt 5: Last resort - create a new GsiServer instance
+        try {
+            logger.info("Creating new GSI server instance as last resort");
+            
+            // Create GSI state manager
+            com.dota2assistant.gsi.GsiStateManager stateManager = new com.dota2assistant.gsi.GsiStateManager();
+            
+            // Create server with reflection to avoid any direct dependencies
+            java.lang.reflect.Constructor<?> constructor = GsiServer.class.getConstructor(GsiConfig.class, com.dota2assistant.gsi.GsiStateManager.class);
+            gsiServer = (GsiServer) constructor.newInstance(gsiConfig, stateManager);
+            
+            if (gsiServer != null) {
+                logger.info("Successfully created new GSI server instance as fallback");
+                return gsiServer;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to create fallback GSI server: {}", e.getMessage());
+        }
+        
+        // All attempts failed
+        return null;
     }
     
     /**

@@ -15,11 +15,19 @@ import java.util.Objects;
 public class Dota2DraftAssistant extends Application {
     
     private static final Logger logger = LoggerFactory.getLogger(Dota2DraftAssistant.class);
-    private AnnotationConfigApplicationContext context;
+    private static AnnotationConfigApplicationContext context;
     
     public static void main(String[] args) {
         logger.info("Starting Dota 2 Draft Assistant");
         launch(args);
+    }
+    
+    /**
+     * Returns the Spring application context.
+     * @return The application context
+     */
+    public static AnnotationConfigApplicationContext getApplicationContext() {
+        return context;
     }
     
     @Override

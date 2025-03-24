@@ -1,0 +1,12 @@
+# Game State Integration (GSI) Configuration
+gsi.server.port=29455
+gsi.auth.token=dota2_draft_assistant_secure_token
+gsi.server.autostart=true
+
+# GSI Config Installation Path (override if your Dota 2 is installed in a non-standard location)
+# gsi.config.path.windows=C:\\Program Files (x86)\\Steam\\steamapps\\common\\dota 2 beta\\game\\dota\\cfg\\gamestate_integration\\
+# gsi.config.path.mac=~/Library/Application Support/Steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/
+# gsi.config.path.linux=~/.steam/steam/steamapps/common/dota 2 beta/game/dota/cfg/gamestate_integration/
+
+# GSI Config Name (determines the filename of the config in Dota 2)
+gsi.config.name=dota2_draft_assistant_gsi

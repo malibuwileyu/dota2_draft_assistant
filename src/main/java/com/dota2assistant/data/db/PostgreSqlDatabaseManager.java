@@ -123,6 +123,9 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
         logger.info("HikariCP connection pool initialized");
     }
     
+    // Track if we're in shutdown mode to prevent reinitialization
+    private volatile boolean isShuttingDown = false;
+    
     @Override
     public Connection getConnection() throws SQLException {
         // First check if we're in a transaction
@@ -132,10 +135,20 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
             return transactionConn;
         }
         
+        // Check if we're shutting down
+        if (isShuttingDown) {
+            throw new SQLException("Database manager is shutting down, no new connections allowed");
+        }
+        
         // Otherwise get a new connection from the pool
         if (dataSource == null || dataSource.isClosed()) {
-            logger.warn("Connection pool is not initialized or closed, attempting to reinitialize");
-            initConnectionPool();
+            // Only attempt to reinitialize if we're not shutting down
+            if (!isShuttingDown) {
+                logger.warn("Connection pool is not initialized or closed, attempting to reinitialize");
+                initConnectionPool();
+            } else {
+                throw new SQLException("Connection pool is closed due to application shutdown");
+            }
         }
         
         Connection conn = dataSource.getConnection();
@@ -446,7 +459,11 @@ public class PostgreSqlDatabaseManager implements DatabaseManager {
     @Override
     @PreDestroy
     public void closeConnection() {
-        // This method now properly shuts down the connection pool
+        // Set the shutdown flag first to prevent new connection attempts
+        isShuttingDown = true;
+        logger.info("Setting PostgreSQL database manager to shutdown mode");
+        
+        // Then close the connection pool
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
             logger.info("PostgreSQL connection pool has been shut down");

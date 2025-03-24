@@ -39,6 +39,7 @@ public class CaptainsModeDraftEngine implements DraftEngine {
     private final ReadOnlyBooleanWrapper playerTurnProperty;
     private final Random random = new Random();
     private ScheduledExecutorService timerExecutor;
+    private DraftRecommendationService draftRecommendationService;
     
     // The order of turns in Captain's Mode draft
     private static final List<TurnInfo> DRAFT_SEQUENCE = Arrays.asList(
@@ -307,6 +308,24 @@ public class CaptainsModeDraftEngine implements DraftEngine {
     @Override
     public DraftPhase getCurrentPhase() {
         return draftState.getCurrentPhase();
+    }
+    
+    /**
+     * Sets the draft recommendation service for personalized recommendations
+     * 
+     * @param service the recommendation service to use
+     */
+    public void setDraftRecommendationService(DraftRecommendationService service) {
+        this.draftRecommendationService = service;
+    }
+    
+    /**
+     * Gets the draft recommendation service for personalized recommendations
+     * 
+     * @return the recommendation service or null if not set
+     */
+    public DraftRecommendationService getDraftRecommendationService() {
+        return this.draftRecommendationService;
     }
     
     /**

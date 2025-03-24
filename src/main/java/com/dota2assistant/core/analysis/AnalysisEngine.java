@@ -159,4 +159,20 @@ public interface AnalysisEngine {
     default int getHeroPickCount(Hero hero) {
         return 10; // Default implementation
     }
+    
+    /**
+     * Gets pick rate for a hero (as a percentage of matches)
+     * 
+     * @param hero The hero to get pick rate for
+     * @return Pick rate between 0 and 1, or -1 if no data available
+     */
+    default double getHeroPickRate(Hero hero) {
+        // Generate a pick rate between 5% and 15% based on hero id
+        // This is just for demonstration purposes until real data is used
+        if (hero == null || hero.getId() <= 0) {
+            return 0.1;
+        }
+        
+        return 0.05 + (hero.getId() % 10) * 0.01;
+    }
 }

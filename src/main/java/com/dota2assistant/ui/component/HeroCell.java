@@ -409,6 +409,13 @@ public class HeroCell extends VBox {
      * @param playerPerformance the player performance data to set
      */
     public void setPlayerPerformance(PlayerHeroPerformance playerPerformance) {
+        // Remove comfort hero class if present
+        getStyleClass().remove("comfort-hero-cell");
+        
+        // Reset the hero name
+        nameLabel.setText(hero.getLocalizedName());
+        nameLabel.getStyleClass().remove("comfort-hero-name");
+        
         this.playerPerformance = playerPerformance;
         
         // Remove old indicator if it exists
@@ -423,6 +430,19 @@ public class HeroCell extends VBox {
             performanceIndicator = createPerformanceIndicator();
             StackPane.setAlignment(performanceIndicator, Pos.TOP_RIGHT);
             imagePane.getChildren().add(performanceIndicator);
+            
+            // Add comfort pick styling if applicable
+            if (playerPerformance.isComfortPick()) {
+                getStyleClass().add("comfort-hero-cell");
+                
+                // Update name label to show it's a comfort pick
+                nameLabel.setText(hero.getLocalizedName() + " ★");
+                nameLabel.getStyleClass().add("comfort-hero-name");
+            } else {
+                // Reset to normal name
+                nameLabel.setText(hero.getLocalizedName());
+                nameLabel.getStyleClass().remove("comfort-hero-name");
+            }
             
             // Update the tooltip
             StringBuilder tooltipText = new StringBuilder();
@@ -511,6 +531,11 @@ public class HeroCell extends VBox {
             
             if (playerPerformance.isComfortPick()) {
                 indicator.getStyleClass().add("comfort-pick");
+                
+                // Apply comfort pick styling to the parent cell
+                if (getStyleClass().contains("hero-cell")) {
+                    getStyleClass().add("comfort-hero-cell");
+                }
             }
         }
         

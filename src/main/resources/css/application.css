@@ -226,6 +226,7 @@
     -fx-min-height: 85;
     -fx-pref-width: 85;
     -fx-pref-height: 85;
+    -fx-transition: all 0.2s ease;
 }
 
 .hero-cell:hover {
@@ -240,12 +241,40 @@
     -fx-effect: dropshadow(gaussian, rgba(102, 204, 255, 0.5), 7, 0, 0, 0);
 }
 
+/* Comfort hero styling */
+.hero-cell.comfort-hero-cell {
+    -fx-border-color: gold;
+    -fx-border-width: 2;
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.05));
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.6), 8, 0, 0, 0);
+}
+
+.hero-cell.comfort-hero-cell:hover {
+    -fx-border-color: gold;
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1));
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 10, 0, 0, 0);
+}
+
+.hero-cell.comfort-hero-cell.selected {
+    -fx-border-color: gold;
+    -fx-border-width: 2;
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 215, 0, 0.25), rgba(255, 215, 0, 0.1));
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.9), 12, 0, 0, 0);
+}
+
 .hero-name {
     -fx-font-size: 11px;
     -fx-text-fill: white;
     -fx-alignment: center;
     -fx-text-alignment: center;
     -fx-wrap-text: true;
+}
+
+/* Style for comfort hero names */
+.hero-name.comfort-hero-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: gold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 1, 0, 0, 0);
 }
 
 .hero-pane {
@@ -464,13 +493,14 @@
 .recommendation-cell {
     -fx-background-color: transparent;
     -fx-padding: 5;
+    -fx-max-width: infinity;
 }
 
 .recommendation-reasoning {
     -fx-text-fill: #e0e0e0;
     -fx-font-style: italic;
     -fx-wrap-text: true;
-    -fx-pref-width: 320;
+    -fx-max-width: infinity;
 }
 
 .recommendation-score {
@@ -534,12 +564,23 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 3, 0, 0, 1);
     -fx-background-radius: 50%;
     -fx-border-radius: 50%;
+    -fx-transition: all 0.3s ease;
 }
 
 .performance-indicator.comfort-pick {
-    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.7), 6, 0, 0, 0);
-    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.8), 8, 0, 0, 0);
+    -fx-border-width: 2px;
     -fx-border-color: gold;
+    -fx-background-color: rgba(255, 215, 0, 0.3);
+    -fx-scale-x: 1.15;
+    -fx-scale-y: 1.15;
+}
+
+/* Hover effect on comfort indicators */
+.hero-cell:hover .performance-indicator.comfort-pick {
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.9), 10, 0, 0, 0);
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
 }
 
 /* Sync Settings Component */
@@ -581,4 +622,44 @@
 
 .sync-settings-component .error {
     -fx-text-fill: -dire;
+}
+
+/* Notification area styles */
+.notification-header {
+    -fx-background-color: linear-gradient(to bottom, #C23C2A, #A3241A);
+    -fx-background-radius: 4 4 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 0, 0);
+}
+
+.notification-content {
+    -fx-background-color: #333333;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-background-radius: 0 0 4 4;
+    -fx-border-radius: 0 0 4 4;
+    -fx-overflow: scroll;
+}
+
+.error-text {
+    -fx-fill: -dire;
+    -fx-font-weight: bold;
+}
+
+.warning-text {
+    -fx-fill: -highlight;
+    -fx-font-weight: bold;
+}
+
+.info-text {
+    -fx-fill: -accent;
+}
+
+#matchNotificationArea {
+    -fx-background-color: transparent;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0, 0, 0);
+    -fx-max-width: 800;
 }

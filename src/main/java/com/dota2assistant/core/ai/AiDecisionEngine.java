@@ -69,4 +69,14 @@ public interface AiDecisionEngine {
     default void setDifficultyLevel(double difficultyLevel) {
         // Default implementation does nothing
     }
+    
+    /**
+     * Gets all available heroes (not picked or banned)
+     * 
+     * @return List of available heroes
+     */
+    default List<Hero> getAvailableHeroes() {
+        // Default implementation returns empty list
+        return List.of();
+    }
 }

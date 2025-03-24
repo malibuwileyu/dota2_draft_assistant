@@ -1,5 +1,6 @@
 package com.dota2assistant;
 
+import com.dota2assistant.Dota2DraftAssistant;
 import com.dota2assistant.core.ai.AiDecisionEngine;
 import com.dota2assistant.core.ai.DefaultAiDecisionEngine;
 import com.dota2assistant.core.ai.ProMatchDataAiDecisionEngine;
@@ -15,6 +16,8 @@ import com.dota2assistant.data.repository.DraftDataRepository;
 import com.dota2assistant.data.repository.HeroAbilitiesRepository;
 import com.dota2assistant.data.repository.HeroRepository;
 import com.dota2assistant.data.repository.MatchRepository;
+import com.dota2assistant.data.service.MatchEnrichmentService;
+import com.dota2assistant.Dota2DraftAssistant;
 import com.dota2assistant.ui.controller.MainController;
 import com.dota2assistant.util.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +45,9 @@ import java.util.concurrent.TimeUnit;
 public class AppConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
+    
+    // Static reference to the MainController for cross-controller communication
+    private static MainController mainControllerInstance;
 
     @Bean
     public PropertyLoader propertyLoader() {
@@ -349,9 +355,15 @@ public class AppConfig {
                                         AnalysisEngine analysisEngine,
                                         ExecutorService executorService,
                                         ScheduledExecutorService scheduledExecutorService,
-                                        PropertyLoader propertyLoader) {
-        return new MainController(draftEngine, aiDecisionEngine, analysisEngine, 
-                                 executorService, scheduledExecutorService, propertyLoader);
+                                        PropertyLoader propertyLoader,
+                                        com.dota2assistant.ui.component.LiveDraftPanel liveDraftPanel) {
+        MainController controller = new MainController(draftEngine, aiDecisionEngine, analysisEngine, 
+                                 executorService, scheduledExecutorService, propertyLoader, liveDraftPanel);
+        
+        // Store the instance in our static reference for cross-controller access
+        mainControllerInstance = controller;
+        
+        return controller;
     }
 
     @Bean
@@ -484,5 +496,99 @@ public class AppConfig {
     @Bean
     public com.dota2assistant.ui.controller.AdminMonitoringController adminMonitoringController() {
         return new com.dota2assistant.ui.controller.AdminMonitoringController();
+    }
+    
+    /**
+     * GSI integration components
+     */
+    
+    // Static reference for GSI components
+    private static com.dota2assistant.gsi.GsiStateManager staticGsiStateManager;
+    
+    /**
+     * GSI components static access
+     */
+    public static com.dota2assistant.gsi.GsiStateManager getGsiStateManager() {
+        if (staticGsiStateManager == null) {
+            throw new IllegalStateException("GSI State Manager not initialized. Application context may not be ready.");
+        }
+        return staticGsiStateManager;
+    }
+    
+    @Bean
+    public GsiStateManagerInitializer gsiStateManagerInitializer(
+            com.dota2assistant.gsi.GsiStateManager gsiStateManager) {
+        staticGsiStateManager = gsiStateManager;
+        return new GsiStateManagerInitializer(gsiStateManager);
+    }
+    
+    /**
+     * Helper class for initializing the static GSI state manager
+     */
+    public static class GsiStateManagerInitializer {
+        private final com.dota2assistant.gsi.GsiStateManager gsiStateManager;
+        
+        public GsiStateManagerInitializer(com.dota2assistant.gsi.GsiStateManager gsiStateManager) {
+            this.gsiStateManager = gsiStateManager;
+        }
+    }
+    
+    @Bean
+    public com.dota2assistant.gsi.GsiStateManager gsiStateManager() {
+        return new com.dota2assistant.gsi.GsiStateManager();
+    }
+    
+    @Bean
+    public com.dota2assistant.gsi.GsiConfig gsiConfig() {
+        return new com.dota2assistant.gsi.GsiConfig();
+    }
+    
+    @Bean
+    public com.dota2assistant.gsi.GsiServer gsiServer(
+            com.dota2assistant.gsi.GsiConfig gsiConfig,
+            com.dota2assistant.gsi.GsiStateManager gsiStateManager) {
+        return new com.dota2assistant.gsi.GsiServer(gsiConfig, gsiStateManager);
+    }
+    
+    @Bean
+    public com.dota2assistant.gsi.GsiDraftRecommendationService gsiDraftRecommendationService(
+            com.dota2assistant.gsi.GsiStateManager gsiStateManager,
+            HeroRepository heroRepository,
+            com.dota2assistant.core.draft.DraftRecommendationService draftRecommendationService,
+            com.dota2assistant.data.service.PlayerRecommendationService playerRecommendationService) {
+        return new com.dota2assistant.gsi.GsiDraftRecommendationService(gsiStateManager, heroRepository, 
+                draftRecommendationService, playerRecommendationService);
+    }
+    
+    /**
+     * Static methods for accessing beans across the application
+     */
+    
+    /**
+     * Returns the MainController instance for use by other controllers
+     * @return The MainController instance
+     */
+    public static MainController getMainController() {
+        return mainControllerInstance;
+    }
+    
+    /**
+     * Alternative way to get the MatchEnrichmentService using BeanFactoryUtils
+     * This is kept as a reference but is not currently used
+     * @return The MatchEnrichmentService instance
+     * @deprecated Use getMatchEnrichmentService() method instead
+     */
+    @Deprecated
+    private static MatchEnrichmentService getMatchEnrichmentServiceFromContext() {
+        try {
+            return org.springframework.beans.factory.BeanFactoryUtils.beanOfTypeIncludingAncestors(
+                Dota2DraftAssistant.getApplicationContext(),
+                MatchEnrichmentService.class
+            );
+        } catch (Exception e) {
+            LoggerFactory.getLogger(AppConfig.class)
+                .error("Failed to get MatchEnrichmentService: {}", e.getMessage());
+            return null;
+        }
     }
 }
