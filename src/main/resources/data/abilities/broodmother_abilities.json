@@ -1,0 +1,106 @@
+{
+  "heroes": [
+    {
+      "id": 61,
+      "name": "broodmother",
+      "localized_name": "Broodmother",
+      "abilities": [
+        {
+          "id": 6101,
+          "name": "Insatiable Hunger",
+          "description": "Broodmother's hunger gives her a rush of blood lust, granting bonus attack damage and lifesteal.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "bonus_damage": [60, 100, 140, 180],
+            "lifesteal": [60, 80, 100, 120],
+            "duration": [10, 15, 20, 25]
+          },
+          "cooldown": [45, 40, 35, 30],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Provides damage and lifesteal for the duration."
+        },
+        {
+          "id": 6102,
+          "name": "Spin Web",
+          "description": "Spins a large web that renders Broodmother invisible while allowing free movement and increased regeneration. An area of webbing persists on the ground, granting the same buffs to spiderlings.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "max_webs": [4, 6, 8, 10],
+            "web_radius": [900, 900, 900, 900],
+            "health_regen_bonus": [2, 4, 6, 8],
+            "movement_speed_bonus_pct": [25, 35, 45, 55],
+            "charge_restore_time": [40, 35, 30, 25]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "Provides invisibility while on the web unless attacking or using abilities. Grants free pathing on the web for Broodmother and her spiderlings."
+        },
+        {
+          "id": 6103,
+          "name": "Incapacitating Bite",
+          "description": "Broodmother's venom cripples enemies with her attacks, slowing their movement speed and giving them a chance to miss their attacks.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "move_speed_slow": [20, 30, 40, 50],
+            "miss_chance": [15, 20, 25, 30],
+            "debuff_duration": [2, 2, 2, 2]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Applies a debuff that slows movement and gives enemies a chance to miss their attacks."
+        },
+        {
+          "id": 6104,
+          "name": "Spawn Spiderlings",
+          "description": "Broodmother injects her victim with eggs which hatch into deadly spiderlings. When spiderlings attack enemies, there is a chance they will spawn even smaller spiderites.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "cast_range": [700, 700, 700],
+            "damage": [100, 175, 250],
+            "spiderling_duration": [60, 60, 60],
+            "spiderling_count": [3, 4, 5]
+          },
+          "cooldown": [45, 40, 35],
+          "mana_cost": [120, 130, 140],
+          "notes": "Kills from this spell spawn spiderlings. Spiderlings have a 20% chance to spawn a spiderite when attacking."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 6105,
+          "name": "Spider's Milk",
+          "description": "Grants a lifesteal-based heal over time buff per enemy hero killed within the radius.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "heal_percent": [4, 4, 4, 4],
+            "duration": [3, 3, 3, 3],
+            "radius": [600, 600, 600, 600]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Provides healing over time when enemy heroes are killed nearby."
+        }
+      ]
+    }
+  ]
+}

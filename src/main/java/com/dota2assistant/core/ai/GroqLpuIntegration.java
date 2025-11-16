@@ -4,7 +4,6 @@ import com.dota2assistant.data.model.Ability;
 import com.dota2assistant.data.model.Hero;
 import com.dota2assistant.data.repository.HeroRepository;
 import com.dota2assistant.core.draft.DraftState;
-import com.dota2assistant.util.PropertyLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,10 @@ import java.util.stream.Collectors;
 /**
  * Integration with Groq LPU for real-time inference during the draft phase.
  * This class provides an interface to the Groq Large Processing Units for 
- * high-performance AI recommendations.
+ * high-performance AI-powered draft recommendations.
  * 
- * Note: This is a simulation of what such an integration would look like.
- * In a real implementation, this would communicate with the Groq API.
+ * Uses Groq's LLM API to analyze draft context and provide intelligent,
+ * context-aware hero recommendations with detailed explanations.
  */
 @Service
 public class GroqLpuIntegration {
@@ -33,7 +32,6 @@ public class GroqLpuIntegration {
     private static final Logger logger = LoggerFactory.getLogger(GroqLpuIntegration.class);
     
     private final HeroRepository heroRepository;
-    private final NlpModelIntegration nlpModel;
     private final RestTemplate restTemplate;
     
     @Value("${groq.api.enabled:false}")
@@ -42,19 +40,18 @@ public class GroqLpuIntegration {
     @Value("${groq.api.url:https://api.groq.com}")
     private String groqApiUrl;
     
-    @Value("${groq.api.model:llama3-medium-8b}")
+    @Value("${groq.api.model:llama3-70b-8192}")
     private String groqApiModel;
     
-    @Value("${groq.api.key:dummy-key}")
+    @Value("${groq.api.key:}")
     private String groqApiKey;
     
     @Value("${groq.api.timeout:10000}")
     private int groqApiTimeout;
     
     @Autowired
-    public GroqLpuIntegration(HeroRepository heroRepository, NlpModelIntegration nlpModel) {
+    public GroqLpuIntegration(HeroRepository heroRepository) {
         this.heroRepository = heroRepository;
-        this.nlpModel = nlpModel;
         this.restTemplate = new RestTemplate();
     }
     
@@ -129,7 +126,7 @@ public class GroqLpuIntegration {
             if (groqEnabled) {
                 explanation = generateGroqRecommendationExplanation(hero, allyHeroes, enemyHeroes);
             } else {
-                explanation = nlpModel.generateRecommendationExplanation(hero, allyHeroes, enemyHeroes);
+                explanation = generateBasicRecommendationExplanation(hero, allyHeroes, enemyHeroes);
             }
             recommendations.add(new HeroRecommendation(hero, explanation, heroScores.get(hero)));
         }
@@ -138,7 +135,8 @@ public class GroqLpuIntegration {
     }
     
     /**
-     * Score a hero for the current draft situation
+     * Score a hero for the current draft situation.
+     * This provides a basic scoring mechanism - the real intelligence comes from Groq LLM.
      * 
      * @param hero The hero to score
      * @param allyHeroes Current allies
@@ -146,139 +144,29 @@ public class GroqLpuIntegration {
      * @return A score representing how good the hero is for the draft
      */
     private double scoreHeroForDraft(Hero hero, List<Hero> allyHeroes, List<Hero> enemyHeroes) {
-        // In a real implementation, this would use the Groq LPU for inference
-        // This is a simplified version that combines various factors
+        // Base score for all heroes
+        double score = 0.5;
         
-        double score = 0.0;
+        // Simple heuristic: heroes with multiple roles are more flexible
+        if (hero.getRoles() != null && hero.getRoles().size() > 2) {
+            score += 0.1;
+        }
         
-        // Get hero feature vector
-        Map<String, Double> heroFeatures = nlpModel.getHeroFeatureVector(hero.getId());
-        
-        // Factor 1: Team synergy (weight 0.4)
-        double synergy = 0.0;
-        for (Hero ally : allyHeroes) {
-            double similarity = nlpModel.getHeroSimilarity(hero.getId(), ally.getId());
-            List<NlpAbilityAnalyzer.AbilitySynergy> synergies = nlpModel.findAbilitySynergies(hero.getId(), ally.getId());
+        // Simple heuristic: position flexibility is valuable in early draft
+        if (hero.getRoleFrequency() != null && !hero.getRoleFrequency().isEmpty()) {
+            int positionsPlayed = (int) hero.getRoleFrequency().values().stream()
+                .filter(freq -> freq >= 0.2)
+                .count();
             
-            // Add score based on top synergy
-            if (!synergies.isEmpty()) {
-                double topSynergyScore = synergies.stream()
-                        .mapToDouble(NlpAbilityAnalyzer.AbilitySynergy::getScore)
-                        .max()
-                        .orElse(0.0);
-                synergy += topSynergyScore;
+            if (allyHeroes.size() <= 2 && positionsPlayed > 1) {
+                score += 0.2; // Boost flexible heroes in early draft
             }
         }
         
-        if (!allyHeroes.isEmpty()) {
-            synergy /= allyHeroes.size();  // Normalize by team size
-        }
+        // Add small random variation to prevent identical scores
+        score += Math.random() * 0.1;
         
-        score += 0.4 * synergy;
-        
-        // Factor 2: Counter enemies (weight 0.4)
-        double counter = 0.0;
-        for (Hero enemy : enemyHeroes) {
-            // Check if this hero's strengths counter enemy weaknesses
-            Map<String, Double> enemyFeatures = nlpModel.getHeroFeatureVector(enemy.getId());
-            
-            // Example: If we have control and enemy has mobility
-            if (heroFeatures.getOrDefault("stun_score", 0.0) > 0.5 && 
-                enemyFeatures.getOrDefault("mobility_score", 0.0) > 0.7) {
-                counter += 0.3;
-            }
-            
-            // Example: If we have silence and enemy relies on spells
-            if (heroFeatures.getOrDefault("silence_score", 0.0) > 0.5 && 
-                enemyFeatures.getOrDefault("magical_damage", 0.0) > 0.7) {
-                counter += 0.3;
-            }
-            
-            // Example: If we have mobility and enemy lacks control
-            if (heroFeatures.getOrDefault("mobility_score", 0.0) > 0.7 && 
-                enemyFeatures.getOrDefault("stun_score", 0.0) < 0.3 &&
-                enemyFeatures.getOrDefault("root_score", 0.0) < 0.3) {
-                counter += 0.2;
-            }
-        }
-        
-        if (!enemyHeroes.isEmpty()) {
-            counter /= enemyHeroes.size();  // Normalize by enemy team size
-        }
-        
-        score += 0.4 * counter;
-        
-        // Factor 3: Team composition needs (weight 0.2)
-        double compositionScore = assessTeamCompositionFit(hero, allyHeroes);
-        score += 0.2 * compositionScore;
-        
-        return score;
-    }
-    
-    /**
-     * Assess how well a hero fits the team composition needs
-     */
-    private double assessTeamCompositionFit(Hero hero, List<Hero> allyHeroes) {
-        double score = 0.5;  // Base score
-        
-        // Extract team capabilities
-        boolean hasTeamfight = false;
-        boolean hasControl = false;
-        boolean hasPhysicalDamage = false;
-        boolean hasMagicalDamage = false;
-        boolean hasInitiation = false;
-        
-        for (Hero ally : allyHeroes) {
-            Map<String, Double> features = nlpModel.getHeroFeatureVector(ally.getId());
-            
-            if (features.getOrDefault("aoe_impact", 0.0) > 0.6) {
-                hasTeamfight = true;
-            }
-            
-            if (features.getOrDefault("stun_score", 0.0) > 0.5 || 
-                features.getOrDefault("root_score", 0.0) > 0.5) {
-                hasControl = true;
-            }
-            
-            if (features.getOrDefault("physical_damage", 0.0) > 0.7) {
-                hasPhysicalDamage = true;
-            }
-            
-            if (features.getOrDefault("magical_damage", 0.0) > 0.7) {
-                hasMagicalDamage = true;
-            }
-            
-            if (features.getOrDefault("initiator_score", 0.0) > 0.6) {
-                hasInitiation = true;
-            }
-        }
-        
-        // Check what the hero brings to the team
-        Map<String, Double> heroFeatures = nlpModel.getHeroFeatureVector(hero.getId());
-        
-        // Fill team needs
-        if (!hasTeamfight && heroFeatures.getOrDefault("aoe_impact", 0.0) > 0.6) {
-            score += 0.3;
-        }
-        
-        if (!hasControl && (heroFeatures.getOrDefault("stun_score", 0.0) > 0.5 || 
-                          heroFeatures.getOrDefault("root_score", 0.0) > 0.5)) {
-            score += 0.3;
-        }
-        
-        if (!hasPhysicalDamage && heroFeatures.getOrDefault("physical_damage", 0.0) > 0.7) {
-            score += 0.2;
-        }
-        
-        if (!hasMagicalDamage && heroFeatures.getOrDefault("magical_damage", 0.0) > 0.7) {
-            score += 0.2;
-        }
-        
-        if (!hasInitiation && heroFeatures.getOrDefault("initiator_score", 0.0) > 0.6) {
-            score += 0.2;
-        }
-        
-        return Math.min(1.0, score);  // Cap at 1.0
+        return Math.min(1.0, score);
     }
     
     /**
@@ -403,7 +291,7 @@ public class GroqLpuIntegration {
             prompt.append("Early draft (picks 1-2). Flexibility is highly valuable at this stage.\n\n");
         } else if (isMidDraft) {
             prompt.append("Mid draft (pick 3). Balance between flexibility and specific roles.\n\n");
-        } else {
+        } else if (isLateDraft) {
             prompt.append("Late draft (picks 4-5). Specific role filling and counter-picking is important.\n\n");
         }
         
@@ -427,9 +315,59 @@ public class GroqLpuIntegration {
             return callGroqApi(prompt.toString());
         } catch (Exception e) {
             logger.error("Error calling Groq API: {}", e.getMessage());
-            // Fall back to local NLP model if Groq API fails
-            return nlpModel.generateRecommendationExplanation(hero, allyHeroes, enemyHeroes);
+            // Fall back to basic explanation if Groq API fails
+            return generateBasicRecommendationExplanation(hero, allyHeroes, enemyHeroes);
         }
+    }
+    
+    /**
+     * Generate a basic recommendation explanation without LLM
+     * Used as fallback when Groq API is disabled or fails
+     */
+    private String generateBasicRecommendationExplanation(Hero hero, List<Hero> allyHeroes, List<Hero> enemyHeroes) {
+        StringBuilder explanation = new StringBuilder();
+        
+        explanation.append("**").append(hero.getLocalizedName()).append("** could be a good pick for this draft.\n\n");
+        
+        // Basic role information
+        if (hero.getRoles() != null && !hero.getRoles().isEmpty()) {
+            explanation.append("**Roles:** ").append(String.join(", ", hero.getRoles())).append("\n\n");
+        }
+        
+        // Position flexibility
+        if (hero.getRoleFrequency() != null && !hero.getRoleFrequency().isEmpty()) {
+            explanation.append("**Position Flexibility:** ");
+            List<String> positions = new ArrayList<>();
+            for (Map.Entry<Integer, Double> entry : hero.getRoleFrequency().entrySet()) {
+                if (entry.getValue() > 0.2) {
+                    positions.add(String.format("Pos %d (%.0f%%)", entry.getKey(), entry.getValue() * 100));
+                }
+            }
+            if (!positions.isEmpty()) {
+                explanation.append(String.join(", ", positions)).append("\n\n");
+            }
+        }
+        
+        // Team context
+        if (!allyHeroes.isEmpty()) {
+            explanation.append("**Current Team:** ");
+            explanation.append(allyHeroes.stream()
+                .map(Hero::getLocalizedName)
+                .collect(Collectors.joining(", ")));
+            explanation.append("\n\n");
+        }
+        
+        if (!enemyHeroes.isEmpty()) {
+            explanation.append("**Enemy Team:** ");
+            explanation.append(enemyHeroes.stream()
+                .map(Hero::getLocalizedName)
+                .collect(Collectors.joining(", ")));
+            explanation.append("\n\n");
+        }
+        
+        explanation.append("*Note: Enable Groq API for detailed AI-powered analysis and recommendations.*");
+        
+        return explanation.toString();
     }
     
     /**

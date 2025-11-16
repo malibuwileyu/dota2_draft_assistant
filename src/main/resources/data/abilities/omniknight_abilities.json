@@ -1,0 +1,98 @@
+{
+  "heroes": [
+    {
+      "id": 57,
+      "name": "omniknight",
+      "localized_name": "Omniknight",
+      "abilities": [
+        {
+          "id": 5701,
+          "name": "Purification",
+          "description": "Instantly heals a friendly unit and damages nearby enemy units.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "radius": [260, 260, 260, 260],
+            "damage_heal": [90, 160, 230, 300]
+          },
+          "cooldown": [18, 16, 14, 12],
+          "mana_cost": [90, 105, 120, 135],
+          "notes": "Heals allied units and damages enemies in the radius."
+        },
+        {
+          "id": 5702,
+          "name": "Repel",
+          "description": "Grants debuff immunity to allied heroes and provides strength and health regen bonus based on current debuffs.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "strength_bonus": [7, 14, 21, 28],
+            "duration": [5, 5, 5, 5]
+          },
+          "cooldown": [55, 50, 45, 40],
+          "mana_cost": [90, 105, 120, 135],
+          "notes": "Provides immunity to most debuffs and increases strength based on current debuffs."
+        },
+        {
+          "id": 5703,
+          "name": "Hammer of Purity",
+          "description": "Deals pure damage based on main attack damage.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "base_damage": [40, 60, 80, 100],
+            "attack_damage_factor": [1.55, 1.7, 1.85, 2]
+          },
+          "cooldown": [16, 12, 8, 4],
+          "mana_cost": [30, 35, 40, 45],
+          "notes": "Can be set to autocast. Deals pure damage based on attack damage."
+        },
+        {
+          "id": 5704,
+          "name": "Guardian Angel",
+          "description": "Grants physical damage immunity to allied units.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "radius": [400, 400, 400],
+            "duration": [5, 6, 7]
+          },
+          "cooldown": [110, 100, 90],
+          "mana_cost": [125, 175, 225],
+          "notes": "Provides immunity to physical damage for allied heroes."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5705,
+          "name": "Degen Aura",
+          "description": "Passive aura that slows enemy movement speed and amplifies damage on affected enemies.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [325, 325, 325, 325],
+            "move_speed_slow": [10, 20, 30, 40]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Slows enemies within the aura radius."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "heroes": [
+    {
+      "id": 48,
+      "name": "luna",
+      "localized_name": "Luna",
+      "abilities": [
+        {
+          "id": 4801,
+          "name": "Lucent Beam",
+          "description": "Calls down a concentrated beam of lunar energy to damage and briefly stun a target.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [75, 150, 225, 300],
+            "stun_duration": [0.6, 0.6, 0.6, 0.6]
+          },
+          "cooldown": [9, 8, 7, 6],
+          "mana_cost": [90, 100, 110, 120],
+          "notes": "Each cast during Eclipse counts as one beam."
+        },
+        {
+          "id": 4802,
+          "name": "Lunar Orbit",
+          "description": "Luna summons orbiting glaives that instantly attack nearby enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "orbit_radius": [250, 250, 250, 250],
+            "glaive_count": [4, 4, 4, 4],
+            "duration": [5, 6, 7, 8]
+          },
+          "cooldown": [40, 35, 30, 25],
+          "mana_cost": [65, 65, 80, 80],
+          "notes": "Glaives orbit around Luna and attack the nearest enemy automatically."
+        },
+        {
+          "id": 4803,
+          "name": "Moon Glaives",
+          "description": "Luna's glaive attacks bounce to hit nearby enemies. Each bounce deals diminishing damage.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "bounces": [3, 4, 5, 6],
+            "damage_reduction_percent": [50, 45, 40, 35],
+            "bounce_search_radius": [500, 500, 500, 500]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Damage is reduced with each bounce."
+        },
+        {
+          "id": 4804,
+          "name": "Eclipse",
+          "description": "Calls down multiple Lucent Beams upon random enemy units in the area. Creates a night-time effect for the duration.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [675, 675, 675],
+            "beams": [6, 9, 12],
+            "max_beams_per_unit": [5, 5, 5],
+            "beam_interval": [0.6, 0.6, 0.6],
+            "night_duration": [10, 10, 10]
+          },
+          "cooldown": [110, 110, 110],
+          "mana_cost": [150, 200, 250],
+          "notes": "Turns day into night for 10 seconds. Each enemy can be hit a maximum of 5 times."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4805,
+          "name": "Lunar Blessing",
+          "description": "Luna and nearby allies gain bonus damage. The aura is global during nighttime.",
+          "type": "passive",
+          "behavior": "passive aura",
+          "affects": ["allies"],
+          "special_values": {
+            "bonus_damage_per_level": [1, 1, 1, 1],
+            "daytime_radius": [1200, 1200, 1200, 1200],
+            "nighttime_vision_bonus": [250, 250, 250, 250]
+          },
+          "notes": "Bonus damage scales with Luna's level. The aura becomes global during nighttime."
+        }
+      ]
+    }
+  ]
+}

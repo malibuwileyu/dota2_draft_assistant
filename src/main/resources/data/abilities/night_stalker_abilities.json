@@ -1,0 +1,103 @@
+{
+  "heroes": [
+    {
+      "id": 60,
+      "name": "night_stalker",
+      "localized_name": "Night Stalker",
+      "abilities": [
+        {
+          "id": 6001,
+          "name": "Void",
+          "description": "Night Stalker creates a damaging void that slows movement and attack speed. During night, it also causes a ministun.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [80, 160, 240, 320],
+            "move_speed_slow": [50, 50, 50, 50],
+            "attack_speed_slow": [50, 50, 50, 50],
+            "daytime_slow_duration": [1.25, 1.25, 1.25, 1.25],
+            "nighttime_slow_duration": [2, 2.5, 3, 3.5]
+          },
+          "cooldown": [11, 10, 9, 8],
+          "mana_cost": [90, 95, 100, 105],
+          "notes": "During nighttime, also applies a 0.1 second ministun."
+        },
+        {
+          "id": 6002,
+          "name": "Crippling Fear",
+          "description": "Night Stalker creates an aura of fear, silencing and damaging nearby enemies. Effect lasts longer during night.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [375, 375, 375, 375],
+            "damage_per_second": [25, 30, 35, 40],
+            "daytime_duration": [3, 3, 3, 3],
+            "nighttime_duration": [4.5, 5, 5.5, 6]
+          },
+          "cooldown": [30, 25, 20, 15],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "During nighttime, both the silence and damage duration are extended."
+        },
+        {
+          "id": 6003,
+          "name": "Hunter in the Night",
+          "description": "Night Stalker is empowered by the darkness, gaining substantial bonus movement and attack speed during nighttime.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "nighttime_move_speed_bonus_pct": [16, 22, 28, 34],
+            "nighttime_attack_speed_bonus": [15, 35, 55, 75]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Aghanim's Shard adds an active ability to consume a creep, granting additional movement and attack speed."
+        },
+        {
+          "id": 6004,
+          "name": "Dark Ascension",
+          "description": "Night Stalker transforms into a nightmarish creature, forcing nighttime for the duration and giving him flying movement and unobstructed vision.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [30, 30, 30],
+            "bonus_damage": [50, 100, 150]
+          },
+          "cooldown": [140, 130, 120],
+          "mana_cost": [175, 175, 175],
+          "notes": "Grants flying movement, unobstructed vision, and forces nighttime for the duration."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 6005,
+          "name": "Heart of Darkness",
+          "description": "Night Stalker's health regeneration is amplified during nighttime but reduced during daytime.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "nighttime_regen_amplification": [40, 40, 40, 40],
+            "daytime_regen_reduction": [20, 20, 20, 20]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Amplifies all sources of health regeneration during nighttime by 40% and reduces them during daytime by 20%."
+        }
+      ]
+    }
+  ]
+}

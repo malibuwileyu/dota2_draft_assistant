@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 51,
+      "name": "rattletrap",
+      "localized_name": "Clockwerk",
+      "abilities": [
+        {
+          "id": 5101,
+          "name": "Battery Assault",
+          "description": "Discharges high-powered shrapnel at random nearby units, dealing damage and causing ministuns.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_per_instance": [20, 40, 60, 80],
+            "radius": [275, 275, 275, 275],
+            "interval": [0.7, 0.7, 0.7, 0.7],
+            "duration": [10.5, 10.5, 10.5, 10.5],
+            "ministun": [0.1, 0.1, 0.1, 0.1]
+          },
+          "cooldown": [32, 26, 20, 14],
+          "mana_cost": [100, 100, 100, 100],
+          "notes": "Searches for enemies within the radius every interval. If found, one enemy is hit with damage and ministun."
+        },
+        {
+          "id": 5102,
+          "name": "Power Cogs",
+          "description": "Deploys a ring of powered cogs that trap enemies who touch them, dealing damage and draining mana. Enemies outside the ring are pushed away.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [50, 100, 150, 200],
+            "knockback_distance": [300, 300, 300, 300],
+            "mana_burn": [50, 100, 150, 200],
+            "cog_health": [2, 3, 4, 5],
+            "duration": [8, 8, 8, 8],
+            "radius": [215, 215, 215, 215]
+          },
+          "cooldown": [15, 15, 15, 15],
+          "mana_cost": [60, 70, 80, 90],
+          "notes": "Creates 8 cogs around Clockwerk. Each cog takes a specified number of attacks to destroy."
+        },
+        {
+          "id": 5103,
+          "name": "Rocket Flare",
+          "description": "Fires a flare that explodes over a targeted area, damaging enemies and providing vision.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [80, 120, 160, 200],
+            "radius": [600, 600, 600, 600],
+            "vision_radius": [900, 900, 900, 900],
+            "vision_duration": [10, 10, 10, 10],
+            "movement_slow": [100, 100, 100, 100],
+            "slow_duration": [0.4, 0.4, 0.4, 0.4]
+          },
+          "cooldown": [40, 35, 30, 25],
+          "mana_cost": [50, 60, 70, 80],
+          "notes": "Global cast range. Reveals invisible units briefly upon impact."
+        },
+        {
+          "id": 5104,
+          "name": "Hookshot",
+          "description": "Fires a grappling hook that latches onto the first unit it hits, pulling Clockwerk to it and stunning the target.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [175, 275, 375],
+            "stun_duration": [2, 2.5, 3],
+            "range": [2000, 2500, 3000],
+            "radius": [125, 125, 125],
+            "speed": [4000, 5000, 6000]
+          },
+          "cooldown": [70, 55, 40],
+          "mana_cost": [150, 150, 150],
+          "notes": "Pierces spell immunity. Can latch onto allies but deals no damage or stun."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5105,
+          "name": "Armor Power",
+          "description": "Clockwerk's mechanical augmentations boost his combat effectiveness, providing damage amplification based on his armor.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "damage_amp_per_armor": [0.25, 0.25, 0.25, 0.25]
+          },
+          "notes": "Grants percentage-based damage amplification based on Clockwerk's armor value."
+        }
+      ]
+    }
+  ]
+}

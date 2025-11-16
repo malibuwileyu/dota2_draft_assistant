@@ -1,0 +1,106 @@
+{
+  "heroes": [
+    {
+      "id": 56,
+      "name": "clinkz",
+      "localized_name": "Clinkz",
+      "abilities": [
+        {
+          "id": 5601,
+          "name": "Strafe",
+          "description": "Clinkz gains increased attack speed and attack range for a short duration. While active, Clinkz summons Skeleton Archers with each attack.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "attack_speed_bonus": [100, 140, 180, 220],
+            "attack_range_bonus": [200, 200, 200, 200],
+            "duration": [3.5, 3.5, 3.5, 3.5]
+          },
+          "cooldown": [30, 25, 20, 15],
+          "mana_cost": [60, 70, 80, 90],
+          "notes": "Summons a Skeleton Archer with each attack during Strafe."
+        },
+        {
+          "id": 5602,
+          "name": "Tar Bomb",
+          "description": "Clinkz throws a bomb of tar that explodes on contact, dealing damage and slowing enemies in the area. Skeleton Archers deal bonus damage against targets affected by Tar Bomb.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [40, 60, 80, 100],
+            "movement_slow": [16, 19, 22, 25],
+            "duration": [5, 5, 5, 5],
+            "radius": [300, 300, 300, 300],
+            "archer_damage_bonus": [40, 60, 80, 100]
+          },
+          "cooldown": [7, 6, 5, 4],
+          "mana_cost": [45, 50, 55, 60],
+          "notes": "Skeleton Archers prioritize targets affected by Tar Bomb."
+        },
+        {
+          "id": 5603,
+          "name": "Skeleton Walk",
+          "description": "Clinkz moves invisibly, gaining increased movement speed. When the invisibility breaks, Clinkz gains bonus attack speed for a short duration.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [20, 25, 30, 35],
+            "movement_speed_bonus": [20, 30, 40, 50],
+            "fade_time": [0.6, 0.6, 0.6, 0.6],
+            "attack_speed_after": [110, 130, 150, 170],
+            "attack_speed_duration": [4, 4, 4, 4]
+          },
+          "cooldown": [20, 19, 18, 17],
+          "mana_cost": [75, 85, 95, 105],
+          "notes": "Invisibility breaks when attacking, casting spells, or using items."
+        },
+        {
+          "id": 5604,
+          "name": "Death Pact",
+          "description": "Clinkz consumes a target creep, gaining health and damage based on the consumed unit's max health.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "health_bonus_pct": [50, 65, 80],
+            "damage_bonus_pct": [5, 7, 9],
+            "duration": [65, 65, 65],
+            "skeleton_count": [2, 4, 6]
+          },
+          "cooldown": [85, 75, 65],
+          "mana_cost": [100, 120, 140],
+          "notes": "Instantly kills the target creep. Cannot target ancient creeps or heroes."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5605,
+          "name": "Bone and Arrow",
+          "description": "Clinkz can summon Skeleton Archers that attack his enemies. Each archer deals a percentage of Clinkz's attack damage.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["enemies"],
+          "special_values": {
+            "archer_damage_pct": [20, 20, 20, 20],
+            "archer_attack_range": [600, 600, 600, 600],
+            "archer_duration": [25, 25, 25, 25],
+            "max_archers": [4, 4, 4, 4],
+            "archer_health": [1, 1, 1, 1]
+          },
+          "notes": "Skeleton Archers are summoned through various abilities and on Clinkz's death. They follow and attack Clinkz's targets."
+        }
+      ]
+    }
+  ]
+}

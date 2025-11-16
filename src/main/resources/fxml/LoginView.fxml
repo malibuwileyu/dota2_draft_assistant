@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.dota2assistant.ui.controller.LoginController"
+            prefWidth="400" prefHeight="450"
+            styleClass="main-container">
+    
+    <!-- Header section -->
+    <top>
+        <VBox alignment="CENTER" spacing="8">
+            <padding>
+                <Insets top="20" right="20" bottom="10" left="20"/>
+            </padding>
+            
+            <Label text="Dota 2 Draft Assistant" style="-fx-font-weight: bold;">
+                <font>
+                    <Font size="24.0"/>
+                </font>
+            </Label>
+        </VBox>
+    </top>
+    
+    <!-- Main content area -->
+    <center>
+        <VBox alignment="CENTER" spacing="15">
+            <padding>
+                <Insets top="5" right="20" bottom="10" left="20"/>
+            </padding>
+            
+            <Label text="Login with your Steam account to access personalized drafting recommendations" 
+                   wrapText="true" textAlignment="CENTER" alignment="CENTER"
+                   maxWidth="350"/>
+            
+            <!-- User info (visible when logged in) -->
+            <VBox fx:id="userInfoContainer" alignment="CENTER" spacing="5" visible="false">
+                <ImageView fx:id="avatarImageView" fitWidth="100" fitHeight="100" preserveRatio="true"/>
+                <Label fx:id="usernameLabel" style="-fx-font-weight: bold;"/>
+            </VBox>
+            
+            <!-- Login button (visible when logged out) -->
+            <Button fx:id="loginButton" text="Login with Steam" styleClass="steam-login-button" 
+                    maxWidth="220" minWidth="220">
+                <graphic>
+                    <HBox alignment="CENTER" spacing="5">
+                        <Label text="" style="-fx-text-fill: white; -fx-font-family: 'FontAwesome'; -fx-font-size: 16px;">
+                            <!-- Unicode Steam icon -->
+                            <font>
+                                <Font name="FontAwesome" size="16"/>
+                            </font>
+                        </Label>
+                    </HBox>
+                </graphic>
+                <padding>
+                    <Insets top="10" right="15" bottom="10" left="15"/>
+                </padding>
+            </Button>
+            
+            <!-- Logout button (visible when logged in) -->
+            <Button fx:id="logoutButton" text="Logout" visible="false" maxWidth="200" styleClass="logout-button">
+                <padding>
+                    <Insets top="8" right="12" bottom="8" left="12"/>
+                </padding>
+            </Button>
+            
+            <!-- Status message -->
+            <Label fx:id="statusLabel" text="Not logged in" textAlignment="CENTER" 
+                   wrapText="true" maxWidth="300"/>
+        </VBox>
+    </center>
+    
+    <!-- Bottom section -->
+    <bottom>
+        <VBox alignment="CENTER" spacing="5">
+            <padding>
+                <Insets top="0" right="20" bottom="15" left="20"/>
+            </padding>
+            
+            <Button text="Continue Without Login" onAction="#onContinueWithoutLogin"
+                   focusTraversable="true" visible="true" styleClass="skip-login-button">
+                <padding>
+                    <Insets top="8" right="16" bottom="8" left="16"/>
+                </padding>
+            </Button>
+        </VBox>
+    </bottom>
+
+</BorderPane>

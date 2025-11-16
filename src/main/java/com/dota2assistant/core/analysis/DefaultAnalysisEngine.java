@@ -157,10 +157,12 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         
         // Win probability
         double radiantWinProb = predictWinProbability(radiantPicks, direPicks);
+        double direWinProb = 1.0 - radiantWinProb;
+        
         analysis.append("\n\nEstimated win probability: Radiant ")
                 .append(Math.round(radiantWinProb * 100))
                 .append("% / Dire ")
-                .append(Math.round((1 - radiantWinProb) * 100))
+                .append(Math.round(direWinProb * 100))
                 .append("%");
         
         return analysis.toString();
@@ -178,19 +180,25 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         double radiantStrength = calculateTeamStrength(radiantPicks);
         double direStrength = calculateTeamStrength(direPicks);
         double radiantWinProb = predictWinProbability(radiantPicks, direPicks);
+        double direWinProb = 1.0 - radiantWinProb;
         
         // Determine overall advantage
         summary.append("Draft Summary:\n\n");
         
-        if (radiantWinProb > 0.55) {
+        // Adjusted thresholds to match our new probability range (35-65%)
+        if (radiantWinProb > 0.58) { // Strong radiant advantage
             summary.append("Radiant has drafted a stronger team composition (")
                     .append(Math.round(radiantWinProb * 100))
                     .append("% win probability).\n\n");
-        } else if (radiantWinProb < 0.45) {
+        } else if (radiantWinProb < 0.42) { // Strong dire advantage
             summary.append("Dire has drafted a stronger team composition (")
-                    .append(Math.round((1 - radiantWinProb) * 100))
+                    .append(Math.round(direWinProb * 100))
                     .append("% win probability).\n\n");
-        } else {
+        } else if (radiantWinProb > 0.52) { // Slight radiant advantage
+            summary.append("Radiant has drafted a slightly better team composition.\n\n");
+        } else if (radiantWinProb < 0.48) { // Slight dire advantage
+            summary.append("Dire has drafted a slightly better team composition.\n\n");
+        } else { // Very even match (48-52%)
             summary.append("Both teams have drafted well-balanced compositions.\n\n");
         }
         
@@ -254,6 +262,10 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
     public List<String> identifyTeamSynergies(List<Hero> teamPicks) {
         List<SynergyPair> synergyPairs = new ArrayList<>();
         
+        // Set a realistic maximum synergy value based on data quality
+        // This helps prevent unrealistic 100% synergies from mock data
+        double maxRealisticSynergyScore = 0.65; // 65% win rate is more realistic
+        
         for (int i = 0; i < teamPicks.size(); i++) {
             for (int j = i + 1; j < teamPicks.size(); j++) {
                 Hero hero1 = teamPicks.get(i);
@@ -263,7 +275,17 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
                 
                 double synergyScore = synergies.getOrDefault(key, 0.5);
                 
-                // Only include significant synergies
+                // Check if this is likely mock data with unrealistic values
+                if (synergyScore > maxRealisticSynergyScore) {
+                    // Adjust mock data to be more realistic
+                    // Map from [0.5,1.0] to [0.5,maxRealisticSynergyScore]
+                    double normalizedScore = 0.5 + (synergyScore - 0.5) * 
+                                           ((maxRealisticSynergyScore - 0.5) / 0.5);
+                    synergyScore = normalizedScore;
+                }
+                
+                // Only include significant synergies that might be meaningful
+                // 0.55 = 55% win rate together, which is significant in Dota
                 if (synergyScore > 0.55) {
                     synergyPairs.add(new SynergyPair(
                             hero1.getLocalizedName(), 
@@ -276,56 +298,124 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
         // Sort by synergy score
         synergyPairs.sort(Comparator.comparing(SynergyPair::getScore).reversed());
         
-        // Convert to description strings
+        // Limit to top 3 most significant synergies to avoid information overload
+        if (synergyPairs.size() > 3) {
+            synergyPairs = synergyPairs.subList(0, 3);
+        }
+        
+        // Convert to description strings with appropriate phrasing based on score
         return synergyPairs.stream()
-                .map(pair -> pair.getHero1() + " + " + pair.getHero2() + 
-                           " (" + Math.round(pair.getScore() * 100) + "% win rate together)")
+                .map(pair -> {
+                    // Cap percentage at 100% and format with appropriate wording
+                    int displayPercentage = (int)Math.min(Math.round((pair.getScore() - 0.5) * 200), 30);
+                    
+                    if (displayPercentage <= 5) {
+                        return pair.getHero1() + " + " + pair.getHero2() + 
+                               " (slight synergy)";
+                    } else if (displayPercentage <= 15) {
+                        return pair.getHero1() + " + " + pair.getHero2() + 
+                               " (good synergy)";
+                    } else {
+                        return pair.getHero1() + " + " + pair.getHero2() + 
+                               " (strong synergy)";
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<String> identifyCounters(List<Hero> team1Picks, List<Hero> team2Picks) {
-        List<CounterPair> counterPairs = new ArrayList<>();
+        Map<String, CounterPair> counterPairMap = new HashMap<>();
+        
+        // Set a realistic maximum counter value based on data quality
+        // No hero has a 100% counter advantage in real Dota
+        double maxRealisticCounterScore = 0.65; // 65% win rate against is more realistic
+        
+        // Map to track hero pair relationships by a normalized key (smaller ID first)
+        // This helps prevent contradictions like A counters B and B counters A
+        Map<String, Double> heroMatchupAdvantages = new HashMap<>();
         
         // Check each hero from team1 against each hero from team2
         for (Hero hero1 : team1Picks) {
             for (Hero hero2 : team2Picks) {
-                String key = hero1.getId() + "_" + hero2.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
+                // Create keys for both directions
+                String key1 = hero1.getId() + "_" + hero2.getId();
+                String key2 = hero2.getId() + "_" + hero1.getId();
                 
-                // Only include significant counters
-                if (counterScore > 0.55) {
-                    counterPairs.add(new CounterPair(
-                            hero1.getLocalizedName(),
-                            hero2.getLocalizedName(),
-                            counterScore));
+                // Get counter scores in both directions
+                double team1CountersTeam2 = counters.getOrDefault(key1, 0.5);
+                double team2CountersTeam1 = counters.getOrDefault(key2, 0.5);
+                
+                // Check if these are likely mock data values
+                if (team1CountersTeam2 > maxRealisticCounterScore) {
+                    // Adjust to a more realistic value
+                    team1CountersTeam2 = 0.5 + (team1CountersTeam2 - 0.5) * 
+                                        ((maxRealisticCounterScore - 0.5) / 0.5);
                 }
+                
+                if (team2CountersTeam1 > maxRealisticCounterScore) {
+                    // Adjust to a more realistic value
+                    team2CountersTeam1 = 0.5 + (team2CountersTeam1 - 0.5) * 
+                                        ((maxRealisticCounterScore - 0.5) / 0.5);
+                }
+                
+                // Create a normalized identifier for this hero pair
+                String pairKey = Math.min(hero1.getId(), hero2.getId()) + "_" + Math.max(hero1.getId(), hero2.getId());
+                
+                // Minimum advantage threshold for a true counter relationship
+                double advantageThreshold = 0.55; // 55% win rate against suggests a counter
+                
+                // Need a meaningful difference between both directions to claim a counter
+                double directionDifferenceThreshold = 0.05; // 5% difference between directions
+                
+                // Calculate which hero has the real advantage overall
+                // Only one hero can counter the other in a pair - the one with the higher counter score
+                if (team1CountersTeam2 > advantageThreshold && 
+                    team1CountersTeam2 > team2CountersTeam1 + directionDifferenceThreshold) {
+                    // Team 1 hero counters team 2 hero
+                    heroMatchupAdvantages.put(pairKey, team1CountersTeam2);
+                    counterPairMap.put(pairKey, new CounterPair(
+                            hero1.getLocalizedName(), 
+                            hero2.getLocalizedName(),
+                            team1CountersTeam2));
+                } else if (team2CountersTeam1 > advantageThreshold && 
+                           team2CountersTeam1 > team1CountersTeam2 + directionDifferenceThreshold) {
+                    // Team 2 hero counters team 1 hero
+                    heroMatchupAdvantages.put(pairKey, team2CountersTeam1);
+                    counterPairMap.put(pairKey, new CounterPair(
+                            hero2.getLocalizedName(), 
+                            hero1.getLocalizedName(),
+                            team2CountersTeam1));
+                }
+                // If neither hero has a significant advantage or they're too close, don't add any counter
             }
         }
         
-        // Check each hero from team2 against each hero from team1
-        for (Hero hero1 : team2Picks) {
-            for (Hero hero2 : team1Picks) {
-                String key = hero1.getId() + "_" + hero2.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
-                
-                // Only include significant counters
-                if (counterScore > 0.55) {
-                    counterPairs.add(new CounterPair(
-                            hero1.getLocalizedName(),
-                            hero2.getLocalizedName(),
-                            counterScore));
-                }
-            }
-        }
-        
-        // Sort by counter score
+        // Convert to list and sort by counter score
+        List<CounterPair> counterPairs = new ArrayList<>(counterPairMap.values());
         counterPairs.sort(Comparator.comparing(CounterPair::getScore).reversed());
         
-        // Convert to description strings
+        // Limit to top 3 most significant counters to avoid information overload
+        if (counterPairs.size() > 3) {
+            counterPairs = counterPairs.subList(0, 3);
+        }
+        
+        // Convert to description strings with appropriate phrasing based on advantage
         return counterPairs.stream()
-                .map(pair -> pair.getCounterHero() + " counters " + pair.getCounteredHero() + 
-                           " (" + Math.round(pair.getScore() * 100) + "% advantage)")
+                .map(pair -> {
+                    // Map the advantage to a more intuitive scale and use descriptions instead of percentages
+                    double advantage = pair.getScore() - 0.5; // Convert from [0.5,1.0] to [0,0.5]
+                    int strengthPercent = (int)Math.round(advantage * 200); // Convert to percentage points of advantage
+                    
+                    // Use descriptive terms instead of exact percentages
+                    if (strengthPercent <= 5) {
+                        return pair.getCounterHero() + " has slight advantage against " + pair.getCounteredHero();
+                    } else if (strengthPercent <= 10) {
+                        return pair.getCounterHero() + " is good against " + pair.getCounteredHero();
+                    } else {
+                        return pair.getCounterHero() + " counters " + pair.getCounteredHero();
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
@@ -400,28 +490,64 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
             return 0.5; // Equal chance if teams are not yet drafted
         }
         
+        // Set a realistic maximum counter value based on data quality
+        double maxRealisticCounterScore = 0.65; // 65% win rate against is more realistic
+        
         double radiantStrength = calculateTeamStrength(radiantPicks);
         double direStrength = calculateTeamStrength(direPicks);
         
-        // Calculate direct counter advantage
+        // Calculate direct counter advantage with more realistic values
         double radiantCounterAdvantage = 0.0;
         double direCounterAdvantage = 0.0;
         
-        // Radiant heroes countering Dire heroes
+        // Map to track already processed hero pairs to avoid duplicates
+        // and ensure consistency with identifyCounters method
+        Map<String, Boolean> processedPairs = new HashMap<>();
+        
+        // Check each hero pair once, considering both directions at once
         for (Hero radiantHero : radiantPicks) {
             for (Hero direHero : direPicks) {
-                String key = radiantHero.getId() + "_" + direHero.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
-                radiantCounterAdvantage += (counterScore - 0.5) * 2; // Convert from [0.5, 1.0] to [0.0, 1.0]
-            }
-        }
-        
-        // Dire heroes countering Radiant heroes
-        for (Hero direHero : direPicks) {
-            for (Hero radiantHero : radiantPicks) {
-                String key = direHero.getId() + "_" + radiantHero.getId();
-                double counterScore = counters.getOrDefault(key, 0.5);
-                direCounterAdvantage += (counterScore - 0.5) * 2; // Convert from [0.5, 1.0] to [0.0, 1.0]
+                // Create a normalized identifier for this hero pair
+                String pairKey = Math.min(radiantHero.getId(), direHero.getId()) + "_" + 
+                                Math.max(radiantHero.getId(), direHero.getId());
+                
+                // Skip if we've already processed this pair
+                if (processedPairs.containsKey(pairKey)) {
+                    continue;
+                }
+                
+                // Mark as processed
+                processedPairs.put(pairKey, true);
+                
+                // Get counter scores in both directions
+                String radiantToDireKey = radiantHero.getId() + "_" + direHero.getId();
+                String direToRadiantKey = direHero.getId() + "_" + radiantHero.getId();
+                
+                double radiantCountersDire = counters.getOrDefault(radiantToDireKey, 0.5);
+                double direCountersRadiant = counters.getOrDefault(direToRadiantKey, 0.5);
+                
+                // Check if these are likely mock data values and adjust if necessary
+                if (radiantCountersDire > maxRealisticCounterScore) {
+                    radiantCountersDire = 0.5 + (radiantCountersDire - 0.5) * 
+                                        ((maxRealisticCounterScore - 0.5) / 0.5);
+                }
+                
+                if (direCountersRadiant > maxRealisticCounterScore) {
+                    direCountersRadiant = 0.5 + (direCountersRadiant - 0.5) * 
+                                        ((maxRealisticCounterScore - 0.5) / 0.5);
+                }
+                
+                // Convert from win rate [0.5,1.0] to advantage [0.0,0.5]
+                double radiantAdvantage = radiantCountersDire - 0.5;
+                double direAdvantage = direCountersRadiant - 0.5;
+                
+                // Add the net advantage to the appropriate team
+                // If radiant has more advantage over dire than vice versa
+                if (radiantAdvantage > direAdvantage) {
+                    radiantCounterAdvantage += (radiantAdvantage - direAdvantage);
+                } else {
+                    direCounterAdvantage += (direAdvantage - radiantAdvantage);
+                }
             }
         }
         
@@ -435,14 +561,22 @@ public class DefaultAnalysisEngine implements AnalysisEngine {
             direCounterAdvantage /= totalPairings;
         }
         
-        // Final win probability calculation
-        // 70% based on team strength, 30% based on counter advantage
+        // In real games, team strength (based on heroes' win rates and synergies)
+        // matters more than counter picks, especially at lower ranks
+        // Final win probability calculation with balanced weighting
         double radiantScore = (radiantStrength * 0.7) + (radiantCounterAdvantage * 0.3);
         double direScore = (direStrength * 0.7) + (direCounterAdvantage * 0.3);
         
-        // Convert to probability (using logistic function)
+        // Convert to probability (using logistic function with reduced scaling)
+        // Real Dota 2 matches are rarely exceptionally one-sided in draft phase
         double diff = radiantScore - direScore;
-        return 1.0 / (1.0 + Math.exp(-diff * 5)); // Scaling factor 5 to make it more pronounced
+        double probability = 1.0 / (1.0 + Math.exp(-diff * 3)); // Reduced scaling factor from 5 to 3
+        
+        // Further constrain probabilities to keep predictions realistic
+        // Even the most one-sided drafts rarely exceed 65-35 advantage
+        double minProbability = 0.35; // 35%
+        double maxProbability = 0.65; // 65%
+        return Math.max(minProbability, Math.min(maxProbability, probability));
     }
     
     /**

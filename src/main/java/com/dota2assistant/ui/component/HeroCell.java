@@ -1,6 +1,7 @@
 package com.dota2assistant.ui.component;
 
 import com.dota2assistant.data.model.Hero;
+import com.dota2assistant.data.model.PlayerHeroPerformance;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -12,6 +13,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.TextAlignment;
 import org.slf4j.Logger;
@@ -32,6 +36,8 @@ public class HeroCell extends VBox {
     private final ImageView imageView;
     private final Label nameLabel;
     private boolean isSelected = false;
+    private PlayerHeroPerformance playerPerformance;
+    private StackPane performanceIndicator;
     
     /**
      * Creates a new HeroCell for the given hero.
@@ -39,9 +45,20 @@ public class HeroCell extends VBox {
      * @param hero The hero to display
      */
     public HeroCell(Hero hero) {
+        this(hero, null);
+    }
+    
+    /**
+     * Creates a new HeroCell for the given hero with player performance data.
+     * 
+     * @param hero The hero to display
+     * @param playerPerformance The player's performance data for this hero (can be null)
+     */
+    public HeroCell(Hero hero, PlayerHeroPerformance playerPerformance) {
         this.hero = hero;
         this.imageView = new ImageView();
         this.nameLabel = new Label();
+        this.playerPerformance = playerPerformance;
         
         initializeComponent();
     }
@@ -69,9 +86,20 @@ public class HeroCell extends VBox {
         nameLabel.getStyleClass().add("hero-name");
         
         // Create a stack pane to hold the image (allows for overlays)
-        StackPane imagePane = new StackPane(imageView);
+        StackPane imagePane = new StackPane();
         imagePane.getStyleClass().add("hero-pane");
         imagePane.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        imagePane.getChildren().add(imageView);
+        
+        // Create performance indicator if player performance data is available
+        if (playerPerformance != null) {
+            // Create performance indicator
+            performanceIndicator = createPerformanceIndicator();
+            
+            // Place the indicator in the top-right corner of the image
+            StackPane.setAlignment(performanceIndicator, Pos.TOP_RIGHT);
+            imagePane.getChildren().add(performanceIndicator);
+        }
         
         // Set up tooltip with additional hero information
         StringBuilder tooltipText = new StringBuilder();
@@ -83,6 +111,21 @@ public class HeroCell extends VBox {
         
         if (hero.getPrimaryAttribute() != null) {
             tooltipText.append("\nAttribute: ").append(hero.getPrimaryAttribute().toUpperCase());
+        }
+        
+        // Add player performance information if available
+        if (playerPerformance != null) {
+            tooltipText.append("\n\n--- Your Performance ---");
+            tooltipText.append("\nMatches: ").append(playerPerformance.getMatches());
+            tooltipText.append("\nWin Rate: ").append(playerPerformance.getWinRateFormatted());
+            tooltipText.append("\nKDA: ").append(playerPerformance.getKdaFormatted());
+            
+            if (playerPerformance.isComfortPick()) {
+                tooltipText.append("\n\nComfort Hero ★");
+            }
+            
+            // Add information about data weighting
+            tooltipText.append("\n\nStats Weighting: ").append(playerPerformance.getWeightDistribution());
         }
         
         Tooltip tooltip = new Tooltip(tooltipText.toString());
@@ -116,7 +159,7 @@ public class HeroCell extends VBox {
                         Image image = new Image(is);
                         if (!image.isError()) {
                             imageView.setImage(image);
-                            logger.error("SPECIAL CASE: Loaded Dawnbreaker image successfully!");
+                            logger.debug("SPECIAL CASE: Loaded Dawnbreaker image successfully!");
                             return;
                         }
                     } else {
@@ -349,5 +392,128 @@ public class HeroCell extends VBox {
      */
     public Hero getHero() {
         return hero;
+    }
+    
+    /**
+     * Gets the player performance data associated with this cell.
+     * 
+     * @return the player performance data, or null if none
+     */
+    public PlayerHeroPerformance getPlayerPerformance() {
+        return playerPerformance;
+    }
+    
+    /**
+     * Sets the player performance data and updates the UI.
+     * 
+     * @param playerPerformance the player performance data to set
+     */
+    public void setPlayerPerformance(PlayerHeroPerformance playerPerformance) {
+        this.playerPerformance = playerPerformance;
+        
+        // Remove old indicator if it exists
+        if (getChildren().size() > 0) {
+            StackPane imagePane = (StackPane) getChildren().get(0);
+            imagePane.getChildren().removeIf(node -> node != imageView);
+        }
+        
+        // Create and add new indicator if performance data is available
+        if (playerPerformance != null && getChildren().size() > 0) {
+            StackPane imagePane = (StackPane) getChildren().get(0);
+            performanceIndicator = createPerformanceIndicator();
+            StackPane.setAlignment(performanceIndicator, Pos.TOP_RIGHT);
+            imagePane.getChildren().add(performanceIndicator);
+            
+            // Update the tooltip
+            StringBuilder tooltipText = new StringBuilder();
+            tooltipText.append(hero.getLocalizedName());
+            
+            if (hero.getRoles() != null && !hero.getRoles().isEmpty()) {
+                tooltipText.append("\nRoles: ").append(String.join(", ", hero.getRoles()));
+            }
+            
+            if (hero.getPrimaryAttribute() != null) {
+                tooltipText.append("\nAttribute: ").append(hero.getPrimaryAttribute().toUpperCase());
+            }
+            
+            // Add player performance information
+            tooltipText.append("\n\n--- Your Performance ---");
+            tooltipText.append("\nMatches: ").append(playerPerformance.getMatches());
+            tooltipText.append("\nWin Rate: ").append(playerPerformance.getWinRateFormatted());
+            tooltipText.append("\nKDA: ").append(playerPerformance.getKdaFormatted());
+            
+            if (playerPerformance.isComfortPick()) {
+                tooltipText.append("\n\nComfort Hero ★");
+            }
+            
+            tooltipText.append("\n\nStats Weighting: ").append(playerPerformance.getWeightDistribution());
+            
+            Tooltip tooltip = new Tooltip(tooltipText.toString());
+            Tooltip.install(this, tooltip);
+        }
+    }
+    
+    /**
+     * Creates a visual indicator for player performance with this hero.
+     * 
+     * @return a StackPane containing the performance indicator
+     */
+    private StackPane createPerformanceIndicator() {
+        StackPane indicator = new StackPane();
+        indicator.setPrefSize(24, 24);
+        indicator.setMaxSize(24, 24);
+        indicator.setTranslateX(-5);
+        indicator.setTranslateY(5);
+        
+        // Background circle
+        Circle background = new Circle(12);
+        background.setFill(Color.BLACK);
+        background.setOpacity(0.7);
+        
+        // Visual indicators based on performance
+        if (playerPerformance != null) {
+            // Create the arc for win rate visualization (like a circular progress bar)
+            double winRate = playerPerformance.getWinRate();
+            Arc winRateArc = new Arc(0, 0, 10, 10, 90, winRate * 360);
+            winRateArc.setType(ArcType.ROUND);
+            
+            // Color based on win rate
+            Color arcColor;
+            if (winRate >= 0.55) {
+                arcColor = Color.GREEN;
+            } else if (winRate <= 0.45) {
+                arcColor = Color.RED;
+            } else {
+                arcColor = Color.YELLOW;
+            }
+            winRateArc.setFill(arcColor);
+            
+            // Performance label
+            Label performanceLabel;
+            
+            // Different label based on if it's a comfort pick or just showing matches
+            if (playerPerformance.isComfortPick()) {
+                performanceLabel = new Label("★");
+                performanceLabel.setStyle("-fx-text-fill: gold; -fx-font-weight: bold; -fx-font-size: 14px;");
+            } else if (playerPerformance.getMatches() > 0) {
+                performanceLabel = new Label(String.valueOf(playerPerformance.getMatches()));
+                performanceLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 10px;");
+            } else {
+                performanceLabel = new Label("!");
+                performanceLabel.setStyle("-fx-text-fill: gray; -fx-font-weight: bold; -fx-font-size: 12px;");
+            }
+            
+            // Add components to the indicator
+            indicator.getChildren().addAll(background, winRateArc, performanceLabel);
+            
+            // Add style class for CSS styling
+            indicator.getStyleClass().add("performance-indicator");
+            
+            if (playerPerformance.isComfortPick()) {
+                indicator.getStyleClass().add("comfort-pick");
+            }
+        }
+        
+        return indicator;
     }
 }

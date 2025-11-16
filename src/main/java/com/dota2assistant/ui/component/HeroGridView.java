@@ -1,6 +1,7 @@
 package com.dota2assistant.ui.component;
 
 import com.dota2assistant.data.model.Hero;
+import com.dota2assistant.data.model.PlayerHeroPerformance;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -10,7 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -27,6 +30,7 @@ public class HeroGridView extends FlowPane {
     private final List<HeroCell> heroCells = new ArrayList<>();
     private HeroCell selectedCell;
     private Consumer<Hero> onHeroSelectedCallback;
+    private Map<Integer, PlayerHeroPerformance> heroPerformanceMap = new HashMap<>();
     
     /**
      * Creates a new HeroGridView with the given heroes.
@@ -77,8 +81,20 @@ public class HeroGridView extends FlowPane {
         getChildren().clear();
         heroCells.clear();
         
+        int performanceDataCount = 0;
+        
         for (Hero hero : heroes) {
-            HeroCell cell = new HeroCell(hero);
+            // Check if we have performance data for this hero
+            PlayerHeroPerformance performance = null;
+            if (heroPerformanceMap.containsKey(hero.getId())) {
+                performance = heroPerformanceMap.get(hero.getId());
+                performanceDataCount++;
+            }
+            
+            // Create cell with hero and performance data if available
+            HeroCell cell = new HeroCell(hero, performance);
+            
+            // Set click handling
             cell.setOnMouseClicked(event -> {
                 logger.debug("Hero cell clicked: {}", hero.getLocalizedName());
                 
@@ -101,7 +117,8 @@ public class HeroGridView extends FlowPane {
             getChildren().add(cell);
         }
         
-        logger.debug("Grid populated with {} hero cells", heroCells.size());
+        logger.debug("Grid populated with {} hero cells ({} with performance data)", 
+                   heroCells.size(), performanceDataCount);
     }
     
     /**
@@ -160,5 +177,39 @@ public class HeroGridView extends FlowPane {
         }
         
         return false;
+    }
+    
+    /**
+     * Updates the hero cells with player performance data.
+     * 
+     * @param performanceData Map of hero IDs to performance data
+     */
+    public void updateHeroPerformanceData(Map<Integer, PlayerHeroPerformance> performanceData) {
+        if (performanceData == null || performanceData.isEmpty()) {
+            logger.debug("No performance data provided, skipping update");
+            return;
+        }
+        
+        // Store the new performance data
+        heroPerformanceMap.clear();
+        heroPerformanceMap.putAll(performanceData);
+        logger.debug("Updated hero performance map with {} entries", heroPerformanceMap.size());
+        
+        // Update existing cells
+        for (HeroCell cell : heroCells) {
+            Hero hero = cell.getHero();
+            if (hero != null && heroPerformanceMap.containsKey(hero.getId())) {
+                PlayerHeroPerformance performance = heroPerformanceMap.get(hero.getId());
+                cell.setPlayerPerformance(performance);
+                
+                // Log comfort picks for debugging
+                if (performance.isComfortPick()) {
+                    logger.debug("Comfort hero found: {} (matches: {}, win rate: {})", 
+                               hero.getLocalizedName(), 
+                               performance.getMatches(),
+                               performance.getWinRateFormatted());
+                }
+            }
+        }
     }
 }

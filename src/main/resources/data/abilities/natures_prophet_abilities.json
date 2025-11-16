@@ -1,0 +1,91 @@
+{
+  "heroes": [
+    {
+      "id": 53,
+      "name": "furion",
+      "localized_name": "Nature's Prophet",
+      "abilities": [
+        {
+          "id": 5301,
+          "name": "Sprout",
+          "description": "Creates a ring of trees around the target, trapping them inside. Units trapped inside cannot move out, but can still attack and cast spells.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies", "allies"],
+          "special_values": {
+            "duration": [3, 4, 5, 6],
+            "radius": [250, 250, 250, 250],
+            "cast_range": [625, 700, 775, 850],
+            "vision_radius": [250, 250, 250, 250]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [80, 95, 110, 125],
+          "notes": "Provides vision around the trees. Can be destroyed by tree-cutting effects or quelling blade."
+        },
+        {
+          "id": 5302,
+          "name": "Teleportation",
+          "description": "Teleports Nature's Prophet to any location on the map after a short channel time.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "channel_time": [3, 3, 3, 3],
+            "min_distance": [0, 0, 0, 0],
+            "max_distance": [99999, 99999, 99999, 99999]
+          },
+          "cooldown": [25, 20, 15, 10],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "Taking damage doesn't interrupt the teleport. Can teleport to any point on the map."
+        },
+        {
+          "id": 5303,
+          "name": "Nature's Call",
+          "description": "Converts trees into treants that follow Nature's Prophet and attack his enemies.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["trees"],
+          "special_values": {
+            "max_treants": [2, 3, 4, 5],
+            "treant_health": [500, 550, 600, 650],
+            "treant_damage_min": [24, 31, 38, 45],
+            "treant_damage_max": [28, 35, 42, 49],
+            "duration": [60, 60, 60, 60],
+            "area_of_effect": [375, 375, 375, 375]
+          },
+          "cooldown": [37, 34, 31, 28],
+          "mana_cost": [130, 140, 150, 160],
+          "notes": "Can create treants anywhere there are trees on the map."
+        },
+        {
+          "id": 5304,
+          "name": "Wrath of Nature",
+          "description": "Summons a bolt of energy that strikes the nearest visible enemy unit, then bounces to nearby enemies. Damage increases with each bounce and deals extra damage to creeps.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [175, 250, 325],
+            "damage_percent_increase": [7, 7, 7],
+            "jump_count": [16, 18, 20],
+            "bounce_radius": [500, 500, 500],
+            "cast_range": [99999, 99999, 99999],
+            "creep_damage_pct": [150, 175, 200]
+          },
+          "cooldown": [90, 80, 70],
+          "mana_cost": [175, 200, 225],
+          "notes": "Can target anywhere on the map to start the chain. Deals increased damage to non-hero units."
+        }
+      ],
+      "innate_abilities": []
+    }
+  ]
+}

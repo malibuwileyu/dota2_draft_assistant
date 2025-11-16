@@ -80,6 +80,83 @@
     -fx-opacity: 0.6;
 }
 
+/* Steam login button styling */
+.steam-login-button {
+    -fx-background-color: linear-gradient(to bottom, #1b2838, #171f2a);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #3a597e;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 5, 0, 0, 1);
+    -fx-alignment: center;
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 8;
+    -fx-font-size: 14px;
+}
+
+.steam-login-button .text {
+    -fx-text-alignment: center;
+}
+
+.steam-login-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #2a3f5a, #23364f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 7, 0, 0, 1);
+    -fx-border-color: #4c7eb7;
+}
+
+.steam-login-button:pressed {
+    -fx-background-color: #152238;
+    -fx-translate-y: 1px;
+}
+
+/* Logout button styling */
+.logout-button {
+    -fx-background-color: linear-gradient(to bottom, #444444, #333333);
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #666666;
+    -fx-border-width: 1;
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+}
+
+.logout-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #555555, #444444);
+    -fx-border-color: #888888;
+}
+
+.logout-button:pressed {
+    -fx-background-color: #333333;
+    -fx-translate-y: 1px;
+}
+
+/* Skip login button styling */
+.skip-login-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a0a0a0;
+    -fx-border-width: 1;
+    -fx-border-color: #555555;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-size: 12px;
+}
+
+.skip-login-button:hover {
+    -fx-text-fill: white;
+    -fx-border-color: #666666;
+    -fx-background-color: rgba(80, 80, 80, 0.1);
+}
+
+.skip-login-button:pressed {
+    -fx-background-color: rgba(60, 60, 60, 0.2);
+}
+
 /* Pick/Ban specific button styles */
 .button.pick-action.active-action {
     -fx-background-color: -radiant;
@@ -393,9 +470,115 @@
     -fx-text-fill: #e0e0e0;
     -fx-font-style: italic;
     -fx-wrap-text: true;
+    -fx-pref-width: 320;
 }
 
 .recommendation-score {
     -fx-font-weight: bold;
     -fx-text-fill: -highlight;
+}
+
+/* User status component */
+.user-status-component {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 5;
+    -fx-spacing: 8;
+    -fx-alignment: center-right;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+}
+
+.user-status-component .user-name {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+}
+
+.user-status-component .user-avatar {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 3, 0, 0, 1);
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-border-width: 1;
+    -fx-border-color: #666666;
+}
+
+.user-status-component .login-button {
+    -fx-background-color: linear-gradient(to bottom, #1b2838, #171f2a); /* Steam blue gradient */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 5 12 5 12;
+    -fx-border-color: #3a597e;
+    -fx-border-width: 1;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-cursor: hand;
+}
+
+.user-status-component .login-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #2a3f5a, #23364f);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 3, 0, 0, 1);
+    -fx-border-color: #4c7eb7;
+}
+
+.user-status-component .login-button:pressed {
+    -fx-background-color: #152238;
+    -fx-translate-y: 1px;
+}
+
+/* Player Performance Indicators */
+.performance-indicator {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.7), 3, 0, 0, 1);
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+}
+
+.performance-indicator.comfort-pick {
+    -fx-effect: dropshadow(gaussian, rgba(255, 215, 0, 0.7), 6, 0, 0, 0);
+    -fx-border-width: 1px;
+    -fx-border-color: gold;
+}
+
+/* Sync Settings Component */
+.sync-settings-component {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 10;
+}
+
+.sync-status-container {
+    -fx-background-color: #333333;
+    -fx-border-color: #555555;
+    -fx-border-width: 1;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.sync-settings-component .primary-button {
+    -fx-background-color: -accent;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.sync-settings-component .primary-button:hover {
+    -fx-background-color: derive(-accent, 10%);
+    -fx-effect: dropshadow(gaussian, rgba(102, 204, 255, 0.7), 5, 0, 0, 0);
+}
+
+.sync-settings-component .syncing {
+    -fx-text-fill: -highlight;
+}
+
+.sync-settings-component .completed {
+    -fx-text-fill: -radiant;
+}
+
+.sync-settings-component .error {
+    -fx-text-fill: -dire;
 }

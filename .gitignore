@@ -54,8 +54,14 @@ Thumbs.db
 # Application specific
 *.log
 logs/
+
+# Local SQLite databases (should be in data/local/ if used)
 dota2assistant.db
 dota2assistant.db-journal
+dota2_assistant.db
+dota2_assistant.db-journal
+*.db
+*.db-journal
 
 # Agent support files
 CLAUDE.md
@@ -73,6 +79,7 @@ application.yaml
 application.properties
 application-local.properties
 application-dev.properties
+application.properties.override
 
 # Environment variables and secrets
 *.env
@@ -81,7 +88,6 @@ application-dev.properties
 .env.development
 .groq_api_key
 
-docs/*
 data/benchmarks/*
 data/expert_reviews/*
 data/evaluation/*

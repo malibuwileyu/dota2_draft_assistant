@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.dota2assistant.ui.controller.AdminMonitoringController"
+      spacing="10">
+    
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+    
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Match Enrichment Monitoring" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh" />
+    </HBox>
+    
+    <Separator />
+    
+    <HBox spacing="20">
+        <VBox spacing="10" minWidth="300">
+            <Label text="Queue Statistics" style="-fx-font-weight: bold"/>
+            
+            <GridPane hgap="10" vgap="5">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="150" />
+                    <ColumnConstraints minWidth="100" />
+                </columnConstraints>
+                
+                <Label text="Queue Size:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                <Label fx:id="queueSizeLabel" text="0/0" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                
+                <Label text="Currently Processing:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                <Label fx:id="processingCountLabel" text="0" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                
+                <Label text="Queue Capacity:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                <Label fx:id="queueCapacityLabel" text="0" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                
+                <Label text="API Requests (Last Min):" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                <Label fx:id="apiRequestsLabel" text="0/0" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+            </GridPane>
+        </VBox>
+        
+        <Separator orientation="VERTICAL" />
+        
+        <VBox spacing="10" minWidth="300">
+            <Label text="Processing Statistics" style="-fx-font-weight: bold"/>
+            
+            <GridPane hgap="10" vgap="5">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="150" />
+                    <ColumnConstraints minWidth="100" />
+                </columnConstraints>
+                
+                <Label text="Total Processed:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                <Label fx:id="totalProcessedLabel" text="0" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                
+                <Label text="Successfully Processed:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                <Label fx:id="successfulLabel" text="0" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                
+                <Label text="Failed Matches:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                <Label fx:id="failedLabel" text="0" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                
+                <Label text="Waiting For Retry:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                <Label fx:id="waitingForRetryLabel" text="0" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+            </GridPane>
+        </VBox>
+    </HBox>
+    
+    <Separator />
+    
+    <VBox spacing="5">
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label text="Match Processing History" style="-fx-font-weight: bold"/>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="clearHistoryButton" text="Clear History" onAction="#onClearHistory" />
+        </HBox>
+        
+        <TableView fx:id="matchHistoryTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="matchIdColumn" text="Match ID" prefWidth="100" />
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="80" />
+                <TableColumn fx:id="retryCountColumn" text="Retries" prefWidth="60" />
+                <TableColumn fx:id="lastAttemptColumn" text="Last Attempt" prefWidth="150" />
+                <TableColumn fx:id="nextAttemptColumn" text="Next Attempt" prefWidth="150" />
+            </columns>
+        </TableView>
+    </VBox>
+    
+    <Separator />
+    
+    <HBox spacing="10" alignment="CENTER">
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="Queue Utilization" />
+            <ProgressBar fx:id="queueUtilizationBar" progress="0.0" maxWidth="Infinity" prefHeight="20" />
+        </VBox>
+        
+        <VBox spacing="5" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <Label text="Success Rate" />
+            <ProgressBar fx:id="successRateBar" progress="0.0" maxWidth="Infinity" prefHeight="20" style="-fx-accent: #92A525;" />
+        </VBox>
+    </HBox>
+    
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="forceEnrichmentButton" text="Force Enrichment on Selected" onAction="#onForceEnrichment" />
+    </HBox>
+</VBox>

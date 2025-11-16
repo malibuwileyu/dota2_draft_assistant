@@ -1,0 +1,306 @@
+# Dota 2 Draft Assistant Development Guidelines
+
+## Agent Behavior Rules
+
+### Critical Constraints
+- NEVER create directories or files unless explicitly asked
+- Do not assume directories need to be created even if referenced in the conversation
+- Always check if files/directories exist before suggesting to create them
+- DO NOT run or compile the application using terminal commands
+- DO NOT attempt to run `mvn javafx:run` or similar commands
+- The application requires PostgreSQL which may not be available in all environments
+
+### File Organization Rules
+- **ALL documentation files** (*.md) belong in `/docs/` directory (except README.md, team_composition.md, and .cursorrules in root)
+- **Local database files** (*.db) should be in `/data/local/` or explicitly gitignored if in root
+- **Temporary files, scripts, test outputs** must be cleaned up or moved to appropriate directories
+- **Keep root directory clean** - only essential project files (pom.xml, README.md, .gitignore, .cursorrules, etc.)
+
+### Build Commands Reference
+```bash
+# Build
+mvn clean install
+
+# Run application
+mvn javafx:run
+
+# Run tests
+mvn test
+
+# Run single test
+mvn test -Dtest=TestClassName#testMethodName
+
+# Package application
+mvn javafx:jlink jpackage
+
+# Clean build artifacts
+mvn clean
+```
+
+---
+
+## File Organization
+
+### File Length and Structure Guidelines
+- **Java files:** 250 lines maximum (for maintainability)
+- **Test files:** 250 lines maximum
+- Implementation files must have corresponding test files
+- Break larger files into feature modules (e.g., heroes, matches, players)
+- Use composition over inheritance
+- Extract common functionality into utility classes
+
+### Module Organization
+
+#### Match Analysis Module
+- Match data processing
+- Statistical analysis
+- Performance metrics calculation
+
+#### Hero Analysis Module
+- Hero performance tracking
+- Counter-pick analysis
+- Meta trend analysis
+
+#### Player Analysis Module
+- Player performance metrics
+- Role analysis
+- Improvement tracking
+
+---
+
+## Code Style
+
+### Class Structure
+1. Interfaces and types first
+2. Private members next
+3. Constructor following private members
+4. Public methods implementing interfaces
+5. Private helper methods last
+
+### Code Formatting
+- Use 4 spaces for indentation, **no tabs**
+- Maximum line length: 120 characters
+- Use camelCase for variables and methods, PascalCase for classes
+- Imports should be organized: standard Java, third-party, then project imports
+- Always use braces for control structures, even for single-line blocks
+- Prefer composition over inheritance
+- Use JavaFX FXML for UI separation where appropriate
+
+### Naming Conventions
+- **Classes:** PascalCase, nouns (e.g., `HeroRepository`)
+- **Interfaces:** PascalCase, adjectives when applicable (e.g., `Drawable`, `Serializable`)
+- **Methods:** camelCase, verb phrases (e.g., `calculateWinRate`, `fetchMatchData`)
+- **Variables:** camelCase, clear and descriptive (e.g., `heroList`, `currentDraftState`)
+- **Constants:** SNAKE_CASE, all caps (e.g., `MAX_HEROES`, `DEFAULT_TIMEOUT`)
+- Use descriptive names reflecting Dota 2 domain concepts
+- Clear abbreviations for common terms (e.g., `pos1` for Position 1, `aoe` for Area of Effect)
+
+---
+
+## Architecture Patterns
+
+### Design Patterns in Use
+- **MVC Pattern:** UI components follow Model-View-Controller
+- **Repository Pattern:** Data access abstraction layer
+- **Strategy Pattern:** AI implementations (different decision engines)
+- **Observer Pattern:** Draft state changes and UI updates
+- **Dependency Injection:** Component management via Spring
+- **Async Operations:** Network calls and heavy computations
+
+### Component Architecture
+```
+com.dota2assistant/
+├── core/             # Business logic
+│   ├── draft/        # Draft rules and mechanics
+│   ├── ai/           # AI decision making
+│   └── analysis/     # Draft analysis
+├── data/             # Data access and management
+│   ├── api/          # API clients (OpenDota, Steam)
+│   ├── db/           # Database operations
+│   ├── model/        # Data models
+│   ├── repository/   # Data repositories
+│   └── service/      # Data services
+├── ui/               # User interface
+│   ├── controller/   # JavaFX controllers
+│   ├── view/         # View components
+│   ├── component/    # Reusable UI components
+│   └── overlay/      # Game overlay implementation
+└── util/             # Utility classes
+```
+
+---
+
+## Testing Guidelines
+
+### Test Structure
+- Group tests by feature
+- Separate unit and integration tests
+- Mock external services (Steam API, OpenDota API)
+- Use meaningful test data
+
+### Test Coverage Requirements
+- **Minimum 80% code coverage**
+- Critical paths require 100% coverage
+- Test edge cases thoroughly
+- Include performance tests for heavy operations
+
+### Test Organization
+```java
+@Test
+public void testMethodName_givenCondition_expectedBehavior() {
+    // Arrange
+    // Act
+    // Assert
+}
+```
+
+---
+
+## Error Handling
+
+### Error Types
+
+#### Game Data Errors
+- Invalid match data
+- Missing player information
+- Corrupted replay files
+
+#### Analysis Errors
+- Statistical calculation errors
+- Invalid metric computations
+- Data processing failures
+
+#### Integration Errors
+- API connection failures
+- Rate limit exceeded
+- Data synchronization issues
+
+### Error Handling Strategy
+- Use checked exceptions for recoverable errors
+- Use unchecked exceptions for programming errors
+- Always include meaningful error messages
+- Log exceptions before rethrowing when appropriate
+- Use `Optional<T>` for nullable return values instead of returning null
+- Implement proper retry logic for transient failures
+
+---
+
+## Performance Guidelines
+
+### Memory Management
+
+#### Resource Handling
+- Proper cleanup of analysis resources
+- Efficient handling of large match datasets
+- Memory-efficient data structures
+- Resource pooling for heavy operations
+
+#### Caching Strategy
+- Cache frequently accessed match data
+- Store hero statistics with TTL
+- Implement TTL for volatile data (meta changes with patches)
+- Use distributed caching for scalability
+- Clear caches after data updates
+
+### Async Operations
+- Use async operations for network and heavy computations
+- Implement proper thread pool management
+- Handle cancellation and timeouts gracefully
+
+---
+
+## Integration Guidelines
+
+### External API Integration
+
+#### Steam API Integration
+- Rate limiting compliance (respect API limits)
+- Error handling for auth failures
+- Data validation for user profiles
+- Version compatibility checks
+
+#### OpenDota API Integration
+- Request throttling (be respectful)
+- Response caching to minimize calls
+- Error recovery for failed requests
+- Data mapping and transformation
+- Handle API deprecations gracefully
+
+---
+
+## Critical Rules
+
+### Data Processing
+- Validate all match data before processing
+- Handle incomplete data gracefully (don't crash)
+- Implement proper data sanitization
+- Version all data structures for migration compatibility
+
+### Analysis Accuracy
+- Verify statistical calculations (unit test them)
+- Cross-validate metrics against known data
+- Document analysis assumptions clearly
+- Handle edge cases properly (e.g., heroes with <10 matches)
+
+### Best Practices
+- **Type Safety:** Use strong typing, implement proper validation, define clear interfaces
+- **Documentation:** Document analysis algorithms, maintain API documentation, include usage examples
+- **Security:** Secure API keys, validate user input, implement rate limiting, follow security best practices
+
+---
+
+## Database Guidelines
+
+### Schema Design
+- Optimize for match data storage (frequent inserts)
+- Index frequently queried fields (hero_id, match_id, player_id)
+- Handle large datasets efficiently (pagination, chunking)
+- Plan for data growth (partition strategies)
+
+### Query Optimization
+- Optimize match retrieval queries
+- Efficient statistical queries (use aggregations)
+- Cache query results when appropriate
+- Monitor performance and slow queries
+
+---
+
+## Documentation Requirements
+
+### Code Documentation
+- Document analysis algorithms with clear explanations
+- Explain metric calculations (formulas, reasoning)
+- Include usage examples for complex APIs
+- Document configurations and their effects
+
+### API Documentation
+- Document endpoints with request/response examples
+- Specify rate limits clearly
+- Include response formats and schemas
+- Document error cases and status codes
+
+### Architecture Documentation
+- System components and their responsibilities
+- Data flow diagrams
+- Integration points (external APIs)
+- Scaling strategy
+
+---
+
+## Dota 2 Domain Knowledge
+
+### Key Concepts to Understand
+- **Positions 1-5:** Farm priority (1=Carry, 5=Hard Support)
+- **Draft phases:** Captain's Mode (ban-pick-ban-pick sequence)
+- **Hero roles:** Carry, Support, Offlaner, Midlaner
+- **Synergies:** Ability combos (e.g., Magnus RP + Invoker)
+- **Counters:** Hero matchups (e.g., Silencer vs spell-reliant heroes)
+- **Meta shifts:** Changes with patches, tournament trends
+
+### Data Considerations
+- **Patches:** Game balance changes regularly (track patch versions)
+- **Meta evolution:** Popular strategies change over time
+- **Role flexibility:** Heroes can be played in multiple positions
+- **Item builds:** Significantly affect hero effectiveness
+- **Skill brackets:** Different strategies work at different MMR ranges
+

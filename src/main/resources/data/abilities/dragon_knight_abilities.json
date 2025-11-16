@@ -1,0 +1,107 @@
+{
+  "heroes": [
+    {
+      "id": 49,
+      "name": "dragon_knight",
+      "localized_name": "Dragon Knight",
+      "abilities": [
+        {
+          "id": 4901,
+          "name": "Breathe Fire",
+          "description": "Dragon Knight breathes a cone of fire in front of him, dealing damage to enemies and reducing their attack damage.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [90, 170, 250, 330],
+            "attack_damage_reduction": [25, 30, 35, 40],
+            "duration": [8, 8, 8, 8],
+            "range": [750, 750, 750, 750],
+            "radius": [350, 350, 350, 350]
+          },
+          "cooldown": [12, 11, 10, 9],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "The fire is expelled in a cone in front of Dragon Knight."
+        },
+        {
+          "id": 4902,
+          "name": "Dragon Tail",
+          "description": "Dragon Knight slams his shield into the target, stunning them. When in Elder Dragon Form, the attack becomes ranged and hits in a small area.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "stun_duration": [2.25, 2.5, 2.75, 3.0],
+            "damage": [60, 90, 120, 150],
+            "melee_range": [150, 150, 150, 150],
+            "dragon_range": [400, 400, 400, 400]
+          },
+          "cooldown": [19, 17, 15, 13],
+          "mana_cost": [100, 100, 100, 100],
+          "notes": "When in Elder Dragon Form, Dragon Tail becomes a ranged attack and hits in a small area."
+        },
+        {
+          "id": 4903,
+          "name": "Wyrm's Wrath",
+          "description": "Imbues Dragon Knight's attacks with draconic energy, granting different effects based on the selected dragon type.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "fire_damage": [20, 30, 40, 50],
+            "corrosive_armor_reduction": [2, 3, 4, 5],
+            "corrosive_damage_per_second": [10, 20, 30, 40],
+            "frost_movement_slow": [20, 25, 30, 35],
+            "frost_attack_slow": [20, 25, 30, 35],
+            "duration": [3, 3, 3, 3]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Effect depends on the selected dragon type: Fire, Corrosive, or Frost."
+        },
+        {
+          "id": 4904,
+          "name": "Elder Dragon Form",
+          "description": "Dragon Knight transforms into an Elder Dragon, gaining a ranged attack and additional powers based on the level of Elder Dragon Form.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "duration": [30, 35, 40],
+            "bonus_attack_range": [350, 350, 350],
+            "bonus_movement": [25, 25, 25],
+            "splash_radius": [200, 200, 200],
+            "splash_damage_percent": [40, 40, 40],
+            "frost_slow": [30, 30, 30]
+          },
+          "cooldown": [115, 110, 105],
+          "mana_cost": [50, 50, 50],
+          "notes": "Level 1: Green Dragon - Corrosive Breath. Level 2: Red Dragon - Adds Splash Attack. Level 3: Blue Dragon - Adds Frost Breath."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 4905,
+          "name": "Dragon Blood",
+          "description": "The blood of a dragon flows through Dragon Knight, granting him health regeneration and bonus armor.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "health_regen": [2, 4, 6, 8],
+            "bonus_armor": [3, 6, 9, 12]
+          },
+          "notes": "Can be disabled by Break status."
+        }
+      ]
+    }
+  ]
+}

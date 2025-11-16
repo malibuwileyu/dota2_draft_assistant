@@ -11,6 +11,8 @@ A desktop application that simulates Dota 2's drafting process with an AI oppone
 - **Hero Analysis**: Access to complete hero data, role flexibility, and team composition analysis
 - **Draft Insights**: Detailed analysis of team composition strengths and weaknesses
 - **Learning Tools**: Post-draft feedback and strategic suggestions
+- **Steam Integration**: Login with your Steam account to save preferences and track stats
+- **Personalized Recommendations**: Get draft suggestions based on your match history
 - **Overlay Mode**: Future feature to provide assistance during real Dota 2 drafts
 
 ## Technology Stack
@@ -18,8 +20,10 @@ A desktop application that simulates Dota 2's drafting process with an AI oppone
 - **Java 17** - Core programming language
 - **JavaFX** - UI framework
 - **Spring Core** - Dependency injection
-- **SQLite** - Local data storage
+- **SQLite/PostgreSQL** - Local/server data storage
 - **OpenDota API** - Game data source
+- **Steam Web API** - User authentication and profiles
+- **Steam OpenID** - Authentication protocol
 
 ## Getting Started
 
@@ -81,6 +85,11 @@ logging.level.com.dota2assistant=DEBUG
 # Application settings
 default.rank=legend  # immortal, divine, ancient, legend, archon, crusader, guardian, herald
 default.difficulty=0.8  # 0.0 to 1.0
+
+# Steam Authentication
+steam.api.key=YOUR_STEAM_API_KEY  # Get from https://steamcommunity.com/dev/apikey
+steam.auth.return_url=http://localhost:8080/login/oauth2/code/steam
+steam.auth.realm=http://localhost:8080
 ```
 
 ### Option 2: Edit default properties
@@ -146,6 +155,31 @@ mvn test
 ```bash
 mvn test -Dtest=TestClassName#testMethodName
 ```
+
+### Testing Steam Authentication
+
+To test the Steam authentication flow:
+
+1. Ensure you have a Steam API key configured in `application.properties.override`:
+   ```properties
+   steam.api.key=YOUR_STEAM_API_KEY
+   steam.auth.return_url=http://localhost:8080/login/oauth2/code/steam
+   steam.auth.realm=http://localhost:8080
+   ```
+
+2. Run the E2E test application:
+   ```bash
+   # On Windows
+   run_auth_test.bat
+   
+   # On Linux/Mac
+   mvn exec:java -Dexec.mainClass="com.dota2assistant.auth.SteamAuthE2ETest" -Dexec.classpathScope=test
+   ```
+
+3. Use the interface to:
+   - Login with your Steam account
+   - Check if your session persists after closing and reopening
+   - Logout to clear your session
 
 ## Contributing
 

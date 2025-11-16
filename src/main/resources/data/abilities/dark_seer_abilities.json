@@ -1,0 +1,100 @@
+{
+  "heroes": [
+    {
+      "id": 55,
+      "name": "dark_seer",
+      "localized_name": "Dark Seer",
+      "abilities": [
+        {
+          "id": 5501,
+          "name": "Vacuum",
+          "description": "Creates a powerful vacuum that sucks all enemy units in the area of effect to the center point, dealing damage and disrupting them.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [70, 130, 190, 250],
+            "radius": [325, 400, 475, 550],
+            "pull_duration": [0.3, 0.3, 0.3, 0.3]
+          },
+          "cooldown": [60, 50, 40, 30],
+          "mana_cost": [60, 90, 120, 150],
+          "notes": "Affects invisible units. Can pull units over impassable terrain."
+        },
+        {
+          "id": 5502,
+          "name": "Ion Shell",
+          "description": "Surrounds the target unit with a bristling shield of plasma that damages nearby enemy units.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["allies", "enemies"],
+          "special_values": {
+            "damage_per_second": [30, 50, 70, 90],
+            "radius": [275, 275, 275, 275],
+            "duration": [21, 24, 27, 30]
+          },
+          "cooldown": [9, 9, 9, 9],
+          "mana_cost": [100, 110, 120, 130],
+          "notes": "Can be cast on allied or enemy units. Does not stack on the same unit."
+        },
+        {
+          "id": 5503,
+          "name": "Surge",
+          "description": "Temporarily grants a friendly unit maximum movement speed.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["allies"],
+          "special_values": {
+            "duration": [3, 4, 5, 6],
+            "speed": [550, 550, 550, 550]
+          },
+          "cooldown": [24, 19, 14, 9],
+          "mana_cost": [50, 50, 50, 50],
+          "notes": "Removes movement speed restrictions. Can be cast on allies, including creeps."
+        },
+        {
+          "id": 5504,
+          "name": "Wall of Replica",
+          "description": "Conjures a wall of energy that damages enemies who pass through it and creates illusions of those heroes. Illusions last for the duration of the wall.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [150, 150, 150],
+            "width": [1000, 1000, 1000],
+            "duration": [45, 45, 45],
+            "illusion_damage_outgoing": [60, 75, 90],
+            "illusion_damage_incoming": [300, 300, 300]
+          },
+          "cooldown": [100, 90, 80],
+          "mana_cost": [125, 250, 375],
+          "notes": "Creates controllable illusions of enemy heroes who cross the wall. The wall is perpendicular to the direction Dark Seer is facing."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5505,
+          "name": "Aggrandize",
+          "description": "When Dark Seer levels up, he heals a percentage of his maximum health and mana.",
+          "type": "passive",
+          "behavior": "passive",
+          "affects": ["self"],
+          "special_values": {
+            "base_health_restore": [10, 10, 10, 10],
+            "bonus_per_level": [1.5, 1.5, 1.5, 1.5],
+            "base_mana_restore": [10, 10, 10, 10]
+          },
+          "notes": "Healing increases with Dark Seer's level, making him stronger as the game progresses."
+        }
+      ]
+    }
+  ]
+}

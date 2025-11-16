@@ -1,0 +1,103 @@
+{
+  "heroes": [
+    {
+      "id": 43,
+      "name": "death_prophet",
+      "localized_name": "Death Prophet",
+      "abilities": [
+        {
+          "id": 1,
+          "name": "Crypt Swarm",
+          "description": "Sends a swarm of ghosts that damage enemy units in a line.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage": [100, 175, 250, 325],
+            "radius_start": [135, 135, 135, 135],
+            "radius_end": [260, 260, 260, 260]
+          },
+          "cooldown": [8, 7, 6, 5],
+          "mana_cost": [110, 120, 130, 140],
+          "notes": "The ghosts travel 800 units forward from Death Prophet's position, at a speed of 1100."
+        },
+        {
+          "id": 2,
+          "name": "Silence",
+          "description": "Silences target enemies, preventing them from casting spells.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "point target",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "radius": [425, 425, 425, 425],
+            "duration": [3, 4, 5, 6]
+          },
+          "cooldown": [14, 13, 12, 11],
+          "mana_cost": [70, 80, 90, 100],
+          "notes": "Silences all enemy units in the targeted area."
+        },
+        {
+          "id": 3,
+          "name": "Spirit Siphon",
+          "description": "Places a spirit on an enemy unit, draining its life over time. Death Prophet restores health equal to the damage dealt. Has multiple charges.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "magical",
+          "affects": ["enemies"],
+          "special_values": {
+            "damage_pct": [14, 16, 18, 20],
+            "duration": [5, 5, 5, 5],
+            "max_charges": [2, 3, 4, 5],
+            "charge_replenish_time": [45, 45, 45, 45],
+            "movement_slow": [5, 10, 15, 20]
+          },
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [70, 65, 60, 55],
+          "notes": "The siphon breaks if Death Prophet or the target moves too far apart. Base slow is increased by 1% for each 5 units of distance between Death Prophet and the target."
+        },
+        {
+          "id": 4,
+          "name": "Exorcism",
+          "description": "Unleashes evil spirits that drain the life of nearby enemy units and buildings. At the end of the spell's duration, Death Prophet is healed based on the damage dealt.",
+          "type": "ultimate",
+          "pierces_immunity": true,
+          "behavior": "no target",
+          "damage_type": "physical",
+          "affects": ["enemies"],
+          "special_values": {
+            "spirits": [9, 12, 15],
+            "spirit_damage": [56, 77, 98],
+            "duration": [35, 35, 35]
+          },
+          "cooldown": [145, 145, 145],
+          "mana_cost": [200, 300, 400],
+          "notes": "Death Prophet is healed for 70% of the damage dealt by the spirits when they return. Spirits move at a speed of 500 and have a 700 range."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5,
+          "name": "Witchcraft",
+          "description": "Grants self bonus movement speed and cooldown reduction per hero level.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["self"],
+          "special_values": {
+            "movement_speed_bonus_per_level": [0.5, 0.5, 0.5, 0.5],
+            "cooldown_reduction_per_level": [0.25, 0.25, 0.25, 0.25]
+          },
+          "cooldown": [],
+          "mana_cost": [],
+          "notes": "Provides increasing movement speed and cooldown reduction as Death Prophet levels up."
+        }
+      ]
+    }
+  ]
+}

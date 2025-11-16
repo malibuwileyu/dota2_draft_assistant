@@ -1,0 +1,100 @@
+{
+  "heroes": [
+    {
+      "id": 58,
+      "name": "enchantress",
+      "localized_name": "Enchantress",
+      "abilities": [
+        {
+          "id": 5801,
+          "name": "Impetus",
+          "description": "Enchantress fills her spears with magical energy that deals additional damage based on the distance between her and her target.",
+          "type": "active",
+          "pierces_immunity": true,
+          "behavior": "unit target",
+          "damage_type": "pure",
+          "affects": ["enemies"],
+          "special_values": {
+            "distance_damage_pct": [14, 18, 22, 26],
+            "cast_range": [550, 575, 600, 625],
+            "base_damage": [15, 20, 25, 30]
+          },
+          "cooldown": [4.75, 3.75, 2.75, 1.75],
+          "mana_cost": [45, 50, 55, 60],
+          "notes": "Damage is calculated based on distance traveled by the projectile. Deals pure damage that pierces spell immunity."
+        },
+        {
+          "id": 5802,
+          "name": "Enchant",
+          "description": "Takes control of a creep. If cast on an enemy hero, slows their movement speed.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "unit target",
+          "damage_type": "none",
+          "affects": ["enemies", "creeps"],
+          "special_values": {
+            "slow": [20, 30, 40, 50],
+            "slow_duration": [4.5, 5.0, 5.5, 6.0],
+            "dominate_duration": [50, 60, 70, 80],
+            "cast_range": [700, 750, 800, 850]
+          },
+          "cooldown": [25, 22, 19, 16],
+          "mana_cost": [65, 80, 95, 110],
+          "notes": "Cannot dominate ancient creeps. Dominated creeps receive bonus health and damage."
+        },
+        {
+          "id": 5803,
+          "name": "Nature's Attendants",
+          "description": "Summons wisps that heal Enchantress or nearby allied units. The healing is spread among all affected units.",
+          "type": "active",
+          "pierces_immunity": false,
+          "behavior": "no target",
+          "damage_type": "none",
+          "affects": ["allies", "self"],
+          "special_values": {
+            "wisp_count": [8, 10, 12, 14],
+            "heal_per_second": [5, 7, 9, 11],
+            "radius": [900, 900, 900, 900],
+            "duration": [11, 11, 11, 11]
+          },
+          "cooldown": [28, 25, 22, 19],
+          "mana_cost": [110, 130, 150, 170],
+          "notes": "Heals all allied units within range including creeps and dominated units."
+        },
+        {
+          "id": 5804,
+          "name": "Untouchable",
+          "description": "Enchantress's natural grace causes enemies who attack her to have their attack speed significantly reduced for a short duration.",
+          "type": "ultimate",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["enemies"],
+          "special_values": {
+            "attack_speed_slow": [140, 190, 240],
+            "slow_duration": [3.5, 4.0, 4.5]
+          },
+          "cooldown": [0, 0, 0],
+          "mana_cost": [0, 0, 0],
+          "notes": "Attack speed reduction triggers when an enemy initiates an attack against Enchantress, not when the attack lands."
+        }
+      ],
+      "innate_abilities": [
+        {
+          "id": 5805,
+          "name": "Rabble-Rouser",
+          "description": "All neutral creeps conditionally deals more damage to enemy heroes.",
+          "type": "passive",
+          "pierces_immunity": false,
+          "behavior": "passive",
+          "damage_type": "none",
+          "affects": ["dominated creeps"],
+          "special_values": {},
+          "cooldown": [0, 0, 0, 0],
+          "mana_cost": [0, 0, 0, 0],
+          "notes": "Enhances damage dealt by dominated creeps against enemy heroes."
+        }
+      ]
+    }
+  ]
+}
