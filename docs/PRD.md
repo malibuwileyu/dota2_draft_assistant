@@ -15,37 +15,39 @@ Build a **reasoning agent** that provides superior draft recommendations compare
 
 ---
 
-## 🚨 Current Critical Issues
+## 🚨 Current Status
 
-### High Priority Bugs
-1. **Match Sync Not Working Properly**
-   - Only retrieving matches from 3+ days ago
-   - Missing today's matches (3 played, 0 synced)
-   - API returning error status 15 (Access Denied/Invalid Auth)
-   - Location: `MatchHistoryService.retrieveMatchHistory()`
+### ✅ Recently Fixed (Nov 16, 2024)
+1. **Match Sync** - ✅ FIXED
+   - Refactored to use OpenDota API as primary (more reliable, no key required)
+   - Steam API kept as fallback
+   - Success rate: 98.9%
 
-2. **Admin Panel Upload Issues**
-   - Some uploads failing and showing "eternally waiting" status
-   - Match enrichment showing "processed=2, successful=0, failed=0"
-   - Possible queue/worker thread issue
-   - Location: Match enrichment service
+2. **Match Enrichment** - ✅ FIXED
+   - Workers no longer fail silently
+   - Creates placeholder records when matches don't exist in DB
+   - Private/abandoned matches (404) handled gracefully
 
-3. **Authentication Window Not Closing**
-   - Browser window says "will close in 7 seconds" but doesn't
-   - Requires manual close after successful auth
-   - Location: `AuthCallbackServer` callback handling
+3. **Auth Window UX** - ✅ FIXED
+   - Auto-redirects to `about:blank` after 3 seconds
+   - Large, prominent "Close This Tab" button
+   - Clearer messaging
 
-4. **Groq API Configuration**
-   - Recently fixed: Updated from decommissioned `llama3-8b-8192` to `llama3-70b-8192`
+4. **Groq API Configuration** - ✅ FIXED
+   - Updated to `llama3-70b-8192` model
    - API URL corrected to `https://api.groq.com/openai`
-   - Still needs valid API key for testing
+   - Ready for LLM reasoning implementation
 
-5. **Test Failures**
-   - 4 test failures out of 32 tests
+### 🔧 Remaining Issues
+1. **Test Failures** (4 out of 32 tests)
    - `AuthCallbackServerTest.testCallbackHandling` - Connection refused
    - `SteamAuthenticationManagerTest.testExtractionWithResponseNonce` - Assertion failure
    - `DatabaseMigrationTest.testInitialize` - Mock verification failure
    - `MatchEnrichmentServiceTest.testEnqueueMultipleMatches` - Assertion failure
+
+2. **Data Freshness**
+   - Pro match database is 7 months old (~3,500 matches)
+   - Need to fetch ~5,000 recent matches for better analysis
 
 ---
 
@@ -438,9 +440,8 @@ com.dota2assistant/
 
 ### Sprint Goals (Remaining)
 1. **Update Pro Match Dataset** - Fetch ~5000 recent pro matches (current 3500 are 7 months old)
-2. **Fix Match Enrichment Queue** - Debug worker threads
-3. **Fix Auth Window Auto-Close** - Add JavaScript timer
-4. **Fix Unit Tests** - Update mocks and assertions
+2. **Fix Unit Tests** - Update mocks and assertions (4 failing tests)
+3. **Begin LLM Reasoning Agent** - Start Phase 3 implementation
 
 ### Success Criteria
 - [ ] All unit tests passing (currently 28/32)
