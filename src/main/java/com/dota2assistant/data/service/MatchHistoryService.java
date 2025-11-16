@@ -51,7 +51,8 @@ public class MatchHistoryService {
     
     private final UserMatchRepository userMatchRepository;
     private final DatabaseManager databaseManager;
-    private final String apiKey;
+    private final String steamApiKey;
+    private final String openDotaApiKey;
     private final HttpClient httpClient;
     private final ExecutorService executorService;
     private final ScheduledExecutorService schedulerService;
@@ -61,7 +62,8 @@ public class MatchHistoryService {
     // Constants for API and processing
     private static final int MATCHES_PER_REQUEST = 100;
     private static final int MAX_MATCHES_TO_RETRIEVE = 500;
-    private static final String API_BASE_URL = "https://api.steampowered.com/IDOTA2Match_570";
+    private static final String OPENDOTA_API_BASE = "https://api.opendota.com/api";
+    private static final String STEAM_API_BASE_URL = "https://api.steampowered.com/IDOTA2Match_570";
     private static final int MAX_CONCURRENT_REQUESTS = 5;
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
     private static final int RATE_LIMIT_DELAY_MS = 1100; // Slightly over 1 second for Steam API rate limits
@@ -73,8 +75,19 @@ public class MatchHistoryService {
             MatchEnrichmentService matchEnrichmentService) {
         this.userMatchRepository = userMatchRepository;
         this.databaseManager = databaseManager;
-        this.apiKey = propertyLoader.getProperty("steam.api.key", "");
+        this.steamApiKey = propertyLoader.getProperty("steam.api.key", "");
+        this.openDotaApiKey = propertyLoader.getProperty("opendota.api.key", "");
         this.matchEnrichmentService = matchEnrichmentService;
+        
+        if (openDotaApiKey != null && !openDotaApiKey.isEmpty()) {
+            LOGGER.info("MatchHistoryService initialized with OpenDota API key (primary)");
+        } else {
+            LOGGER.warning("No OpenDota API key configured - will use free tier (60 calls/min)");
+        }
+        
+        if (steamApiKey == null || steamApiKey.isEmpty()) {
+            LOGGER.warning("No Steam API key configured - Steam API fallback disabled");
+        }
         
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
@@ -198,89 +211,191 @@ public class MatchHistoryService {
      * @return Total number of matches found for the player
      */
     private int retrieveMatchHistory(long accountId, Long lastMatchId, List<JSONObject> matchesResult) {
+        // Try OpenDota API first (more reliable and doesn't require API key for basic access)
+        try {
+            LOGGER.info("Attempting to retrieve match history using OpenDota API");
+            int matches = retrieveMatchHistoryFromOpenDota(accountId, lastMatchId, matchesResult);
+            if (matches > 0) {
+                LOGGER.info("Successfully retrieved " + matches + " matches from OpenDota API");
+                return matches;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "OpenDota API failed, falling back to Steam API", e);
+        }
+        
+        // Fall back to Steam API if OpenDota fails
+        if (steamApiKey != null && !steamApiKey.isEmpty()) {
+            LOGGER.info("Attempting to retrieve match history using Steam API");
+            try {
+                return retrieveMatchHistoryFromSteam(accountId, lastMatchId, matchesResult);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Steam API also failed", e);
+                return 0;
+            }
+        } else {
+            LOGGER.warning("Steam API fallback unavailable (no API key configured)");
+            return 0;
+        }
+    }
+    
+    /**
+     * Retrieves match history from OpenDota API.
+     */
+    private int retrieveMatchHistoryFromOpenDota(long accountId, Long lastMatchId, List<JSONObject> matchesResult) 
+            throws Exception {
+        int retrievedMatches = 0;
+        int offset = 0;
+        int maxIterations = (MAX_MATCHES_TO_RETRIEVE / MATCHES_PER_REQUEST) + 1;
+        
+        for (int iteration = 0; iteration < maxIterations; iteration++) {
+            // Build OpenDota API URL
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append(OPENDOTA_API_BASE)
+                     .append("/players/")
+                     .append(accountId)
+                     .append("/matches?limit=")
+                     .append(MATCHES_PER_REQUEST)
+                     .append("&offset=")
+                     .append(offset);
+            
+            // Add API key if available
+            if (openDotaApiKey != null && !openDotaApiKey.isEmpty()) {
+                urlBuilder.append("&api_key=").append(openDotaApiKey);
+            }
+            
+            String url = urlBuilder.toString();
+            LOGGER.fine("Requesting match history from OpenDota: " + url);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(REQUEST_TIMEOUT)
+                .header("User-Agent", "Dota2DraftAssistant/1.0")
+                .GET()
+                .build();
+            
+            HttpResponse<String> response = httpClient.send(
+                request, 
+                HttpResponse.BodyHandlers.ofString()
+            );
+            
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("OpenDota API error: " + response.statusCode());
+            }
+            
+            // Parse OpenDota response (returns array of match objects)
+            JSONArray matches = new JSONArray(response.body());
+            
+            if (matches.length() == 0) {
+                break; // No more matches
+            }
+            
+            // Process each match
+            boolean reachedLastMatch = false;
+            for (int i = 0; i < matches.length(); i++) {
+                JSONObject match = matches.getJSONObject(i);
+                long matchId = match.getLong("match_id");
+                
+                // If we've reached the last synced match, stop
+                if (lastMatchId != null && matchId <= lastMatchId) {
+                    reachedLastMatch = true;
+                    break;
+                }
+                
+                matchesResult.add(match);
+                retrievedMatches++;
+            }
+            
+            if (reachedLastMatch || retrievedMatches >= MAX_MATCHES_TO_RETRIEVE) {
+                break;
+            }
+            
+            offset += MATCHES_PER_REQUEST;
+            
+            // Respect rate limits (60 calls/min for free tier)
+            Thread.sleep(RATE_LIMIT_DELAY_MS);
+        }
+        
+        return retrievedMatches;
+    }
+    
+    /**
+     * Retrieves match history from Steam API (fallback).
+     */
+    private int retrieveMatchHistoryFromSteam(long accountId, Long lastMatchId, List<JSONObject> matchesResult) 
+            throws Exception {
         int matchesFound = 0;
         Long startAtMatchId = null;
         int retrievedMatches = 0;
         int requests = 0;
         
-        try {
-            while (retrievedMatches < MAX_MATCHES_TO_RETRIEVE && requests < 10) { // Limit to 10 requests
-                String url = API_BASE_URL + "/GetMatchHistory/V001/" +
-                           "?key=" + apiKey +
-                           "&account_id=" + accountId +
-                           "&matches_requested=" + MATCHES_PER_REQUEST;
-                
-                if (startAtMatchId != null) {
-                    url += "&start_at_match_id=" + startAtMatchId;
-                }
-                
-                LOGGER.fine("Requesting match history: " + url);
-                
-                HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .timeout(REQUEST_TIMEOUT)
-                    .GET()
-                    .build();
-                
-                HttpResponse<String> response = httpClient.send(
-                    request, 
-                    HttpResponse.BodyHandlers.ofString()
-                );
-                
-                if (response.statusCode() != 200) {
-                    LOGGER.warning("API error: " + response.statusCode() + " - " + response.body());
-                    break;
-                }
-                
-                // Parse response
-                JSONObject responseJson = new JSONObject(response.body());
-                JSONObject result = responseJson.getJSONObject("result");
-                
-                if (result.getInt("status") != 1) {
-                    LOGGER.warning("API returned error status: " + result.getInt("status"));
-                    break;
-                }
-                
-                matchesFound = result.getInt("total_results");
-                JSONArray matches = result.getJSONArray("matches");
-                
-                // Check if we have any matches
-                if (matches.length() == 0) {
-                    break;
-                }
-                
-                // Process each match
-                boolean reachedLastMatch = false;
-                for (int i = 0; i < matches.length(); i++) {
-                    JSONObject match = matches.getJSONObject(i);
-                    long matchId = match.getLong("match_id");
-                    
-                    // If we've reached the last synced match, stop
-                    if (lastMatchId != null && matchId <= lastMatchId) {
-                        reachedLastMatch = true;
-                        break;
-                    }
-                    
-                    matchesResult.add(match);
-                    startAtMatchId = matchId - 1; // For pagination
-                }
-                
-                retrievedMatches += matches.length();
-                requests++;
-                
-                if (reachedLastMatch) {
-                    break;
-                }
-                
-                // Respect rate limits
-                Thread.sleep(RATE_LIMIT_DELAY_MS);
+        while (retrievedMatches < MAX_MATCHES_TO_RETRIEVE && requests < 10) {
+            String url = STEAM_API_BASE_URL + "/GetMatchHistory/V001/" +
+                       "?key=" + steamApiKey +
+                       "&account_id=" + accountId +
+                       "&matches_requested=" + MATCHES_PER_REQUEST;
+            
+            if (startAtMatchId != null) {
+                url += "&start_at_match_id=" + startAtMatchId;
             }
             
-            return matchesFound;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error retrieving match history", e);
-            return retrievedMatches;
+            LOGGER.fine("Requesting match history from Steam: " + url);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(REQUEST_TIMEOUT)
+                .GET()
+                .build();
+            
+            HttpResponse<String> response = httpClient.send(
+                request, 
+                HttpResponse.BodyHandlers.ofString()
+            );
+            
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Steam API error: " + response.statusCode());
+            }
+            
+            // Parse response
+            JSONObject responseJson = new JSONObject(response.body());
+            JSONObject result = responseJson.getJSONObject("result");
+            
+            if (result.getInt("status") != 1) {
+                throw new RuntimeException("Steam API returned error status: " + result.getInt("status"));
+            }
+            
+            matchesFound = result.getInt("total_results");
+            JSONArray matches = result.getJSONArray("matches");
+            
+            if (matches.length() == 0) {
+                break;
+            }
+            
+            // Process each match
+            boolean reachedLastMatch = false;
+            for (int i = 0; i < matches.length(); i++) {
+                JSONObject match = matches.getJSONObject(i);
+                long matchId = match.getLong("match_id");
+                
+                if (lastMatchId != null && matchId <= lastMatchId) {
+                    reachedLastMatch = true;
+                    break;
+                }
+                
+                matchesResult.add(match);
+                startAtMatchId = matchId - 1;
+            }
+            
+            retrievedMatches += matches.length();
+            requests++;
+            
+            if (reachedLastMatch) {
+                break;
+            }
+            
+            Thread.sleep(RATE_LIMIT_DELAY_MS);
         }
+        
+        return matchesFound;
     }
     
     /**

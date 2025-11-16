@@ -335,8 +335,8 @@ public class MatchEnrichmentService {
                 } else if ("NOT_FOUND".equals(errorType)) {
                     // 404 - Match doesn't exist - don't retry after MAX_RETRIES
                     if (attempts >= MAX_RETRIES - 1) {
-                        logger.warn("Match {} not found after {} attempts, removing from queue", matchId, attempts + 1);
-                        notifyListeners(matchId, false, attempts + 1, "Match not found (404): " + errorMessage);
+                        logger.debug("Match {} not found (likely private/abandoned match), removing from queue", matchId);
+                        notifyListeners(matchId, false, attempts + 1, "Match not found (private/abandoned): " + errorMessage);
                         return false;
                     }
                 } else if ("RATE_LIMITED".equals(errorType)) {
@@ -504,8 +504,21 @@ public class MatchEnrichmentService {
             boolean matchExists = checkMatchExists(matchId, conn);
             
             if (!matchExists) {
-                logger.debug("Match {} not found in database, cannot enrich", matchId);
-                return false;
+                logger.warn("Match {} not found in database when attempting enrichment - may need to be fetched first", matchId);
+                // Try to insert basic match record before enriching
+                try {
+                    String insertSql = "INSERT INTO matches (id, start_time, duration, radiant_win, game_mode, has_details) " +
+                                      "VALUES (?, 0, 0, false, 0, false) ON CONFLICT (id) DO NOTHING";
+                    try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                        stmt.setLong(1, matchId);
+                        stmt.executeUpdate();
+                    }
+                    conn.commit();
+                    logger.info("Created placeholder record for match {}, will now enrich", matchId);
+                } catch (SQLException e) {
+                    logger.error("Failed to create placeholder for match {}: {}", matchId, e.getMessage());
+                    return false;
+                }
             }
             
             conn.setAutoCommit(false);

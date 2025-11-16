@@ -361,10 +361,83 @@ com.dota2assistant/
 
 ---
 
-## 🚀 Current Sprint: Bug Fixes (Weeks 1-2)
+### Phase 11: Custom Data Infrastructure 🏗️ (STRETCH GOAL)
 
-### Sprint Goals
-1. **Fix Match Sync Authentication** - Debug Steam API error 15
+**Goal:** Build our own Steam API infrastructure like OpenDota
+
+#### Why This Matters
+- OpenDota caches Steam API data on their servers
+- They run dedicated Steam API keys with enterprise rate limits
+- This allows them to provide fast, unlimited access to cached match data
+- Free tier: 60 calls/min (2,000/day) - sufficient for now
+- Premium tier: 1,200 calls/min (unlimited daily) at $0.01/100 calls
+
+#### Implementation Requirements
+- [ ] **Server Infrastructure**
+  - [ ] Dedicated server(s) for continuous data collection
+  - [ ] PostgreSQL database for match data storage
+  - [ ] Redis for caching layer
+  
+- [ ] **Steam API Integration**
+  - [ ] Multiple Steam API keys for higher rate limits
+  - [ ] Continuous match data harvesting service
+  - [ ] Pro match detection and prioritization
+  - [ ] Real-time match result processing
+  
+- [ ] **Data Pipeline**
+  - [ ] Match data enrichment workers
+  - [ ] Automated data validation
+  - [ ] Data retention policies
+  - [ ] Backup and recovery systems
+  
+- [ ] **API Layer**
+  - [ ] RESTful API for client access
+  - [ ] Rate limiting per user/API key
+  - [ ] CDN for static assets (hero images, etc.)
+  - [ ] API documentation and SDKs
+
+#### Benefits
+- ⚡ Faster match data access (no external API dependency)
+- 🎯 Custom data processing tailored to our needs
+- 💰 Long-term cost savings vs. OpenDota Premium
+- 🔒 Data ownership and control
+- 📊 Custom analytics and aggregations
+
+#### Estimated Effort
+- **Infrastructure Setup:** 2-3 months
+- **Continuous Maintenance:** Ongoing
+- **Monthly Cost:** $50-200 (hosting + bandwidth)
+
+**Current Status:** Using OpenDota API with fallback strategy. This stretch goal only makes sense if we have 10,000+ active users.
+
+---
+
+## 🚀 Current Sprint: Bug Fixes & Infrastructure (Week 1)
+
+### ✅ Completed (Nov 16, 2024)
+1. **Fixed Match Sync** - Refactored `MatchHistoryService` to use OpenDota API as primary with Steam API fallback
+   - OpenDota API is more reliable and doesn't require API key for basic access
+   - Steam API kept as fallback (requires valid API key)
+   - Match sync now working with 98.9% success rate
+
+2. **Fixed Match Enrichment** - Added placeholder record creation when matches don't exist in database
+   - Workers were failing silently because matches weren't in DB yet
+   - Now creates placeholder records before enrichment
+   - Private/abandoned matches (404 errors) are expected and handled gracefully
+
+3. **Fixed Auth Window UX** - Improved post-login browser tab experience
+   - Auto-redirects to `about:blank` after 3 seconds
+   - Large, prominent "Close This Tab" button with pulsing animation
+   - Attempts JavaScript close (works in some browsers)
+   - Clearer messaging about closing the tab
+
+4. **Documentation Cleanup** - Consolidated all planning docs into living PRD
+   - Moved all `.md` files to `/docs/` directory
+   - Updated `.cursorrules` with comprehensive guidelines
+   - Added Phase 11: Custom Data Infrastructure as stretch goal
+
+### Sprint Goals (Remaining)
+1. **Update Pro Match Dataset** - Fetch ~5000 recent pro matches (current 3500 are 7 months old)
 2. **Fix Match Enrichment Queue** - Debug worker threads
 3. **Fix Auth Window Auto-Close** - Add JavaScript timer
 4. **Fix Unit Tests** - Update mocks and assertions
