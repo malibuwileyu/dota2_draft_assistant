@@ -1,38 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Console appender -->
+    <!-- Console Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%logger{36}] %msg%n</pattern>
         </encoder>
     </appender>
     
-    <!-- File appender -->
+    <!-- File Appender -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/dota2-draft-assistant.log</file>
+        <file>${user.home}/.dota2assistant/logs/app.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/dota2-draft-assistant.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>100MB</totalSizeCap>
+            <fileNamePattern>${user.home}/.dota2assistant/logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%logger{36}] %msg%n</pattern>
         </encoder>
     </appender>
     
-    <!-- Logger levels -->
-    <logger name="com.dota2assistant" level="INFO" />
-    <logger name="com.dota2assistant.Dota2DraftAssistant" level="INFO" />
-    <logger name="org.springframework" level="WARN" />
+    <!-- Application Loggers -->
+    <logger name="com.dota2assistant" level="DEBUG"/>
     
-    <!-- Extra verbose loggers that should only show errors -->
-    <logger name="com.dota2assistant.data.repository.HeroAbilitiesRepository" level="ERROR" />
-    <logger name="com.dota2assistant.ui.component.HeroCell" level="ERROR" />
-    <logger name="com.dota2assistant.data.repository.HeroRepository" level="WARN" />
+    <!-- Framework Loggers -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.sqlite" level="WARN"/>
     
-    <!-- Root logger -->
+    <!-- Root Logger -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>
+
