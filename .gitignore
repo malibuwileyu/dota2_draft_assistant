@@ -102,5 +102,4 @@ data/validation_results/*
 
 /sc
 
-/docs
-/docs/*
+# NOTE: docs/ is tracked - contains PRD, TDD, Implementation Plan
