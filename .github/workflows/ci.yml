@@ -1,0 +1,149 @@
+# =============================================================================
+# Dota 2 Draft Assistant - Continuous Integration
+# =============================================================================
+# 
+# Triggers on:
+#   - Push to main/develop branches
+#   - Pull requests to main/develop
+#
+# Runs:
+#   - Build and test on all 3 platforms
+#   - Code quality checks
+#   - Test coverage reporting
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+
+jobs:
+  # ===========================================================================
+  # Build and Test
+  # ===========================================================================
+  build:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+      
+      - name: Grant execute permission for gradlew
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
+      
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+      
+      - name: Run tests
+        run: ./gradlew test --no-daemon
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: build/reports/tests/
+          retention-days: 7
+      
+      - name: Upload test coverage
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/
+          retention-days: 7
+
+  # ===========================================================================
+  # Code Quality
+  # ===========================================================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+      
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      - name: Check code style
+        run: ./gradlew checkstyleMain checkstyleTest --no-daemon || true
+      
+      - name: Check for large files (>200 lines)
+        run: |
+          echo "Checking for files exceeding 200 lines..."
+          find src/main/java -name "*.java" -exec wc -l {} + | \
+            awk '$1 > 200 {print "WARNING: " $2 " has " $1 " lines"}' | \
+            tee large-files.txt
+          if [ -s large-files.txt ]; then
+            echo "::warning::Some files exceed the 200-line limit"
+          fi
+      
+      - name: Check domain layer imports
+        run: |
+          echo "Checking domain layer for framework imports..."
+          if grep -r "import org.springframework" src/main/java/com/dota2assistant/domain/ 2>/dev/null || \
+             grep -r "import javafx" src/main/java/com/dota2assistant/domain/ 2>/dev/null || \
+             grep -r "import java.sql" src/main/java/com/dota2assistant/domain/ 2>/dev/null; then
+            echo "::error::Domain layer contains framework imports!"
+            exit 1
+          fi
+          echo "Domain layer is clean of framework imports"
+
+  # ===========================================================================
+  # Security Scan
+  # ===========================================================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+

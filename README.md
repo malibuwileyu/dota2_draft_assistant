@@ -1,206 +1,168 @@
 # Dota 2 Draft Assistant
 
-A desktop application that simulates Dota 2's drafting process with an AI opponent, helping players practice and improve their drafting skills.
-
-![Dota 2 Draft Assistant](docs/screenshots/app_screenshot.png)
+A cross-platform desktop application that provides **AI-powered draft recommendations** for Dota 2 players. Unlike tools that only show win rates, this assistant explains *why* a pick is good using LLM-powered analysis.
 
 ## Features
 
-- **Draft Simulation**: Complete implementation of Captain's Mode and All Pick drafting formats
-- **AI Opponent**: Meta-driven drafting decisions with hero synergy and counter picking
-- **Hero Analysis**: Access to complete hero data, role flexibility, and team composition analysis
-- **Draft Insights**: Detailed analysis of team composition strengths and weaknesses
-- **Learning Tools**: Post-draft feedback and strategic suggestions
-- **Steam Integration**: Login with your Steam account to save preferences and track stats
-- **Personalized Recommendations**: Get draft suggestions based on your match history
-- **Overlay Mode**: Future feature to provide assistance during real Dota 2 drafts
+- **Draft Simulation**: Complete Captain's Mode and All Pick draft sequences
+- **AI Recommendations**: LLM-powered explanations via Groq API (with offline fallback)
+- **Hero Database**: 124+ heroes with abilities, roles, and position data—works offline
+- **Team Analysis**: Damage type balance, disable assessment, power spike timing
+- **Personalized**: Recommendations weighted by your hero pool (via Steam login)
+- **Cross-Platform**: Native installers for macOS, Windows, and Linux
 
-## Technology Stack
+## Current Status
 
-- **Java 17** - Core programming language
-- **JavaFX** - UI framework
-- **Spring Core** - Dependency injection
-- **SQLite/PostgreSQL** - Local/server data storage
-- **OpenDota API** - Game data source
-- **Steam Web API** - User authentication and profiles
-- **Steam OpenID** - Authentication protocol
+> **⚠️ Architecture Rebuild in Progress**
+> 
+> This project is being rebuilt from v1 (problematic architecture) to v3 (Clean Architecture).
+> See `docs/PRD_v3.md` and `docs/TDD_v3.md` for the planned architecture.
+
+### What's Changing (v1 → v3)
+
+| Aspect | v1 (Current) | v3 (Planned) |
+|--------|--------------|--------------|
+| Java Version | 17 | 21 (LTS) |
+| Build Tool | Maven | Gradle |
+| Database | PostgreSQL + SQLite | SQLite only |
+| Architecture | Monolithic (4500-line controller) | Clean Architecture |
+| Startup Time | ~10s | <3s target |
+| Test Coverage | Limited | 80%+ target |
+
+## Technology Stack (v3)
+
+- **Java 21** - Records, pattern matching, virtual threads
+- **JavaFX 21** - Cross-platform UI
+- **Gradle** - Build tool
+- **Spring Boot 3.2** - Lightweight DI
+- **SQLite** - Embedded database
+- **Groq API** - LLM recommendations
+- **OpenDota API** - Match data
+- **Steam Web API** - Authentication
 
 ## Getting Started
 
 ### Prerequisites
 
-- Java 17 or higher
-- Maven 3.6 or higher
+- Java 21 or higher ([Temurin](https://adoptium.net/) recommended)
+- Gradle 8.x (or use included wrapper)
 
-### Installation
-
-1. Clone the repository
-   ```bash
-   git clone https://github.com/yourusername/dota2-draft-assistant.git
-   cd dota2-draft-assistant
-   ```
-
-2. Build the project
-   ```bash
-   mvn clean install
-   ```
-
-3. Run the application
-   ```bash
-   mvn javafx:run
-   ```
-
-### Creating a Native Package
-
-Create a native package for your platform:
+### Installation (v3 - Coming Soon)
 
 ```bash
-mvn javafx:jlink jpackage
+# Clone the repository
+git clone https://github.com/malibuwileyu/dota2_draft_assistant.git
+cd dota2_draft_assistant
+
+# Build the project
+./gradlew build
+
+# Run the application
+./gradlew run
+
+# Create native installer for your platform
+./gradlew jpackage
+```
+
+### Installation (v1 - Current)
+
+```bash
+# Build with Maven
+mvn clean install
+
+# Run
+mvn javafx:run
 ```
 
 ## Configuration
 
-You can configure the application in two ways:
-
-### Option 1: Edit application.properties.override (recommended)
-
-Create or edit `application.properties.override` in the application root directory:
+Create `application.properties.override` in the project root:
 
 ```properties
-# Database configuration (choose one)
-# SQLite (default)
+# Groq API (for AI explanations)
+groq.api.enabled=true
+groq.api.key=YOUR_GROQ_API_KEY
+groq.api.model=llama3-70b-8192
+
+# Steam Authentication (optional, for personalization)
+steam.api.key=YOUR_STEAM_API_KEY
+
+# Database
 database.type=sqlite
 database.file=dota2assistant.db
-
-# PostgreSQL (requires PostgreSQL server)
-# database.type=postgresql
-# database.url=jdbc:postgresql://localhost:5432/dota2_draft_assistant
-# database.username=dota2_user
-# database.password=password
-
-# Logging
-logging.level.root=INFO
-logging.level.com.dota2assistant=DEBUG
-
-# Application settings
-default.rank=legend  # immortal, divine, ancient, legend, archon, crusader, guardian, herald
-default.difficulty=0.8  # 0.0 to 1.0
-
-# Steam Authentication
-steam.api.key=YOUR_STEAM_API_KEY  # Get from https://steamcommunity.com/dev/apikey
-steam.auth.return_url=http://localhost:8080/login/oauth2/code/steam
-steam.auth.realm=http://localhost:8080
 ```
 
-### Option 2: Edit default properties
-
-Edit `src/main/resources/application.properties` to customize:
-
-- API settings
-- Default rank for statistics
-- AI difficulty level
-- Draft timer settings
-
-### PostgreSQL Setup
-
-To use PostgreSQL instead of SQLite:
-
-1. Install PostgreSQL server
-2. Create a database and user:
-   ```sql
-   CREATE DATABASE dota2_draft_assistant;
-   CREATE USER dota2_user WITH PASSWORD 'password';
-   GRANT ALL PRIVILEGES ON DATABASE dota2_draft_assistant TO dota2_user;
-   ```
-3. Run the schema creation scripts in the `scripts` folder
-4. Update your configuration to use PostgreSQL as shown above
-
-## Project Structure
+## Project Structure (v3)
 
 ```
 com.dota2assistant/
-├── core/             # Core business logic
-│   ├── draft/        # Draft rules and mechanics
-│   ├── ai/           # AI decision making
-│   └── analysis/     # Draft analysis
-├── data/             # Data access and management
-│   ├── api/          # API clients (OpenDota)
-│   ├── db/           # Database operations
-│   ├── model/        # Data models
-│   └── repository/   # Data repositories
-├── ui/               # User interface
-│   ├── controller/   # JavaFX controllers
-│   ├── view/         # View components
-│   ├── component/    # Reusable UI components
-│   └── overlay/      # Game overlay implementation
-└── util/             # Utility classes
+├── config/              # Spring configuration
+├── domain/              # Pure business logic (no framework deps)
+│   ├── draft/           # Draft engine, state machine
+│   ├── recommendation/  # Scoring algorithms
+│   └── analysis/        # Team composition analysis
+├── application/         # Use cases / services
+├── infrastructure/      # External adapters
+│   ├── persistence/     # SQLite repositories
+│   └── api/             # OpenDota, Steam, Groq clients
+└── ui/                  # JavaFX controllers and views
+    ├── controller/      # <200 lines each
+    └── component/       # Reusable UI components
 ```
 
 ## Documentation
 
-See the [docs](./docs) directory for detailed documentation, including:
-- Product Requirements Document (PRD)
-- Technical Design Document (TDD)
+Documentation is stored locally in `docs/` (not tracked in git):
+
+- **PRD_v3.md** - Product Requirements (what to build, traceable requirements)
+- **TDD_v3.md** - Technical Design (how to build it)
+- **IMPLEMENTATION_PLAN.md** - Detailed task breakdown with estimates
 
 ## Development
 
 ### Running Tests
 
 ```bash
+# v3 (Gradle)
+./gradlew test
+
+# v1 (Maven)
 mvn test
 ```
 
-### Running a Single Test
+### Code Quality Targets
 
-```bash
-mvn test -Dtest=TestClassName#testMethodName
-```
+- No class >200 lines
+- Domain layer has zero framework dependencies
+- 80%+ test coverage on domain logic
+- All requirements traceable via REQ-XXX IDs
 
-### Testing Steam Authentication
+## Roadmap
 
-To test the Steam authentication flow:
+| Phase | Timeline | Focus |
+|-------|----------|-------|
+| **Phase 0** | Weeks 1-2 | Project foundation (Gradle, packages, models) |
+| **Alpha** | Weeks 3-8 | Core draft simulation, local recommendations |
+| **Beta** | Weeks 9-14 | Groq LLM, Steam auth, personalization |
+| **GA v1.0** | Weeks 15-18 | Polish, bug fixes, release |
 
-1. Ensure you have a Steam API key configured in `application.properties.override`:
-   ```properties
-   steam.api.key=YOUR_STEAM_API_KEY
-   steam.auth.return_url=http://localhost:8080/login/oauth2/code/steam
-   steam.auth.realm=http://localhost:8080
-   ```
-
-2. Run the E2E test application:
-   ```bash
-   # On Windows
-   run_auth_test.bat
-   
-   # On Linux/Mac
-   mvn exec:java -Dexec.mainClass="com.dota2assistant.auth.SteamAuthE2ETest" -Dexec.classpathScope=test
-   ```
-
-3. Use the interface to:
-   - Login with your Steam account
-   - Check if your session persists after closing and reopening
-   - Logout to clear your session
+See `docs/IMPLEMENTATION_PLAN.md` for the detailed 48-task breakdown.
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create your feature branch (`git checkout -b feature/TASK-XXX-description`)
+3. Follow Clean Architecture layers
+4. Ensure tests pass and coverage maintained
+5. Open a Pull Request referencing the task ID
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Roadmap
-
-1. **Phase 1**: Basic draft simulation and AI opponent
-2. **Phase 2**: Enhanced data analysis and team composition insights
-3. **Phase 3**: In-game overlay integration
-4. **Phase 4**: Player tendency analysis and team-specific draft strategies
+This project is licensed under the MIT License.
 
 ## Acknowledgments
 
-- Data provided by [OpenDota API](https://docs.opendota.com/)
-- Inspired by professional Dota 2 drafting strategies
+- [OpenDota API](https://docs.opendota.com/) - Match data and statistics
+- [Groq](https://groq.com/) - Fast LLM inference
+- [Dota 2 Wiki](https://dota2.fandom.com/) - Ability data reference
+
