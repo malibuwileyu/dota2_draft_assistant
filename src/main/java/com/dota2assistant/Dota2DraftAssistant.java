@@ -4,7 +4,7 @@ import com.dota2assistant.config.AppConfig;
 import com.dota2assistant.domain.repository.HeroRepository;
 import com.dota2assistant.infrastructure.persistence.DatabaseMigrator;
 import com.dota2assistant.infrastructure.persistence.HeroDataImporter;
-import com.dota2assistant.ui.DraftView;
+import com.dota2assistant.ui.PracticeDraftView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -54,14 +54,16 @@ public class Dota2DraftAssistant extends Application {
         log.info("Starting JavaFX application...");
         
         HeroRepository heroRepo = springContext.getBean(HeroRepository.class);
-        DraftView draftView = new DraftView(heroRepo);
+        PracticeDraftView practiceDraft = new PracticeDraftView(heroRepo);
         
-        var scene = new Scene(draftView, 1400, 800);
+        var scene = new Scene(practiceDraft, 1280, 900);
         
-        primaryStage.setTitle("Dota 2 Draft Assistant - Captain's Mode");
+        primaryStage.setTitle("Dota 2 Draft Assistant - Practice Draft");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(1200);
-        primaryStage.setMinHeight(700);
+        primaryStage.setWidth(1280);
+        primaryStage.setHeight(900);
+        primaryStage.setMinWidth(1100);
+        primaryStage.setMinHeight(800);
         primaryStage.show();
         
         log.info("Application started successfully");

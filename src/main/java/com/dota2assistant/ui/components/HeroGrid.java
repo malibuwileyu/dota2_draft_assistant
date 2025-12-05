@@ -1,72 +1,62 @@
 package com.dota2assistant.ui.components;
 
+import com.dota2assistant.domain.model.Attribute;
 import com.dota2assistant.domain.model.Hero;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Grid of hero buttons for selection.
+ * Grid of heroes organized by attribute columns.
  */
-public class HeroGrid extends ScrollPane {
+public class HeroGrid extends HBox {
     
-    private final FlowPane grid = new FlowPane(5, 5);
+    private final AttributeColumn strColumn = new AttributeColumn(Attribute.STRENGTH);
+    private final AttributeColumn agiColumn = new AttributeColumn(Attribute.AGILITY);
+    private final AttributeColumn intColumn = new AttributeColumn(Attribute.INTELLIGENCE);
+    private final AttributeColumn uniColumn = new AttributeColumn(Attribute.UNIVERSAL);
+    
     private Consumer<Hero> onHeroClick = h -> {};
-    private List<Hero> allHeroes = List.of();
     
     public HeroGrid() {
-        setFitToWidth(true);
-        setStyle("-fx-background: #0a0e14; -fx-background-color: #0a0e14;");
-        grid.setStyle("-fx-background-color: #0a0e14;");
-        grid.setPadding(new Insets(10));
-        grid.setAlignment(Pos.TOP_LEFT);
-        setContent(grid);
+        setSpacing(8);
+        setPadding(new Insets(10));
+        setStyle("-fx-background-color: #0a0e14;");
+        getChildren().addAll(strColumn, agiColumn, intColumn, uniColumn);
     }
     
     public void setOnHeroClick(Consumer<Hero> handler) {
         this.onHeroClick = handler;
+        strColumn.setOnHeroClick(handler);
+        agiColumn.setOnHeroClick(handler);
+        intColumn.setOnHeroClick(handler);
+        uniColumn.setOnHeroClick(handler);
     }
     
     public void setAllHeroes(List<Hero> heroes) {
-        this.allHeroes = heroes;
+        Map<Attribute, List<Hero>> byAttr = heroes.stream()
+            .collect(Collectors.groupingBy(Hero::primaryAttribute));
+        
+        strColumn.setHeroes(sorted(byAttr.getOrDefault(Attribute.STRENGTH, List.of())));
+        agiColumn.setHeroes(sorted(byAttr.getOrDefault(Attribute.AGILITY, List.of())));
+        intColumn.setHeroes(sorted(byAttr.getOrDefault(Attribute.INTELLIGENCE, List.of())));
+        uniColumn.setHeroes(sorted(byAttr.getOrDefault(Attribute.UNIVERSAL, List.of())));
     }
     
     public void update(List<Hero> availableHeroes) {
-        Set<Integer> availableIds = availableHeroes.stream()
-            .map(Hero::id).collect(Collectors.toSet());
-        
-        grid.getChildren().clear();
-        
-        for (Hero hero : allHeroes) {
-            boolean available = availableIds.contains(hero.id());
-            Button btn = createHeroButton(hero, available);
-            grid.getChildren().add(btn);
-        }
+        Set<Integer> ids = availableHeroes.stream().map(Hero::id).collect(Collectors.toSet());
+        strColumn.updateAvailability(ids);
+        agiColumn.updateAvailability(ids);
+        intColumn.updateAvailability(ids);
+        uniColumn.updateAvailability(ids);
     }
     
-    private Button createHeroButton(Hero hero, boolean available) {
-        Button btn = new Button(hero.localizedName());
-        btn.setPrefWidth(110);
-        btn.setPrefHeight(40);
-        
-        if (available) {
-            btn.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white; -fx-cursor: hand;");
-            btn.setOnAction(e -> onHeroClick.accept(hero));
-            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #334155; -fx-text-fill: white;"));
-            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: #1e293b; -fx-text-fill: white;"));
-        } else {
-            btn.setStyle("-fx-background-color: #0f172a; -fx-text-fill: #4b5563;");
-            btn.setDisable(true);
-        }
-        
-        return btn;
+    private List<Hero> sorted(List<Hero> heroes) {
+        return heroes.stream()
+            .sorted(Comparator.comparing(Hero::localizedName))
+            .toList();
     }
 }
-

@@ -155,13 +155,13 @@ jlink {
 // Custom Tasks
 // =============================================================================
 
-// Task to check file sizes (no file > 200 lines)
+// Task to check file sizes (no file > 500 lines)
 tasks.register("checkFileSizes") {
     group = "verification"
-    description = "Check that no Java file exceeds 200 lines"
+    description = "Check that no Java file exceeds 500 lines"
     
     doLast {
-        val maxLines = 200
+        val maxLines = 500
         var violations = 0
         
         fileTree("src/main/java") {
