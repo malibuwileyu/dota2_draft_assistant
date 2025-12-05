@@ -1,39 +1,36 @@
 package com.dota2assistant.domain.recommendation;
 
 /**
- * A component of a recommendation score with reasoning.
+ * A single component of a hero's recommendation score.
  */
 public record ScoreComponent(
-    String type,          // "synergy", "counter", "role", "meta", "personal"
-    double value,         // 0.0 to 1.0
-    String description    // Human-readable reason
+    String type,
+    double value,
+    String description
 ) {
-    /**
-     * Creates a synergy score component.
-     */
+    public static final String SYNERGY = "synergy";
+    public static final String COUNTER = "counter";
+    public static final String ROLE = "role";
+    public static final String META = "meta";
+    public static final String PERSONAL = "personal";
+    
     public static ScoreComponent synergy(double value, String description) {
-        return new ScoreComponent("synergy", value, description);
+        return new ScoreComponent(SYNERGY, value, description);
     }
     
-    /**
-     * Creates a counter score component.
-     */
     public static ScoreComponent counter(double value, String description) {
-        return new ScoreComponent("counter", value, description);
+        return new ScoreComponent(COUNTER, value, description);
     }
     
-    /**
-     * Creates a role score component.
-     */
     public static ScoreComponent role(double value, String description) {
-        return new ScoreComponent("role", value, description);
+        return new ScoreComponent(ROLE, value, description);
     }
     
-    /**
-     * Creates a meta score component.
-     */
     public static ScoreComponent meta(double value, String description) {
-        return new ScoreComponent("meta", value, description);
+        return new ScoreComponent(META, value, description);
+    }
+    
+    public static ScoreComponent personal(double value, String description) {
+        return new ScoreComponent(PERSONAL, value, description);
     }
 }
-
