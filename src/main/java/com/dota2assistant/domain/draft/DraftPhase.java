@@ -10,6 +10,20 @@ public enum DraftPhase {
     PICK_2,     // Second pick phase (6 picks: BAABBA)
     BAN_3,      // Third ban phase (4 bans: ABBA)
     PICK_3,     // Third pick phase (2 picks: AB)
-    COMPLETED   // Draft finished
+    COMPLETED;  // Draft finished
+    
+    /**
+     * Check if this phase is a ban phase.
+     */
+    public boolean isBanPhase() {
+        return this == BAN_1 || this == BAN_2 || this == BAN_3;
+    }
+    
+    /**
+     * Check if this phase is a pick phase.
+     */
+    public boolean isPickPhase() {
+        return this == PICK_1 || this == PICK_2 || this == PICK_3;
+    }
 }
 
