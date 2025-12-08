@@ -57,19 +57,47 @@ public class HeroButton extends StackPane {
         });
     }
     
+    private boolean filterMatch = true; // Whether hero matches current search filter
+    
     public void setAvailable(boolean available) {
         this.available = available;
-        if (available) {
-            imageView.setEffect(null);
-            setStyle("-fx-background-color: #1e293b; -fx-background-radius: 4; -fx-cursor: hand;");
-            setDisable(false);
-        } else {
+        updateVisualState();
+    }
+    
+    /**
+     * Set whether this hero matches the current search filter.
+     * Filtered-out heroes are grayed but still clickable (unlike picked heroes).
+     */
+    public void setFilterMatch(boolean matches) {
+        this.filterMatch = matches;
+        updateVisualState();
+    }
+    
+    private void updateVisualState() {
+        if (!available) {
+            // Picked/banned - fully disabled
             ColorAdjust grayscale = new ColorAdjust();
             grayscale.setSaturation(-0.8);
             grayscale.setBrightness(-0.4);
             imageView.setEffect(grayscale);
             setStyle("-fx-background-color: #0f172a; -fx-background-radius: 4;");
             setDisable(true);
+            setOpacity(1.0);
+        } else if (!filterMatch) {
+            // Doesn't match filter - grayed out but clickable
+            ColorAdjust dim = new ColorAdjust();
+            dim.setSaturation(-0.6);
+            dim.setBrightness(-0.3);
+            imageView.setEffect(dim);
+            setStyle("-fx-background-color: #1e293b; -fx-background-radius: 4; -fx-cursor: hand;");
+            setDisable(false);
+            setOpacity(0.4);
+        } else {
+            // Available and matches filter
+            imageView.setEffect(null);
+            setStyle("-fx-background-color: #1e293b; -fx-background-radius: 4; -fx-cursor: hand;");
+            setDisable(false);
+            setOpacity(1.0);
         }
     }
     

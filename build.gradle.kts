@@ -219,3 +219,29 @@ tasks.named("check") {
     dependsOn("checkFileSizes", "checkDomainImports")
 }
 
+// Task to import counter data from OpenDota API
+tasks.register<JavaExec>("importCounterData") {
+    group = "data"
+    description = "Import hero counter data from OpenDota API (~3 minutes)"
+    
+    mainClass.set("com.dota2assistant.cli.ImportCounterDataCommand")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
+// Task to import synergy data from DotaBASED
+tasks.register<JavaExec>("importSynergyData") {
+    group = "data"
+    description = "Import hero synergy data from DotaBASED (~5 seconds)"
+    
+    mainClass.set("com.dota2assistant.cli.ImportSynergyDataCommand")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
+// Task to import all matchup data (counter + synergy)
+tasks.register("importAllData") {
+    group = "data"
+    description = "Import both counter and synergy data"
+    dependsOn("importSynergyData")
+    // Note: importCounterData takes ~3 mins, run separately if needed
+}
+

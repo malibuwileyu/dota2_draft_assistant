@@ -93,6 +93,18 @@ public class AttributeColumn extends VBox {
         }
     }
     
+    /**
+     * Filter heroes by search text. Heroes not matching are dimmed.
+     */
+    public void applyFilter(String searchText) {
+        String search = searchText.toLowerCase();
+        for (HeroButton btn : heroButtons) {
+            boolean matches = search.isEmpty() || 
+                btn.getHero().localizedName().toLowerCase().contains(search);
+            btn.setFilterMatch(matches);
+        }
+    }
+    
     public void setOnHeroClick(Consumer<Hero> handler) {
         this.onHeroClick = handler;
         for (HeroButton btn : heroButtons) {

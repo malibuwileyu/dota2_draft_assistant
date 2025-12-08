@@ -27,12 +27,16 @@ public class DraftTower extends VBox {
     private static final double SAME_STAGGER = 1.0;
     private static final double SAME_GAP = 3;
     private static final double ASPECT = 1.8;
+    private static final double SLOT_SCALE = 0.92; // Scale down individual slot size
     
     private final VBox slotsBox = new VBox(0);
     private final List<DraftSlot> slots = new ArrayList<>();
     private final List<HBox> rows = new ArrayList<>();
     private final Label phaseLabel = new Label();
     private final Label turnLabel = new Label();
+    private final Label leftLabel = new Label("RAD");
+    private final Label rightLabel = new Label("DIRE");
+    private boolean flipped = false; // true = Dire on left, Radiant on right
     
     public DraftTower() {
         setupUI();
@@ -60,19 +64,17 @@ public class DraftTower extends VBox {
         header.setAlignment(Pos.CENTER);
         header.setPadding(new Insets(8, 0, 8, 0));
         
-        Label rad = new Label("RAD");
-        rad.setTextFill(Color.web("#22c55e"));
-        rad.setFont(Font.font("System", FontWeight.BOLD, 10));
-        rad.setMinWidth(50);
-        rad.setAlignment(Pos.CENTER);
+        leftLabel.setFont(Font.font("System", FontWeight.BOLD, 10));
+        leftLabel.setMinWidth(50);
+        leftLabel.setAlignment(Pos.CENTER);
         
-        Label dire = new Label("DIRE");
-        dire.setTextFill(Color.web("#ef4444"));
-        dire.setFont(Font.font("System", FontWeight.BOLD, 10));
-        dire.setMinWidth(50);
-        dire.setAlignment(Pos.CENTER);
+        rightLabel.setFont(Font.font("System", FontWeight.BOLD, 10));
+        rightLabel.setMinWidth(50);
+        rightLabel.setAlignment(Pos.CENTER);
         
-        HBox teamLabels = new HBox(4, rad, dire);
+        updateLabelColors();
+        
+        HBox teamLabels = new HBox(4, leftLabel, rightLabel);
         teamLabels.setAlignment(Pos.CENTER);
         teamLabels.setPadding(new Insets(0, 0, 5, 0));
         
@@ -105,7 +107,11 @@ public class DraftTower extends VBox {
             
             Region spacer = new Region();
             
-            if (turn.isRadiant) {
+            // Determine if this slot goes on left or right
+            // When flipped, Radiant goes right and Dire goes left
+            boolean onLeft = flipped ? !turn.isRadiant : turn.isRadiant;
+            
+            if (onLeft) {
                 row.getChildren().addAll(slot, spacer);
                 HBox.setHgrow(spacer, Priority.ALWAYS);
             } else {
@@ -126,18 +132,24 @@ public class DraftTower extends VBox {
         int sameCount = countSameSideTransitions();
         double totalGaps = sameCount * SAME_GAP;
         
-        double slotH = (available - totalGaps) / totalUnits;
-        slotH = Math.max(16, Math.min(36, slotH));
+        // Calculate layout height (full size for spacing math)
+        double layoutH = (available - totalGaps) / totalUnits;
+        layoutH = Math.max(16, Math.min(36, layoutH));
+        
+        // Scale down the actual slot visual size
+        double slotH = layoutH * SLOT_SCALE;
         double slotW = slotH * ASPECT;
         
         for (int i = 0; i < slots.size(); i++) {
             DraftSlot slot = slots.get(i);
             slot.resize(slotW, slotH);
             
-            // Set row spacing based on whether next is same side
+            // Set row spacing based on layout height (not scaled slot height)
             if (i < SEQUENCE.size() - 1) {
-                boolean nextSameSide = SEQUENCE.get(i).isRadiant == SEQUENCE.get(i + 1).isRadiant;
-                double margin = nextSameSide ? -slotH * (1 - SAME_STAGGER) + SAME_GAP : -slotH * (1 - CROSS_STAGGER);
+                boolean currLeft = flipped ? !SEQUENCE.get(i).isRadiant : SEQUENCE.get(i).isRadiant;
+                boolean nextLeft = flipped ? !SEQUENCE.get(i + 1).isRadiant : SEQUENCE.get(i + 1).isRadiant;
+                boolean nextSameSide = currLeft == nextLeft;
+                double margin = nextSameSide ? -layoutH * (1 - SAME_STAGGER) + SAME_GAP : -layoutH * (1 - CROSS_STAGGER);
                 VBox.setMargin(rows.get(i + 1), new Insets(margin, 0, 0, 0));
             }
         }
@@ -146,7 +158,9 @@ public class DraftTower extends VBox {
     private double calculateTotalUnits() {
         double units = 1.0;
         for (int i = 0; i < SEQUENCE.size() - 1; i++) {
-            boolean sameSide = SEQUENCE.get(i).isRadiant == SEQUENCE.get(i + 1).isRadiant;
+            boolean currLeft = flipped ? !SEQUENCE.get(i).isRadiant : SEQUENCE.get(i).isRadiant;
+            boolean nextLeft = flipped ? !SEQUENCE.get(i + 1).isRadiant : SEQUENCE.get(i + 1).isRadiant;
+            boolean sameSide = currLeft == nextLeft;
             units += sameSide ? SAME_STAGGER : CROSS_STAGGER;
         }
         return units;
@@ -155,7 +169,9 @@ public class DraftTower extends VBox {
     private int countSameSideTransitions() {
         int count = 0;
         for (int i = 0; i < SEQUENCE.size() - 1; i++) {
-            if (SEQUENCE.get(i).isRadiant == SEQUENCE.get(i + 1).isRadiant) count++;
+            boolean currLeft = flipped ? !SEQUENCE.get(i).isRadiant : SEQUENCE.get(i).isRadiant;
+            boolean nextLeft = flipped ? !SEQUENCE.get(i + 1).isRadiant : SEQUENCE.get(i + 1).isRadiant;
+            if (currLeft == nextLeft) count++;
         }
         return count;
     }
@@ -189,6 +205,38 @@ public class DraftTower extends VBox {
             if (hero != null) slots.get(i).setHero(hero);
             else if (i == turnIndex && team != null) slots.get(i).setActive(true);
         }
+    }
+    
+    /**
+     * Configure display based on user's side and pick order.
+     * User's side always appears on the LEFT of the tower.
+     * - Radiant First Pick: no flip (RAD left, DIRE right)
+     * - Radiant Second Pick: flip (DIRE left, RAD right) 
+     * - Dire First Pick: flip (DIRE left, RAD right)
+     * - Dire Second Pick: no flip (RAD left, DIRE right)
+     */
+    public void setUserSide(Team side, boolean userFirstPick) {
+        // Flip when Dire is the first-pick team
+        this.flipped = (side == Team.DIRE && userFirstPick) || (side == Team.RADIANT && !userFirstPick);
+        updateLabelColors();
+        rebuildSlots();
+    }
+    
+    private void updateLabelColors() {
+        // Labels always stay RAD left, DIRE right - only tower slots flip
+        leftLabel.setText("RAD");
+        leftLabel.setTextFill(Color.web("#22c55e"));
+        rightLabel.setText("DIRE");
+        rightLabel.setTextFill(Color.web("#ef4444"));
+    }
+    
+    private void rebuildSlots() {
+        slotsBox.getChildren().clear();
+        slots.clear();
+        rows.clear();
+        buildSlots();
+        // Delay rescale until after layout pass
+        javafx.application.Platform.runLater(this::rescale);
     }
     
     private String formatPhase(DraftPhase phase) {

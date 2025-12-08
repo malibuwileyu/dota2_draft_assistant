@@ -1,10 +1,12 @@
 package com.dota2assistant;
 
 import com.dota2assistant.config.AppConfig;
+import com.dota2assistant.domain.auth.AuthenticationService;
 import com.dota2assistant.domain.repository.HeroRepository;
+import com.dota2assistant.infrastructure.api.BackendApiClient;
 import com.dota2assistant.infrastructure.persistence.DatabaseMigrator;
 import com.dota2assistant.infrastructure.persistence.HeroDataImporter;
-import com.dota2assistant.ui.PracticeDraftView;
+import com.dota2assistant.ui.MainView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -54,11 +56,14 @@ public class Dota2DraftAssistant extends Application {
         log.info("Starting JavaFX application...");
         
         HeroRepository heroRepo = springContext.getBean(HeroRepository.class);
-        PracticeDraftView practiceDraft = new PracticeDraftView(heroRepo);
+        BackendApiClient backendClient = springContext.getBean(BackendApiClient.class);
+        AuthenticationService authService = springContext.getBean(AuthenticationService.class);
         
-        var scene = new Scene(practiceDraft, 1280, 900);
+        MainView mainView = new MainView(heroRepo, backendClient, authService);
         
-        primaryStage.setTitle("Dota 2 Draft Assistant - Practice Draft");
+        var scene = new Scene(mainView, 1280, 900);
+        
+        primaryStage.setTitle("Dota 2 Draft Assistant");
         primaryStage.setScene(scene);
         primaryStage.setWidth(1280);
         primaryStage.setHeight(900);
