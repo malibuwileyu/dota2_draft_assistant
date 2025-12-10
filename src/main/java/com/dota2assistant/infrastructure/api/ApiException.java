@@ -7,6 +7,7 @@ import java.util.Map;
  * Exception thrown when an external API call fails.
  */
 public class ApiException extends AppError {
+    private static final long serialVersionUID = 1L;
     
     private final int statusCode;
     

@@ -7,6 +7,7 @@ import java.util.Map;
  * Exception thrown when an action is attempted in the wrong draft phase.
  */
 public class InvalidDraftPhaseException extends AppError {
+    private static final long serialVersionUID = 1L;
     
     public InvalidDraftPhaseException(DraftPhase current, String attemptedAction) {
         super(

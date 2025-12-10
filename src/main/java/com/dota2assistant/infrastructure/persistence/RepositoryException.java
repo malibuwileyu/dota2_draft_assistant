@@ -7,6 +7,7 @@ import java.util.Map;
  * Exception thrown when a database operation fails.
  */
 public class RepositoryException extends AppError {
+    private static final long serialVersionUID = 1L;
     
     public RepositoryException(String message, Throwable cause) {
         super("REPOSITORY_ERROR", message, false, Map.of(), cause);

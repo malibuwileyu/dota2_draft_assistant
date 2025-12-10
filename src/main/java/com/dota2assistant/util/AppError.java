@@ -7,6 +7,7 @@ import java.util.Map;
  * Provides structured error information for logging and user feedback.
  */
 public abstract class AppError extends RuntimeException {
+    private static final long serialVersionUID = 1L;
     
     private final String code;
     private final boolean operational;

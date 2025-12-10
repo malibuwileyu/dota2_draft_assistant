@@ -7,6 +7,7 @@ import java.util.Map;
  * Exception thrown when a draft action fails validation.
  */
 public class DraftValidationException extends AppError {
+    private static final long serialVersionUID = 1L;
     
     public DraftValidationException(String message) {
         super("DRAFT_VALIDATION_ERROR", message, true, Map.of(), null);

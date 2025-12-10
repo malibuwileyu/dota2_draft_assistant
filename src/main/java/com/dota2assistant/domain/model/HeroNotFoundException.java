@@ -7,6 +7,7 @@ import java.util.Map;
  * Exception thrown when a hero cannot be found.
  */
 public class HeroNotFoundException extends AppError {
+    private static final long serialVersionUID = 1L;
     
     public HeroNotFoundException(int heroId) {
         super(
