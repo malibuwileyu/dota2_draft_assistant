@@ -38,7 +38,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
       
       - name: Set up Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v5
@@ -83,7 +83,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
       
       - name: Set up Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v5
@@ -129,7 +129,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
       
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -146,4 +146,38 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
         continue-on-error: true
+
+  # ===========================================================================
+  # Auto-Close Issues (on main push)
+  # ===========================================================================
+  close-issues:
+    name: Auto-Close Referenced Issues
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      
+      - name: Parse commit messages for issue references
+        id: issues
+        run: |
+          # Find "Closes #XX", "Fixes #XX", or "Resolves #XX" in recent commits
+          ISSUES=$(git log --oneline -10 | grep -oE '(Closes|Fixes|Resolves) #[0-9]+' | grep -oE '#[0-9]+' | sort -u | tr '\n' ' ')
+          echo "issues=$ISSUES" >> $GITHUB_OUTPUT
+          echo "Found issues to close: $ISSUES"
+      
+      - name: Close issues
+        if: steps.issues.outputs.issues != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for issue in ${{ steps.issues.outputs.issues }}; do
+            issue_num=${issue#\#}
+            echo "Closing issue #$issue_num"
+            gh issue close "$issue_num" --comment "✅ Closed by commit ${{ github.sha }}" || true
+          done
 
